@@ -1,0 +1,28 @@
+// -*- coding utf-8 -*-
+{
+  "manifest_version": 2,
+  "name": "AirCampus for Web Extender",
+  "description": "Extend AirCampus for Web",
+  "version": "0.0.0.1",
+
+  "permissions": [ "tabs" ],
+  "content_scripts": [ {
+    "matches": ["https://www.bbt757.com/ac/web/*"],
+    "default_icon": "src/icon_48.png)",
+    "default_title": "ACex",
+//    "js": ["src/jquery.min.js","src/script.js"],
+//    "run_at": "document_start"
+     "js": ["src/script.js"],
+  } ],
+  "content_security_policy": "script-src 'self' http://www.google-analytics.com/ https://ssl.google-analytics.com; object-src 'self'",
+  "icons": {
+    "16": "src/icon_16.png",
+    "48": "src/icon_48.png",
+    "128": "src/icon_128.png"
+  },
+  "background": {
+    "page": "src/background.html"
+  },
+  "options_page": "src/options.html",
+  "default_locale": "en"
+}

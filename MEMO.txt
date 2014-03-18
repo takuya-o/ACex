@@ -1,0 +1,7 @@
+// -*- coding utf-8 -*-
+- Versions
+ src/jquery-2.1.0.min.js
+ src/prototype-1.7.0.js
+
+-ÉLÅ[çÏê¨
+crxmake --pack-extension="src" --extension-output="ACex.crx" --key-output=ACex.pem --verbose
