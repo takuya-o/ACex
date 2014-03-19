@@ -1,9 +1,9 @@
-// -*- coding utf-8 -*-
+// -*- coding: utf-8-unix -*-
 {
   "chrome_extension_name":{
     "message":"AC extender"
   },
   "save":{
-    "message":"•Û‘¶"
+    "message":"ä¿å­˜"
   }
 }

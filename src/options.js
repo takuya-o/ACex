@@ -1,3 +1,4 @@
+// -*- coding: utf-8-unix -*-
 (function() {
   var Options = Class.create({
       initialize: function() {
@@ -13,23 +14,29 @@
         //
       },
       assignMessages: function() {
-        var hash = {
-          "optOyo": "optOyo",
-          //
-        };
-        for (var key in hash) {
-          $(key).innerHTML = chrome.i18n.getMessage(hash[key]);
-        }
+        // var hash = {
+        //   "optOyo": "optOyo",
+        //   //
+        // };
+        // for (var key in hash) {
+        //   $(key).innerHTML = chrome.i18n.getMessage(hash[key]);
+        // }
+        var elems = document.querySelectorAll('*[class^="MSG_"]');
+        Array.prototype.forEach.call(elems, function (node) {
+          var key = node.className.match(/MSG_(\w+)/)[1];
+          var message = i18n.getMessage(key);
+          if (message) node.textContent = message;
+        });
       },
       assignEventHandlers: function() {
-        $("Oyo").onclick = this.onClick***.bind(this);
+        $("Oyo").onclick = this.onClickOyo.bind(this);
       },
       restoreConfigurations: function() {
-        $("Oyo").value = this.bg.get***Config();
+        $("Oyo").value = this.bg.getOyoConfig();
       },
-      onClick***: function(evt) {
+      onClickOyo: function(evt) {
         var value = $("Oyo").value;
-        this.bg.set***Config(value);
+        this.bg.setOyoConfig(value);
       },
       //
     });

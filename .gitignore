@@ -1,0 +1,6 @@
+# -*- coding: utf-8-unix -*-
+*~
+*.bak
+*.pem
+*.crx
+/nbproject/private/

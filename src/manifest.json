@@ -1,0 +1,34 @@
+// -*- coding: utf-8-unix -*-
+{
+  "manifest_version": 2,
+  "name": "AirCampus for Web Extender",
+  "description": "Extend AirCampus for Web",
+  "version": "0.0.0.1",
+
+  "permissions": [
+    "tabs", 
+    "https://www.bbt757.com/svlAC/" 
+  ],
+  "content_scripts": [ {
+    "matches": ["https://www.bbt757.com/ac/web/*"],
+    "js": ["analytics.js", "prototype.js", "script.js"],
+    "run_at": "document_end"
+  } ],
+  "page_action": {
+    "default_icon": "icon_19.png",
+    "default_title": "AirCumpus for Web Extender",
+    "default_popup": "popup.html"
+  },
+  "content_security_policy":
+          "script-src 'self' https://www.google-analytics.com/; object-src 'self'",
+  "icons": {
+    "128": "icon_128.png",
+    "48": "icon_48.png",
+    "16": "icon_16.png"
+  },
+  "background": {
+    "page": "background.html"
+  },
+  //まだない "options_page": "options.html",
+  "default_locale": "en"
+}

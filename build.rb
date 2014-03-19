@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# -*- coding utf-8 -*-
+# -*- coding: utf-8-unix -*-
 
 require 'rubygems'
 require 'crxmake'
@@ -11,6 +11,6 @@ CrxMake.make(
   :pkey   => "./ACex.pem",
   :crx_output => "./ACex.crx",
   :verbose => true,
-  :ignorefile => /\.swp/,
+  :ignorefile => /(\.swp|.*~)/,
   :ignoredir => /\.(?:svn|git|cvs)/
 )

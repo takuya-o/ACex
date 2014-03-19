@@ -1,27 +1,80 @@
-// -*- coding utf-8 -*-
-/*
-//jQuery readyになったら開始
-//フル $(window).on("load", function() { });
-$(function(){
-  $("a.l").each(function(){ //検索結果ごとに処理
-    //URLを取得
-    var domain = $(this).attr('href');
-    //取得したURLのドメイン部分だけ取り出し
-    var domain2 = domain.match(/^[httpsfile]+:\/{2,3}([0-9a-zA-Z\.\-:]+?):?[0-9]*?\//i);
+// -*- coding: utf-8-unix -*-
+(function() {
+  console.log("--- Start ACex ---");
+  var ContentScript = Class.create({
+    initialize: function() {
+      window.addEventListener("load", function(evt) {
+	this.start();
+      }.bind(this));
+    },
+    start: function() {
+      this.assignMessages();
+      this.assignEventHandlers();
+      this.getACconfig();
+    },
+    assignMessages: function() {
+      var elems = document.querySelectorAll('*[class^="MSG_"]');
+      Array.prototype.forEach.call(elems, function(node) {
+	var key = node.className.match(/MSG_(\w+)/)[1];
+	var message = i18n.getMessage(key);
+	if (message) {
+	  node.textContent = message;
+	}
+	;
+      });
+    },
+    assignEventHandlers: function() {
+      //$("Foo").onclick = this.onClickFoo.bind(this);
+      this.port = chrome.extension.connect({name: "ACex"});
+      this.port.postMessage({status: "showIcon"});
+      this.port.onMessage.addListener(function(msg) {
+	if (msg.cmd == "retBG"){
+	  console.log("--- Recv BackgroundPage:" + msg.bg);
+	  this.port.postMessage({status: "ack"});
+	}else if (msg.cmd == "OK") {
+	  console.log("--- Recv OK");
+	}
+      });
+    },
+    onClickFoo: function(evt) {
+      // 設定値を取得
+      //var oyoConfig = this.bg.getOyoConfig();
+      // Ajax通信
+      //this.bg.loadFoo({
+      //  onSuccess: function(res) {
+      //	    //
+      //  }.bind(this)
+      //});
+      //
+    },
+    //
+    getACconfig: function() {
+      var sessionA = "";
+      var userID = "";
+      var elements = window.document.getElementsByTagName("script");
+      //alert(elements.length + "個の要素を取得しました");
+      for (i = 0; i < elements.length; i++) {
+	var text = elements[i].innerText;
+	if (text) {
+	  //alert(i + ":" + elements[i].innerText);
+	  var match = text.match(/a=\w+/);
+	  if (match) {
+	    sessionA = match;
+	  }
+	  ;
+	  match = text.match(/u=\w+/);
+	  if (match) {
+	    userID = match;
+	  }
+	  ;
+	}
+      }
+      this.port.postMessage(
+	{cmd: "setSession", userID: userID, sessionA: sessionA});
+      console.log("ACex: " + userID + " : " + sessionA);
+    }
 
-     //Googleファビコン取得APIのURL
-    var favget = "//www.google.com/s2/favicons?domain="+domain2[1];
-    //上記のURLを画像ファイルタグにしますよ。
-    var favgethtml = "<img src='"+favget+"' class='favi'/>";
-    //タイトルの前に上記のタグを挿入しますよ。
-    $(this).parent().prepend(favgethtml);
   });
-});
-*/
-
-//Javascriptだけ
-document.OnLoad = start();
-function start() {
-    window.alert('Hello World !!')
-}
+  new ContentScript();
+})();
 
