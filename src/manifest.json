@@ -1,9 +1,10 @@
-// -*- coding: utf-8-unix -*-
 {
   "manifest_version": 2,
   "name": "AirCampus for Web Extender",
+  "short_name": "ACex",
   "description": "Extend AirCampus for Web",
-  "version": "0.0.0.1",
+  "author": "Takuya Ono",
+  "version": "0.0.0.2",
 
   "permissions": [
     "tabs", 
@@ -11,7 +12,7 @@
   ],
   "content_scripts": [ {
     "matches": ["https://www.bbt757.com/ac/web/*"],
-    "js": ["analytics.js", "prototype.js", "script.js"],
+    "js": ["tagmanager.js", "prototype.js", "script.js"],
     "run_at": "document_end"
   } ],
   "page_action": {
@@ -20,15 +21,15 @@
     "default_popup": "popup.html"
   },
   "content_security_policy":
-          "script-src 'self' https://www.google-analytics.com/; object-src 'self'",
+          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com; object-src 'self'",
   "icons": {
     "128": "icon_128.png",
     "48": "icon_48.png",
+    "19": "icon_16.png",
     "16": "icon_16.png"
   },
   "background": {
     "page": "background.html"
   },
-  //まだない "options_page": "options.html",
   "default_locale": "en"
 }

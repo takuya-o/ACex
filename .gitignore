@@ -3,4 +3,5 @@
 *.bak
 *.pem
 *.crx
+*.zip
 /nbproject/private/

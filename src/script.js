@@ -16,7 +16,7 @@
       var elems = document.querySelectorAll('*[class^="MSG_"]');
       Array.prototype.forEach.call(elems, function(node) {
 	var key = node.className.match(/MSG_(\w+)/)[1];
-	var message = i18n.getMessage(key);
+	var message = chrome.i18n.getMessage(key);
 	if (message) {
 	  node.textContent = message;
 	}

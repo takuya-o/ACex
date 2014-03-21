@@ -1,9 +1,42 @@
-// -*- coding: utf-8-unix -*-
 {
   "chrome_extension_name":{
     "message":"AC extender"
   },
   "save":{
     "message":"Save"
+  },
+  "count":{
+    "message":"Count"
+  },
+  "loding":{
+    "message":"Loding..."
+  },
+  "program_list":{
+    "message":"Program List"
+  },
+  "loding_fail":{
+    "message":"Loding Fail."
+  },
+  "loding_exception":{
+    "message":"Loding Exception?"
+  },
+  "loding_success":{
+    "message":"Loding success."
+  },
+  "course_list":{
+    "message":"Course List"
+  },
+  "forum_list":{
+    "message":"Forum List"
+  },
+  "id":{
+    "message":"ID="
+  },
+  "discussion_data":{
+    "message":"Discuttion Data"
+  },
+  "count_finish":{
+    "message":"Count Finish."
   }
 }
+// -*- coding: utf-8-unix -*-
