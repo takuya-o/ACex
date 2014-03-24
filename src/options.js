@@ -14,13 +14,6 @@
         //
       },
       assignMessages: function() {
-        // var hash = {
-        //   "optOyo": "optOyo",
-        //   //
-        // };
-        // for (var key in hash) {
-        //   $(key).innerHTML = chrome.i18n.getMessage(hash[key]);
-        // }
         var elems = document.querySelectorAll('*[class^="MSG_"]');
         Array.prototype.forEach.call(elems, function (node) {
           var key = node.className.match(/MSG_(\w+)/)[1];
@@ -29,16 +22,15 @@
         });
       },
       assignEventHandlers: function() {
-        $("Oyo").onclick = this.onClickOyo.bind(this);
+        $("option_save").onclick = this.onClickSave.bind(this);
       },
       restoreConfigurations: function() {
-        $("Oyo").value = this.bg.getOyoConfig();
+        $("option1").value = this.bg.getOyoConfig();
       },
-      onClickOyo: function(evt) {
-        var value = $("Oyo").value;
+      onClickSave: function(evt) {
+        var value = $("option1").value;
         this.bg.setOyoConfig(value);
-      },
-      //
+      }
     });
   new Options();
 })();

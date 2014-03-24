@@ -5,4 +5,9 @@
  src/prototype-1.7.0.js
 
 -キー作成
-crxmake --pack-extension="src" --extension-output="ACex.crx" --key-output=ACex.pem --verbose
+crxmake --pack-extension="src" --extension-output="ACex.crx"
+--key-output=ACex-crxmake.pem --verbose
+
+-URL
+Github
+ https://github.com/takuya-o/ACex
