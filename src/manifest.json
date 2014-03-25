@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
-  "name": "AirCampus for Web Extender",
   "short_name": "ACex",
-  "description": "Extend AirCampus for Web",
+  "name": "__MSG_ACex_name__",
+  "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.0.2.0",
+  "version": "0.0.3.2",
 
   "permissions": [
     "tabs",
@@ -12,7 +12,7 @@
   ],
   "content_scripts": [ {
     "matches": ["https://www.bbt757.com/ac/web/*"],
-    "js": ["tagmanager.js", "prototype.js", "script.js"],
+    "js": ["tagmanager.js", "lib/prototype.js", "script.js"],
     "run_at": "document_end"
   } ],
   "page_action": {

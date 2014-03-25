@@ -3,8 +3,24 @@
   <head>
     <meta charset="utf-8">
     <title>ACex popup</title>
-    <script type="text/javascript" src="./prototype.js"></script>
-    <script type="text/javascript" src="./popup.js"></script>
+    <style>
+      body {
+      overflow-x: hidden;
+      }
+      .heading {
+      font-family: Helvetica, Arial;
+      font-size: small;
+      font-weight: bold;
+      margin-left: 2px;
+      }
+      .feedList {
+      font-family: Helvetica, Arial;
+      font-size: small;
+      vertical-align: bottom;
+      }
+    </style>
+    <script type="text/javascript" src="lib/prototype.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
   </head>
   <body>
 <script>dataLayer=[];</script>
@@ -17,8 +33,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-K26M5B');</script>
 <!-- End Google Tag Manager -->
-    <div id="menuList">
-      <a href="courselist.html" target="_blank" class="MSG_count">Count</a>
+    <div id="content">
+      <span id="heading" class="MSG_loding">Loading...</span>
     </div>
   </body>
 </html>

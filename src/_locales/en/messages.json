@@ -1,12 +1,21 @@
 {
+  "-*- coding: utf-8-unix -*-":{
+    "message":"comment"
+  },
+  "ACex_name":{
+    "message":"AirCampus for Web Extender"
+  },
+  "ACex_description":{
+    "message":"Extend AirCampus for Web"
+  },
   "chrome_extension_name":{
     "message":"AC extender"
   },
   "save":{
     "message":"Save"
   },
-  "count":{
-    "message":"Count"
+  "inProgressCouseOnly":{
+    "message":"In progress course only"
   },
   "loding":{
     "message":"Loding..."
@@ -39,4 +48,4 @@
     "message":"Count Finish."
   }
 }
-// -*- coding: utf-8-unix -*-
+

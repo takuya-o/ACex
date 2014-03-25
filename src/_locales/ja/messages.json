@@ -1,12 +1,21 @@
 {
+  "-*- coding: utf-8-unix -*-":{
+    "message":"comment"
+  },
+  "ACex_name":{
+    "message":"AirCampus for Web Extender"
+  },
+  "ACex_description":{
+    "message":"AirCampus for Webの機能を拡張します"
+  },
   "chrome_extension_name":{
     "message":"AC extender"
   },
   "save":{
     "message":"保存"
   },
-  "count":{
-    "message":"カウント"
+  "inProgressCouseOnly":{
+    "message":"開講中のみ"
   },
   "loding":{
     "message":"ロード中..."
@@ -39,4 +48,4 @@
     "message":"計測完了"
   }
 }
-// -*- coding: utf-8-unix -*-
+

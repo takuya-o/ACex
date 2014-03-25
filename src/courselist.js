@@ -64,7 +64,9 @@
         var item =  '<li class="ProgramItem" id="programItem'+ programID + '">'
           + '<button type="button" id="' + programID
           + '" value="' + programID + '">'
-          + programs[i].getAttribute('name').replace(/大学院*/g,"")
+          + ( this.bg.isCRmode() ?
+              programs[i].getAttribute('name').replace(/・*大学院*/g,""):
+              programs[i].getAttribute('name'))
           +'</button></li>';
         $( 'ProgramList' ).insert(item);
         $( programID ).onclick = this.onClickProgram.bind(this);
@@ -86,7 +88,9 @@
             + '" end="'+ ( now > end ) + '" name="courseItem" >'
             + '<button type="button" id="' + courseID
             + '" value="' + courseID + '">'
-            + courses[j].getAttribute('name').replace(/大学院*/g,"");
+            + ( this.bg.isCRmode() ?
+                courses[j].getAttribute('name').replace(/・*大学院*/g,""):
+                courses[j].getAttribute('name'))
             + '</botton></li>';
         }
         for(var key in items) {
