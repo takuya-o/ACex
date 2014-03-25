@@ -40,38 +40,74 @@
             this.programItemList(response.responseXML);
           }.bind(this),
           onFailure: function(response) {
-            $('message').update(this.getMessage(["program_list", "loding_fail"]));
+            $('message').update(
+              this.getMessage(["program_list", "loding_fail"] )
+                + response.statusText );
+            dataLayer.push({'event': 'Failure-GetCourseList3'
+                            + response.statusText });
           }.bind(this),
-          onException: function(response) {
-            $('message').update(this.getMessage(["program_list", "loding_exception"]));
+          onException: function(response, e) {
+            $('message').update(
+              this.getMessage(["program_list", "loding_exception"])
+                + e.message );
+            dataLayer.push({'event': 'Exception-GetCourseList3' + e.message });
           }.bind(this)
         }
       );
     },
     programItemList: function(xml) {
       $('message').update(this.getMessage(["course_list", "loding_success"]));
+      var now = new Date();
       var programs = xml.getElementsByTagName("program");
       for(var i=0; i<programs.length; i++) {
         var programID = programs[i].getAttribute('id');
         var item =  '<li class="ProgramItem" id="programItem'+ programID + '">'
-          + '<button type="button" id="' + programID 
+          + '<button type="button" id="' + programID
           + '" value="' + programID + '">'
-          + programs[i].getAttribute('name') +'</button></li>';
+          + programs[i].getAttribute('name').replace(/大学院*/g,"")
+          +'</button></li>';
         $( 'ProgramList' ).insert(item);
         $( programID ).onclick = this.onClickProgram.bind(this);
         $( "programItem" + programID ).insert(
           '<ul id="program' + programID + '"></ul>');
         $( "program" + programID ).hide();
         var courses = programs[i].getElementsByTagName("course");
+        var items = {};
         for(var j=0; j<courses.length; j++) {
           var courseID = courses[j].getAttribute('id');
-          var item =  '<li class="CourseItem" id="course'+ courseID + '">'
-            + '<button type="button" id="' + courseID 
+          var endStr = courses[j].getAttribute('end');
+          //"2012-09-08T23:59:59+09:00"
+          var date = endStr.match(/(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/);
+          var end = new Date(date[1], date[2]-1, date[3]
+                             , date[4], date[5], date[6], 999);
+          //順番付はorderよりcousrIDの方が直感的
+          items[courseID] =
+            '<li class="CourseItem" id="course' + courseID
+            + '" end="'+ ( now > end ) + '" name="courseItem" >'
+            + '<button type="button" id="' + courseID
             + '" value="' + courseID + '">'
-            + courses[j].getAttribute('name')
+            + courses[j].getAttribute('name').replace(/大学院*/g,"");
             + '</botton></li>';
-          $( "program" + programID ).insert(item);
-          $( courseID ).onclick = this.onClickCourseItem.bind(this);
+        }
+        for(var key in items) {
+          $( "program" + programID ).insert(items[key]);
+          $( key ).onclick = this.onClickCourseItem.bind(this);
+          if ( $("termonoffswitch").checked ) {
+            var endFlg = $( "course" + key ).getAttribute('end');
+            if ( endFlg == "true" ) { $( "course" + key ).hide(); }
+          }
+          $("termonoffswitch").onclick = this.onClickSwitch.bind(this);
+        }
+      }
+    },
+    onClickSwitch: function(evt) {
+      var items = document.getElementsByName("courseItem");
+      for(var i=0; i<items.length; i++) {
+        if ( $("termonoffswitch").checked ) {
+          var endFlg = items[i].getAttribute('end');
+          if ( endFlg == "true" ) { items[i].hide(); }
+        }else{
+          items[i].show();
         }
       }
     },
@@ -110,11 +146,17 @@
             }.bind(this),
             onFailure: function(response) {
               $('message').update(
-                this.getMessage(["course_list", "logind_fail"]) + courseID);
+                this.getMessage(["course_list", "logind_fail", "id"])
+                  + courseID + response.statusText );
+              dataLayer.push({'event': 'Failure-GetCourseItemList'
+                              + courseID + response.statusText });
             }.bind(this),
-            onException: function(response) {
+            onException: function(response, e) {
               $('message').update(
-              this.getMessage(["course_list", "logind_exception"]) + courseID);
+              this.getMessage(["course_list", "logind_exception", "id"])
+                  + courseID + e.message );
+              dataLayer.push({'event': 'Exception-GetCourseItemList'
+                              + courseID + e.message });
             }.bind(this)
           }
         );
@@ -168,10 +210,16 @@
               this.getContents(response.responseXML, fid);
             }.bind(this),
             onFailure: function(response) {
-              $('message').update("Course List Loding Fail. " + fid);
+              $('message').update(getMessage(["discussion_data", "loding_fail"])
+                                  + fid + response.statusText );
+              dataLayer.push({'event': 'Failure-GetForumContents'
+                              + fid + response.statusText });
             },
-            onException: function(response) {
-              $('message').update("Course List Loding Exception? " + fid);
+            onException: function(response,e) {
+              $('message').update(getMessage(["discussion_data", "loding_exception"])
+                                  + fid + e.message);
+              dataLayer.push({'event': 'Exception-GetForumContents'
+                              + fid + e.message });
             }
           }
         )

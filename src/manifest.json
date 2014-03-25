@@ -4,11 +4,11 @@
   "short_name": "ACex",
   "description": "Extend AirCampus for Web",
   "author": "Takuya Ono",
-  "version": "0.0.0.3",
+  "version": "0.0.2.0",
 
   "permissions": [
-    "tabs", 
-    "https://www.bbt757.com/svlAC/" 
+    "tabs",
+    "https://www.bbt757.com/svlAC/"
   ],
   "content_scripts": [ {
     "matches": ["https://www.bbt757.com/ac/web/*"],
@@ -21,7 +21,7 @@
     "default_popup": "popup.html"
   },
   "content_security_policy":
-          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com; object-src 'self'",
+          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; object-src 'self'",
   "icons": {
     "128": "icon_128.png",
     "48": "icon_48.png",

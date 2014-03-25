@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/switch.css">
     <title>Course List - AirCampus for Web Extender</title>
     <script type="text/javascript" src="./prototype.js"></script>
     <script type="text/javascript" src="./courselist.js"></script>
@@ -13,6 +14,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script type="text/javascript" src="./tagmanager.js"></script>
 <!-- End Google Tag Manager -->
     <div id="message"></div>
+    <div class="onoffswitch">
+      <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="termonoffswitch" checked>
+      <label class="onoffswitch-label" for="termonoffswitch">
+        <div class="onoffswitch-inner"></div>
+        <div class="onoffswitch-switch"></div>
+      </label>
+    </div>
     <div id="list">
       <ul id="ProgramList"></ul>
     </div>

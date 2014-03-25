@@ -11,3 +11,24 @@ crxmake --pack-extension="src" --extension-output="ACex.crx"
 -URL
 Github
  https://github.com/takuya-o/ACex
+Chromウェブストア
+ --非公開--
+
+-masterブランチの作り方
+masterブランチは孤立したブランチになってしまうが、開発ブランチの細かい
+修正を見せない。
+
+$ git co master        #前のmasterブランチに移動
+$ git co -b release    #安全のためreleaseブランチ作成
+$ git merge develop    #developをマージ このときには細かいログが入る
+$ git co --theirs      #developを優先して
+$ git commit -C ORG_HEAD -a
+$ git rebase -i        #前のリリースから後のdevelopの変更を残して1つにまとめる
+$ git filter-branch --env-filter 'export GIT_COMMITTER_DATE="$GIT_AUTHOR_DATE"'
+                       #Commit DateをAuthor Dateに統一
+$ git co master        #よさげならmasterに戻って
+$ git merge release    #fast-forward-merge
+$ git br -d release    #releasseブランチ削除
+$ git push             #upstreamリポジトリにpush
+$ git co develop       #開発ブランチに戻って
+$ git tag V0.0.0.3     #どこまでmasterにマージしたか忘れないようにタグ打ち
