@@ -4,7 +4,7 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.0.3.2",
+  "version": "0.0.3.3",
 
   "permissions": [
     "tabs",

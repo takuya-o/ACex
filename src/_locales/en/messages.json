@@ -1,6 +1,6 @@
 {
-  "-*- coding: utf-8-unix -*-":{
-    "message":"comment"
+  "comment_for_emacs":{
+    "message":"-*- coding: utf-8-unix -*-"
   },
   "ACex_name":{
     "message":"AirCampus for Web Extender"

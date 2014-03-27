@@ -24,14 +24,18 @@ $ git merge develop    #developをマージ このときには細かいログが
 $ git co --theirs .    #developを優先して
 $ git commit -am "merge develop"
 $ git rebase -i        #前のリリースから後のdevelopの変更を残して1つにまとめる
+
 $ git commit --amend -C HEAD --date=2014-03-18T00:00:00
 $ git filter-branch --env-filter 'export GIT_COMMITTER_DATE="$GIT_AUTHOR_DATE"'
                        #Commit DateをAuthor Dateに統一
+
+$ git format-patch HEAD^ #パッチ作成
 $ git co master        #よさげならmasterに戻って
-$ git merge release    #fast-forward-merge
+$ git am <0001.patch   #パッチ適応
 $ git co --theirs .
+
 $ git push             #upstreamリポジトリにpush
-$ git push origin
+$ git push origin master     
 $ git br -d release    #releasseブランチ削除
 $ git co develop       #開発ブランチに戻って
 $ git tag V0.0.0.3     #どこまでmasterにマージしたか忘れないようにタグ打ち
