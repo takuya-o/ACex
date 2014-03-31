@@ -1,6 +1,7 @@
 // -*- coding: utf-8-unix -*-
 (function() {
   var CurseList = Class.create({
+    bg: null,
     initialize: function() {
       this.bg = chrome.extension.getBackgroundPage().bg;
       window.addEventListener("load", function(evt) {
@@ -150,15 +151,15 @@
             }.bind(this),
             onFailure: function(response) {
               $('message').update(
-                this.getMessage(["course_list", "logind_fail", "id"])
-                  + courseID + response.statusText );
+                this.getMessage(["course_list", "logind_fail", "id",
+                                 courseID, response.statusText]) );
               dataLayer.push({'event': 'Failure-GetCourseItemList'
                               + courseID + response.statusText });
             }.bind(this),
             onException: function(response, e) {
               $('message').update(
-              this.getMessage(["course_list", "logind_exception", "id"])
-                  + courseID + e.message );
+                this.getMessage(["course_list", "logind_exception", "id",
+                                 courseID, e.message]) );
               dataLayer.push({'event': 'Exception-GetCourseItemList'
                               + courseID + e.message });
             }.bind(this)
@@ -181,7 +182,7 @@
           console.log("---- find BBS fid:" + fid);
           var title = outlines[i].getAttribute('text');
           var item = '<li id="BBS' + fid + '">'
-            + '<button type="botton" id="' + fid 
+            + '<button type="botton" id="' + fid
             + '" value="' + fid + '">'
             + title + '</botton></li>';
           $ ( "courseItemList" + courseID ).insert(item);
@@ -192,81 +193,21 @@
     onClickBBS: function(evt) {
       console.log("--- onClickBBS:" + evt.target.id);
       var fid = evt.target.id;
-      try {
-        var list = $( "ranking" + fid );
-        if ( list.clientHeight == 0 ) {
-          list.show();
-        } else {
-          list.hide();
-        }
-      } catch (e) {
-        //まだ無かった
-        console.log("--- Create Forum Data:" + fid);
-        dataLayer.push({'event': 'forum-' + fid });
-        $('message').update(this.getMessage(["discussion_data", "loding", "id"])
-                            + fid);
-        var courseListAjax = new Ajax.Request(
-          "https://www.bbt757.com/svlAC/GetForumContents",
-          { method: "get",
-            parameters: "fid=" + fid + "&" + this.bg.getUserID() + "&" + this.bg.getSessionA(),
-            asynchronous: true,
-            onSuccess: function(response) {
-              this.getContents(response.responseXML, fid);
-            }.bind(this),
-            onFailure: function(response) {
-              $('message').update(getMessage(["discussion_data", "loding_fail"])
-                                  + fid + response.statusText );
-              dataLayer.push({'event': 'Failure-GetForumContents'
-                              + fid + response.statusText });
-            },
-            onException: function(response,e) {
-              $('message').update(getMessage(["discussion_data", "loding_exception"])
-                                  + fid + e.message);
-              dataLayer.push({'event': 'Exception-GetForumContents'
-                              + fid + e.message });
-            }
-          }
-        )
-      }
-    },
-    getContents: function(xml, fid) {
-      //発言一覧から 発言回数取得
-      var counter = {};
-      var namemap = {};
-      $('message').update(
-        this.getMessage(["discussion_data", "loding_success", "id"])
-          + fid);
-      $( "BBS" + fid ).insert('<table id="ranking'+ fid + '"></table>');
-      var entries = xml.getElementsByTagName("entry"); //author, ac:deleted
-      console.log("--- Post:" + entries.length);
-      for(var i=0; i<entries.length; i++) {
-        var deleted = entries[i].getElementsByTagName("deleted")[0].innerHTML;
-        if ( "false" == deleted ) {
-          //削除されていないものだけカウント
-          var author = entries[i].getElementsByTagName("author")[0]; //name, uuid
-          var uuid = author.getElementsByTagName("uuid")[0].innerHTML;
-          if ( isNaN(counter[uuid] ) ) {
-            counter[uuid] = 0;
-            //最初に見つかった名前を利用する
-            var name = author.getElementsByTagName("name")[0].innerHTML;
-            namemap[uuid] = name;
-          }
-          counter[uuid]++;
-        }
-      }
-      $('message').update(this.getMessage(["count_finish", "id"]) + fid);
-      var ranking = [];
-      for(var key in counter) {
-        ranking.push({"name": namemap[key], "count": counter[key]});
-      }
-      ranking.sort( function(a,b) {
-        return( b["count"] - a["count"] );
-      } );
-      for(var i=0; i<ranking.length; i++) {
-        var item = '<tr><td class="RankingNumber">'+ (i+1)
-                +'</th><td class="RankingName">' + ranking[i]["name"] 
-                + '</td><td>' + ranking[i]["count"] + '</td></tr>';
-        $( "ranking" + fid ).insert(item);
+      var tabId = this.bg.getTabId(fid);
+      if ( tabId == null ) { //nullとの==比較でundefined見つけてる
+        //forumを開いているタブが無かったので作る
+        var url = "countresult.html" + "?fid=" + fid;
+        chrome.tabs.create( //タブを開く 引数省略すると「新しいタブ」
+          { url: url },
+          function(tab) {
+            //tabが閉じられるまでキャッシュとして利用する
+            console.log("--- opened tab:" + tab.id);
+            this.bg.addTabId(fid, tab.id);
+          }.bind(this)
+        );
+      } else {
+        //forumを開いているタブを開く
+        chrome.tabs.update(tabId,{highlighted:true});
       }
     }
   });

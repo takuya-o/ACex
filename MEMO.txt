@@ -18,24 +18,21 @@ Chromウェブストア
 masterブランチは孤立したブランチになってしまうが、開発ブランチの細かい
 修正を見せない。
 
-$ git co master        #前のmasterブランチに移動
-$ git co -b release    #安全のためreleaseブランチ作成
-$ git merge develop    #developをマージ このときには細かいログが入る
-$ git co --theirs .    #developを優先して
-$ git commit -am "merge develop"
+$ git co develop           #開発ブランチで
+$ git format-patch HEAD~5  #パッチファイル作成
+$ git co master -b release #安全のためreleaseブランチ作成
+$ git am <0001-...         #パッチ適応
 $ git rebase -i        #前のリリースから後のdevelopの変更を残して1つにまとめる
 
 $ git commit --amend -C HEAD --date=2014-03-18T00:00:00
-$ git filter-branch --env-filter 'export GIT_COMMITTER_DATE="$GIT_AUTHOR_DATE"'
-                       #Commit DateをAuthor Dateに統一
+$ git rebase --commit-date-is-auther-date HEAD~1
 
-$ git format-patch HEAD^ #パッチ作成
 $ git co master        #よさげならmasterに戻って
-$ git am <0001.patch   #パッチ適応
-$ git co --theirs .
+$ git merge release    #マージ
 
 $ git push             #upstreamリポジトリにpush
 $ git push origin master     
+
 $ git br -d release    #releasseブランチ削除
 $ git co develop       #開発ブランチに戻って
 $ git tag V0.0.0.3     #どこまでmasterにマージしたか忘れないようにタグ打ち

@@ -46,6 +46,24 @@
   },
   "count_finish":{
     "message":"計測完了"
+  },
+  "number_column":{
+    "message":"順位"
+  },
+  "name_column":{
+    "message":"名前"
+  },
+  "count_column":{
+    "message":"発言数"
+  },
+  "deleted_column":{
+    "message":"削除数"
+  },
+  "replied_column":{
+    "message":"被返信数"
+  },
+  "ratio_column":{
+    "message":"被返信比率"
   }
 }
 

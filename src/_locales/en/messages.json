@@ -46,6 +46,24 @@
   },
   "count_finish":{
     "message":"Count Finish."
+  },
+  "number_column":{
+    "message":"#"
+  },
+  "name_column":{
+    "message":"Name"
+  },
+  "count_column":{
+    "message":"Posted"
+  },
+  "deleted_column":{
+    "message":"Deleted"
+  },
+  "replied_column":{
+    "message":"Replied"
+  },
+  "ratio_column":{
+    "message":"Ratio"
   }
 }
 
