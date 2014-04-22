@@ -50,20 +50,56 @@
   "number_column":{
     "message":"順位"
   },
+  "tips_number_column":{
+    "message":"発言数の多い順での順位"
+  },
   "name_column":{
     "message":"名前"
+  },
+  "tips_name_column":{
+    "message":"一番最初の発言時の名前"
   },
   "count_column":{
     "message":"発言数"
   },
+  "tips_posted_without_deleted":{
+    "message":"削除を除いた発言数"
+  },
   "deleted_column":{
     "message":"削除数"
+  },
+  "tips_deleted_column":{
+    "message":"削除した発言数"
+  },
+  "ownreply_column":{
+    "message":"自己返信数"
+  },
+  "tips_ownreply_column":{
+    "message":"自分自身の発言に対する返信数"
+  },
+  "reply_column":{
+    "message":"返信数"
+  },
+  "tips_reply_without_own":{
+    "message":"他人に返信した数"
+  },
+  "reply_ratio_column":{
+    "message":"返信比率"
+  },
+  "tips_retio_of_reply_by_posted":{
+    "message":"発言数に占める返信数の割合"
   },
   "replied_column":{
     "message":"被返信数"
   },
-  "ratio_column":{
+  "tips_replied_without_ownreply":{
+    "message":"他人から返信された数"
+  },
+  "replied_ratio_column":{
     "message":"被返信比率"
+  },
+  "tips_ratio_of_replied_by_posted":{
+    "message":"発言数に対する被返信数の割合"
   }
 }
 

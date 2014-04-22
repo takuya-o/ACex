@@ -25,7 +25,7 @@ $ git am <0001-...         #パッチ適応
 $ git rebase -i        #前のリリースから後のdevelopの変更を残して1つにまとめる
 
 $ git commit --amend -C HEAD --date=2014-03-18T00:00:00
-$ git rebase --commit-date-is-auther-date HEAD~1
+$ git rebase --commiter-date-is-auther-date HEAD~1
 
 $ git co master        #よさげならmasterに戻って
 $ git merge release    #マージ

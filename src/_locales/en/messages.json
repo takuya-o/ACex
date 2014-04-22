@@ -50,20 +50,56 @@
   "number_column":{
     "message":"#"
   },
+  "tips_number_column":{
+    "message":"Ranking by posted count."
+  },
   "name_column":{
     "message":"Name"
+  },
+  "tips_name_column":{
+    "message":"The first posted message's name."
   },
   "count_column":{
     "message":"Posted"
   },
+  "tips_posted_without_deleted":{
+    "message":"Posted count without deleted message."
+  },
   "deleted_column":{
     "message":"Deleted"
+  },
+  "tips_deleted_column":{
+    "message":"How many deleted messages."
+  },
+  "ownreply_column":{
+    "message":"Own Reply"
+  },
+  "tips_ownreply_column":{
+    "message":"How many posted by own reply."
+  },
+  "reply_column":{
+    "message":"Reply"
+  },
+  "tips_reply_without_own":{
+    "message":"How many reply to other people."
+  },
+  "reply_ratio_column":{
+    "message":"Reply Ratio"
+  },
+  "tips_retio_of_reply_by_posted":{
+    "message":"Ratio of Reply by Posted."
   },
   "replied_column":{
     "message":"Replied"
   },
-  "ratio_column":{
-    "message":"Ratio"
+  "tips_replied_without_ownreply":{
+    "message":"How many replied from other people."
+  },
+  "replied_ratio_column":{
+    "message":"Replied Ratio"
+  },
+  "tips_retio_of_replied_by_posted":{
+    "message":"Ratio of Reply by Posted. "
   }
 }
 

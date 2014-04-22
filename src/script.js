@@ -9,7 +9,6 @@
     },
     start: function() {
       this.assignMessages();
-      this.assignEventHandlers();
       this.getACconfig();
     },
     assignMessages: function() {
@@ -23,21 +22,6 @@
         ;
       });
     },
-    assignEventHandlers: function() {
-      //$("Foo").onclick = this.onClickFoo.bind(this);
-    },
-    onClickFoo: function(evt) {
-      // 設定値を取得
-      //var oyoConfig = this.bg.getOyoConfig();
-      // Ajax通信
-      //this.bg.loadFoo({
-      //  onSuccess: function(res) {
-      //            //
-      //  }.bind(this)
-      //});
-      //
-    },
-    //
     getACconfig: function() {
       var sessionA = "";
       var userID = "";
