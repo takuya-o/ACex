@@ -1,6 +1,7 @@
 // -*- coding: utf-8-unix -*-
 (function() {
   var CountResult = Class.create({
+    bg: null,
     initialize: function() {
       this.bg = chrome.extension.getBackgroundPage().bg;
       window.addEventListener("load", function(evt) {
@@ -8,7 +9,7 @@
       }.bind(this));
     },
     start: function() {
-      this.assignEventHandlers();
+  //    this.assignEventHandlers();
       this.assignMessages();
       this.createTable();
     },

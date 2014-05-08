@@ -14,6 +14,18 @@
   "save":{
     "message":"Save"
   },
+  "options_saved":{
+    "message":"Options saved."
+  },
+  "reader":{
+    "message":"Reader"
+  },
+  "count":{
+    "message":"Count"
+  },
+  "selectCourse":{
+    "message":"select course"
+  },
   "inProgressCouseOnly":{
     "message":"In progress course only"
   },
@@ -100,6 +112,16 @@
   },
   "tips_retio_of_replied_by_posted":{
     "message":"Ratio of Reply by Posted. "
+  },
+
+  "special_option_list":{
+    "message":"Spetial Options"
+  },
+  "experimental_enable":{
+    "message":"Enable experimental function."
+  },
+  "coursename_rectriction":{
+    "message":"Trim course name"
   }
 }
 

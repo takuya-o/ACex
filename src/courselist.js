@@ -9,8 +9,17 @@
       }.bind(this));
     },
     start: function() {
+      //this.assignEventHandlers();
       this.assignMessages();
       this.createList();
+    },
+    assignEventHandlers: function() {
+      chrome.tabs.onRemoved.addListener(
+        //閉じたときにtabListから削除する
+        function(tabId, removeInfo) {
+          this.bg.removeTabId(tabId);
+        }.bind(this)
+      );
     },
     assignMessages: function() {
       var elems = document.querySelectorAll('*[class^="MSG_"]');
@@ -31,14 +40,21 @@
       return ret;
     },
     createList: function() {
+      var query = window.location.search.toQueryParams();
+      var cmd = query["cmd"];
+      if ( cmd == "reader" ) { cmd = "reader"; }
+      else if ( cmd == "count" ) { cmd = "count"; }
+      else {  cmd="count";  } //サニタイズ
+      $('cmd_name').insert(this.getMessage([cmd, "selectCourse"]));
       $('message').insert(this.getMessage(["loding"]));
+
       var courseListAjax = new Ajax.Request(
         "https://www.bbt757.com/svlAC/GetCourseList3",
         { method: "get",
           parameters: "act=1&" + this.bg.getUserID() + "&" + this.bg.getSessionA(),
           asynchronous: true,
           onSuccess: function(response) {
-            this.programItemList(response.responseXML);
+            this.programItemList(response.responseXML, cmd);
           }.bind(this),
           onFailure: function(response) {
             $('message').update(
@@ -56,7 +72,7 @@
         }
       );
     },
-    programItemList: function(xml) {
+    programItemList: function(xml, cmd) {
       $('message').update(this.getMessage(["course_list", "loding_success"]));
       var now = new Date();
       var programs = xml.getElementsByTagName("program");
@@ -88,6 +104,7 @@
             '<li class="CourseItem" id="course' + courseID
             + '" end="'+ ( now > end ) + '" name="courseItem" >'
             + '<button type="button" id="' + courseID
+            + '" cmd="' + cmd
             + '" value="' + courseID + '">'
             + ( this.bg.isCRmode() ?
                 courses[j].getAttribute('name').replace(/・*大学院*/g,""):
@@ -101,8 +118,8 @@
             var endFlg = $( "course" + key ).getAttribute('end');
             if ( endFlg == "true" ) { $( "course" + key ).hide(); }
           }
-          $("termonoffswitch").onclick = this.onClickSwitch.bind(this);
         }
+        $("termonoffswitch").onclick = this.onClickSwitch.bind(this);
       }
     },
     onClickSwitch: function(evt) {
@@ -130,6 +147,16 @@
     onClickCourseItem: function(evt) {
       console.log("--- onClickCourseItem:" + evt.target.id);
       var courseID = evt.target.id;
+      var cmd = evt.target.getAttribute('cmd');
+      if ( cmd == "reader")     { this.openReader(courseID); }
+      else if ( cmd == "count") { this.openCourseItem(courseID); }
+      else { this.openCourseItem(courseID); } //failsafe
+    },
+    openReader: function(courseID) {
+      var url = "reader.html" + "?courseID=" + encodeURI(courseID);
+      this.openTab(url);
+    },
+    openCourseItem: function(courseID) {
       try {
         var list = $( "courseItemList" + courseID );
         if ( list.clientHeight == 0 ) {
@@ -193,16 +220,20 @@
     onClickBBS: function(evt) {
       console.log("--- onClickBBS:" + evt.target.id);
       var fid = evt.target.id;
-      var tabId = this.bg.getTabId(fid);
+      var url = "countresult.html" + "?fid=" + encodeURI(fid);
+      this.openTab(url);
+    },
+    openTab: function(url) {
+      //該当のURLをタブで開く。既に開いていたらそれを使う
+      var tabId = this.bg.getTabId(url);
       if ( tabId == null ) { //nullとの==比較でundefined見つけてる
-        //forumを開いているタブが無かったので作る
-        var url = "countresult.html" + "?fid=" + fid;
+        //開いているタブが無かったので作る
         chrome.tabs.create( //タブを開く 引数省略すると「新しいタブ」
           { url: url },
           function(tab) {
             //tabが閉じられるまでキャッシュとして利用する
             console.log("--- opened tab:" + tab.id);
-            this.bg.addTabId(fid, tab.id);
+            this.bg.addTabId(url, tab.id);
           }.bind(this)
         );
       } else {

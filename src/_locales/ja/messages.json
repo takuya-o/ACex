@@ -14,6 +14,18 @@
   "save":{
     "message":"保存"
   },
+  "options_saved":{
+    "message":"オプションを保存しました。"
+  },
+  "reader":{
+    "message":"リーダ"
+  },
+  "count":{
+    "message":"カウント"
+  },
+  "selectCourse":{
+    "message":"コース選択"
+  },
   "inProgressCouseOnly":{
     "message":"開講中のみ"
   },
@@ -100,6 +112,15 @@
   },
   "tips_ratio_of_replied_by_posted":{
     "message":"発言数に対する被返信数の割合"
+  },
+
+  "special_option_list":{
+    "message":"特殊オプション"
+  },
+  "experimental_enable":{
+    "message":"試験的な機能を利用する"
+  },
+  "coursename_rectriction":{
+    "message":"コース名を制限し短くする"
   }
 }
-

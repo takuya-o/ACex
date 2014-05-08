@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="css/acexbase.css">
-    <link rel="stylesheet" type="text/css" href="css/courselist.css">
-    <link rel="stylesheet" type="text/css" href="css/switch.css">
-    <title>Course List - AirCampus for Web Extender</title>
-    <script type="text/javascript" src="lib/prototype.js"></script>
-    <script type="text/javascript" src="courselist.js"></script>
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="css/acexbase.css">
+  <link rel="stylesheet" type="text/css" href="css/courselist.css">
+  <link rel="stylesheet" type="text/css" href="css/switch.css">
+  <title>Course List - AirCampus for Web Extender</title>
+  <script type="text/javascript" src="lib/prototype.js"></script>
+  <script type="text/javascript" src="courselist.js"></script>
+</head>
+<body>
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script type="text/javascript" src="tagmanager.js"></script>
 <!-- End Google Tag Manager -->
-    <div id="message"></div>
-    <br />
+  <header>
+    <h2><span id="cmd_name"></span></h2>
     <div class="onoffswitch">
       <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="termonoffswitch" checked>
       <label class="onoffswitch-label" for="termonoffswitch">
@@ -25,9 +25,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </label>
     </div>
     <div><span class="MSG_inProgressCouseOnly">In progress course only</span></div>
+  </header>
+
+  <section>
     <div id="list">
       <ul id="ProgramList"></ul>
     </div>
-  </body>
+  </section>
+  <footer id="statusbar">
+    <div id="message"></div>
+  </footer>
+</body>
 </html>
 <!-- -*- coding: utf-8-unix -*- -->

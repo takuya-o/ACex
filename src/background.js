@@ -1,6 +1,6 @@
 // -*- coding: utf-8-unix -*-
 var Background = Class.create({
-  tabList: new Array(),
+  tabList: new Object(),  //連想記憶配列 {}
   initialize: function() {
     this.assignEventHandlers();
   },
@@ -16,6 +16,26 @@ var Background = Class.create({
         chrome.pageAction.show(sender.tab.id);
       }
     });
+
+    //タブがクローズされた時判定 TODO:すべてのタブで効いてしまうけど…
+    chrome.tabs.onRemoved.addListener(
+      //閉じたときにtabListから削除する
+      function(tabId, removeInfo) {
+        console.log("--- tab closed:" + tabId);
+        this.removeTabId(tabId);
+      }.bind(this)
+    );
+
+    //タブが変更された時判定
+    chrome.tabs.onUpdated.addListener(
+      function(tabId, changeInfo, tab) {
+        if (changeInfo.url != null ) {
+          //URLが変更されたのでTabListから外す
+          this.removeTabId(tabId);
+        }
+      }.bind(this)
+    );
+
   },
   /* フォーラムを開いているタブのIDを記憶
      fid:   forum ID
@@ -29,38 +49,46 @@ var Background = Class.create({
      fid: forum ID
   */
   getTabId: function(fid) {
-    var tabId =this.tabList[fid];
-    if ( tabId != null ) {
-      //存在確認 TODO: 非同期なので一回目はゴミが返る
-      chrome.tabs.get(tabId, function(tab) {
-        if (tab == null ) {
-          console.log("#-- tab was closed." + tabId);
-          this.removeTabId(tabId); //遅いがとりあえず次のために削除
-        }
-      }.bind(this) );
+    console.log("--- getTabId()");
+    try {
+      var tabId =this.tabList[fid];
+      if ( tabId != null ) {
+        //普段はEventListenerで消されるので問題ないが
+        //念の為に存在確認して既に無ければ削除
+        //その場合、非同期なので一回目はゴミが返る
+        chrome.tabs.get(tabId, function(tab) {
+          if (tab == null ) {
+            console.log("#-- tab was closed." + tabId);
+            this.removeTabId(tabId); //遅いがとりあえず次のために削除
+          }
+        }.bind(this) );
+      }
+    } catch (e) {
+      console.log("#-- getTabId()" + e.name + " " + e.message);
     }
     return tabId;
   },
   /* タブが閉じられたのでリストから削除 */
   removeTabId: function(tabId) {
-    //console.log("--- removeTabId()");
+    console.log("--- removeTabId()");
     if (tabId == null ) {
       console.log("#-- removeTabId() argument is null");
     } else {
       var doneFlg = false;
       try {
-        this.tabList = this.tabList.filter( function(element, index, tabList) {
-          if ( element == tabId ) {
+        for(var element in this.tabList) {
+          //console.log("--- removeTabId:" + element);
+          if ( this.tabList[element] == tabId ) {
             console.log("--- removeTabId:" + tabId);
+            delete this.tabList[element];
             doneFlg = true;
           }
-          return (element != tabId);
-        }, this);
+        }
       } catch (e) {
         console.log("#-- removeTabId():" + e.name + " " + e.message);
       }
       if ( !doneFlg ) {
-          console.log("#-- removeTabId() not found:" + tabId);
+        console.log("#-- removeTabId() not found:" + tabId);
       }
     }
   },
@@ -80,10 +108,23 @@ var Background = Class.create({
       return "a=";
     }
   },
+  setSpecial: function(experimental, coursenameRestriction) {
+    localStorage["Special"]
+      = JSON.stringify({"couresenameRestriction":coursenameRestriction,
+                        "experimental": experimental });
+  },
   isCRmode: function() {
     var value = localStorage["Special"];
     if (value) {
       return Boolean(JSON.parse(value)["couresenameRestriction"]);
+    } else {
+      return false;
+    }
+  },
+  isExperimentalEnable: function() {
+    var value = localStorage["Special"];
+    if (value) {
+      return Boolean(JSON.parse(value)["experimental"]);
     } else {
       return false;
     }

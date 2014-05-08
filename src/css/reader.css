@@ -1,0 +1,32 @@
+body {
+    margin:0% auto;
+}
+header, nav, section, footer {
+    display:block;
+    padding:2%;
+}
+header {
+    float:right;
+    width:71%;
+}
+header ul, header li {
+    list-style-type:none;
+    display:inline;
+}
+nav {
+    float:left;
+    width:20%;
+    min-height:100%;
+    overflow: auto;
+}
+section {
+    float:right;
+    width:71%;
+    overflow: auto;
+}
+footer {
+    clear:both !important;
+    text-align: center;
+    border:1px solid #ccc;
+}
+/* -*- coding: utf-8-unix -*- */

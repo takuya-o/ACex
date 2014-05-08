@@ -1,36 +1,46 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="css/acexbase.css">
-    <link rel="stylesheet" type="text/css" href="css/options.css">
-    <title>AC Extender</title>
-    <script type="text/javascript" src="lib/prototype.js"></script>
-    <script type="text/javascript" src="options.js"></script>
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="css/acexbase.css">
+  <link rel="stylesheet" type="text/css" href="css/options.css">
+  <title>AC Extender Options</title>
+  <script type="text/javascript" src="lib/prototype.js"></script>
+  <script type="text/javascript" src="options.js"></script>
+</head>
+<body>
 <script>dataLayer=[];</script>
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script type="text/javascript" src="tagmanager.js"></script>
 <!-- End Google Tag Manager -->
+  <header>
     <div>
-      <img src="icon_128.png" />
-      <div>AC Extender</div>
+      <img src="icon_19.png" />
+      <span class="MSG_ACex_name">AirCampus for Web Extender</span>
     </div>
-    <div><span id="option_list" class="MSG_options_list"></span></div>
-    <table>
-      <tr>
-        <td>
-          <input type="checkbox" id="option1" />
-        </td>
-        <td>
-          <span id="option1_desc" class="MSG_option1_desc"></span>
-        </td>
-      </tr>
-    </table>
-    <div class="buttons"><button id="options_save" class="MSG_save"></button></div>
-  </body>
+  </header>
+  <section>
+    <article>
+      <h2><span id="option_list"
+                 class="MSG_special_option_list"></span></h2>
+      <table>
+        <tr>
+          <td><input type="checkbox" id="experimental_option" /></td>
+          <td><span id="option1_desc" class="MSG_experimental_enable"></span></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="coursename_rectriction_option" /></td>
+          <td><span id="option1_desc" class="MSG_coursename_rectriction"></span></td>
+        </tr>
+      </table>
+      <div class="buttons"><button id="options_save" class="MSG_save"></button></div>
+    </article>
+  </section>
+  <footer id="statusbar">
+    <div id="message"></div>
+  </footer>
+</body>
 </html>
 <!-- -*- coding: utf-8-unix -*- -->

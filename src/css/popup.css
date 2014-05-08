@@ -1,4 +1,6 @@
 body {
-    overflow-x: hidden;
+/*    overflow-x: hidden;*/
+    width:20em;
+    height:5em;
 }
 /* -*- coding: utf-8-unix -*- */
