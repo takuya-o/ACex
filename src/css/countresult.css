@@ -7,3 +7,39 @@
     border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
     padding: 5px; /* セル内の余白 */
 }
+
+.MSG_number_column {
+
+}
+
+.MSG_name_column {
+
+}
+
+.MSG_count_column {
+
+}
+
+.MSG_deleted_column {
+
+}
+
+.MSG_ownreply_column {
+
+}
+
+.MSG_reply_column {
+
+}
+
+.MSG_reply_ratio_column {
+
+}
+
+.MSG_replied_column {
+
+}
+
+.MSG_replied_ratio_column {
+
+}

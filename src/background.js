@@ -29,9 +29,14 @@ var Background = Class.create({
     //タブが変更された時判定
     chrome.tabs.onUpdated.addListener(
       function(tabId, changeInfo, tab) {
-        if (changeInfo.url != null ) {
-          //URLが変更されたのでTabListから外す
-          this.removeTabId(tabId);
+        var url = changeInfo.url;
+        if ( url != null ) {
+          //urlが変更されたので、新しいURLがリストあるか確認
+          url = url.replace(new RegExp(".+/", "g"), "");
+          if( this.getTabId(url) != tabId ) {
+            //見あたらないURLなので、変更されたらしいからTabListから外す
+            this.removeTabId(tabId);
+          }
         }
       }.bind(this)
     );
@@ -43,13 +48,17 @@ var Background = Class.create({
   */
   addTabId: function(fid, tabId) {
     console.log("--- addTabId:" + fid + " = " + tabId);
-    this.tabList[fid] = tabId;
+    try {
+      this.tabList[fid] = tabId;
+    } catch (e) {
+      console.log("#-- addTabId()" + e.name + " " + e.message);
+    }
   },
   /* フォーラムを開いているタブIDを取得
      fid: forum ID
   */
   getTabId: function(fid) {
-    console.log("--- getTabId()");
+    console.log("--- getTabId(" + fid + ")");
     try {
       var tabId =this.tabList[fid];
       if ( tabId != null ) {

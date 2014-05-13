@@ -9,18 +9,8 @@
       }.bind(this));
     },
     start: function() {
-  //    this.assignEventHandlers();
       this.assignMessages();
       this.createTable();
-    },
-    assignEventHandlers: function() {
-      chrome.tabs.onRemoved.addListener(
-        //閉じたときにtabListから削除する
-        function(tabId, removeInfo) {
-          console.log("--- tab closed:" + tabId);
-          this.bg.removeTabId(tabId);
-        }.bind(this)
-      );
     },
     assignMessages: function() {
       var elems = document.querySelectorAll('*[class^="MSG_"]');
@@ -44,7 +34,7 @@
       for(var i=0; i<args.length; i++ ) {
         if ( i != 0 ) { ret = ret + " "; };
         var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i] };
+        if (!message) { message = args[i]; };
         ret = ret + message;
       }
       return ret;
@@ -87,12 +77,12 @@
                               + fid + e.message });
             }.bind(this)
           }
-        )
+        );
       }
     },
     getContents: function(xml, fid) {
       //発言一覧から 発言回数取得
-      var postuser = {}
+      var postuser = {};
       var namemap = {};
       var counter = {};
       var deleted = {};
@@ -104,18 +94,17 @@
           + fid);
       var title = xml.getElementsByTagName("title")[0].innerHTML;
       $('title').update(title);
-      chrome.tabs.getCurrent( function(tab) {
-        tab.title = title; //TODO: 効果なし tab.update()の対象属性でもなし…
-      });
+      document.title = title + " " + document.title;
+
       var entries = xml.getElementsByTagName("entry"); //author, ac:deleted
       console.log("--- Post:" + entries.length);
       for(var i=0; i<entries.length; i++) {
-        var deletedFlg
-          = entries[i].getElementsByTagName("deleted")[0].innerHTML;
+        var author = entries[i].getElementsByTagName("author")[0]; //name, uuid
+        var uuid = author.getElementsByTagName("uuid")[0].innerHTML;
+
+        var deletedFlg = entries[i].getElementsByTagName("deleted")[0].innerHTML;
         if ( "false" == deletedFlg ) {
           //削除されていないものだけカウント
-          var author = entries[i].getElementsByTagName("author")[0]; //name, uuid
-          var uuid = author.getElementsByTagName("uuid")[0].innerHTML;
           if ( isNaN(counter[uuid] ) ) {
             counter[uuid] = 0;
             //最初に見つかった名前を利用する
@@ -124,7 +113,7 @@
           }
           counter[uuid]++; //発言数カウント
           var identifier //記事番号
-            = entries[i].getElementsByTagName("identifier")[0].innerHTML
+            = entries[i].getElementsByTagName("identifier")[0].innerHTML;
           postuser[identifier] = uuid; //誰のポストか覚えておく
           var relation   //参照先
             = entries[i].getElementsByTagName("relation")[0].innerHTML;
@@ -171,10 +160,10 @@
         var reply    = ranking[i]["reply"];
         var ownReply = ranking[i]["ownReply"];
         var replied  = ranking[i]["replied"];
-        if ( isNaN(deleted) )  { deleted = '' };
-        if ( isNaN(reply) )    { reply   = '' };
-        if ( isNaN(ownReply) ) { ownReply= '' };
-        if ( isNaN(replied) )  { replied = '' };
+        if ( isNaN(deleted) )  { deleted = ''; };
+        if ( isNaN(reply) )    { reply   = ''; };
+        if ( isNaN(ownReply) ) { ownReply= ''; };
+        if ( isNaN(replied) )  { replied = ''; };
         var item = '<tr>'
           + '<th align="right" class="RankingNumber">'+ (i+1) +'</th>'
           + '<td class="RankingName">' + ranking[i]["name"] + '</td>'

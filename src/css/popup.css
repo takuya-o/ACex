@@ -1,6 +1,14 @@
+/* -*- coding: utf-8-unix -*- */
 body {
 /*    overflow-x: hidden;*/
     width:20em;
     height:5em;
 }
-/* -*- coding: utf-8-unix -*- */
+
+.MSG_reader {
+
+}
+
+.MSG_count {
+
+}

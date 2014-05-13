@@ -25,7 +25,7 @@
       for(var i=0; i<args.length; i++ ) {
         if ( i != 0 ) { ret = ret + " "; };
         var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i] };
+        if (!message) { message = args[i]; };
         ret = ret + message;
       }
       return ret;

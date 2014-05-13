@@ -31,7 +31,7 @@
       for(var i=0; i<args.length; i++ ) {
         if ( i != 0 ) { ret = ret + " "; };
         var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i] };
+        if (!message) { message = args[i]; };
         ret = ret + message;
       }
       return ret;
@@ -46,7 +46,7 @@
       this.bg.setSpecial(experimental, coursenameRestriction);
 
       $('message').update(this.getMessage(["options_saved"]));
-      var timeoutID = setTimeout( function() {
+      setTimeout( function() {
         $('message').innerHTML=""; //一秒後にメッセージを消す
       }, 1000);
     }

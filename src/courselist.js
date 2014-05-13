@@ -9,17 +9,8 @@
       }.bind(this));
     },
     start: function() {
-      //this.assignEventHandlers();
       this.assignMessages();
       this.createList();
-    },
-    assignEventHandlers: function() {
-      chrome.tabs.onRemoved.addListener(
-        //閉じたときにtabListから削除する
-        function(tabId, removeInfo) {
-          this.bg.removeTabId(tabId);
-        }.bind(this)
-      );
     },
     assignMessages: function() {
       var elems = document.querySelectorAll('*[class^="MSG_"]');
@@ -34,7 +25,7 @@
       for(var i=0; i<args.length; i++ ) {
         if ( i != 0 ) { ret = ret + " "; };
         var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i] };
+        if (!message) { message = args[i]; };
         ret = ret + message;
       }
       return ret;
