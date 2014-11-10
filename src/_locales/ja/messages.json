@@ -118,9 +118,27 @@
     "message":"特殊オプション"
   },
   "experimental_enable":{
-    "message":"試験的な機能を利用する"
+    "message":"実験的な機能を有効にする"
   },
   "coursename_rectriction":{
     "message":"コース名を制限し短くする"
+  },
+  "experimental_option_list":{
+    "message":"実験的オプション"
+  },
+  "display_popup_menu":{
+    "message":"実験用Popupメニュー表示"
+  },
+  "popup_wait_for_mac":{
+    "message":"Popup待ち時間(Macのみ有効)"
+  },
+  "millisecond":{
+    "message":"ms"
+  },
+  "display_telop":{
+    "message":"認証情報表示"
+  },
+  "auth_time":{
+    "message":"認証時刻"
   }
 }

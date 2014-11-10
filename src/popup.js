@@ -10,14 +10,14 @@
     },
     start: function() {
       this.assignMessages();
-      if (this.bg.isExperimentalEnable()) {
+      if (this.bg.isDisplayPopupMenu()) {
         this.assignEventHandlers();
       } else {
         //通常モード
         var wait = 0;
         if(navigator.userAgent.indexOf('Mac') != -1){
           //0.5秒後に移動Mac対策
-          wait = 500;
+          wait = this.bg.getPopupWaitForMac();
         }
         $('content').hide();
         setTimeout(function() {

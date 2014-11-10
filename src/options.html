@@ -21,21 +21,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <span class="MSG_ACex_name">AirCampus for Web Extender</span>
     </div>
   </header>
-  <section>
+ <section>
     <article>
-      <h2><span id="option_list"
+      <h2><span id="special_option_list_title"
                  class="MSG_special_option_list"></span></h2>
       <table>
         <tr>
           <td><input type="checkbox" id="experimental_option" /></td>
           <td><span class="MSG_experimental_enable"></span></td>
         </tr>
+      </table>
+    </article>
+    <article id="experimental_option_list" styple="display:none">
+      <h2><span id="experimental_option_list_title"
+                 class="MSG_experimental_option_list"></span></h2>
+      <table>
         <tr>
           <td><input type="checkbox" id="coursename_rectriction_option" /></td>
-          <td><span class="MSG_coursename_rectriction"></span></td>
+          <td colspan="2"><span class="MSG_coursename_rectriction"></span></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="display_popup_menu_option" /></td>
+          <td colspan="2"><span class="MSG_display_popup_menu"></span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><label><span class="MSG_popup_wait_for_mac"></span></label></td>
+          <td><input type="number" id="popup_wait_for_mac" size="5"
+                     max="1000" min="0" required="required"
+                     style="text-align:right">
+              <span class="MSG_millisecond"></span></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="display_telop_option" /></td>
+          <td colspan="2"><span class="MSG_display_telop"></span></td>
         </tr>
       </table>
-      <div class="buttons"><button id="options_save" class="MSG_save"></button></div>
+    </article>
+    <article>
+      <p></p>
+      <div class="buttons"><button id="options_save"
+                                   class="MSG_save"></button></div>
     </article>
   </section>
   <footer id="statusbar">

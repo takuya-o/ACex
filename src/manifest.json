@@ -4,14 +4,14 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.0.5.4",
+  "version": "0.0.5.9",
 
   "permissions": [
     "tabs",
     "https://www.bbt757.com/svlAC/"
   ],
   "content_scripts": [ {
-    "matches": ["https://www.bbt757.com/ac/web/*"],
+    "matches": ["https://www.bbt757.com/ac/web/*", "http://accontent.bbt757.com/content/*"],
     "js": ["tagmanager.js", "lib/prototype.js", "script.js"],
     "run_at": "document_end"
   } ],
@@ -21,7 +21,7 @@
     "default_popup": "popup.html"
   },
   "content_security_policy":
-          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; object-src 'self'",
+          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; object-src 'self'; 'unsafe-inline'",
   "icons": {
     "128": "icon_128.png",
     "48": "icon_48.png",

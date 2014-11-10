@@ -122,6 +122,24 @@
   },
   "coursename_rectriction":{
     "message":"Trim course name"
+  },
+  "experimental_option_list":{
+    "message":"Experimental Options"
+  },
+  "display_popup_menu":{
+    "message":"Display Experimental Popup Menu"
+  },
+  "popup_wait_for_mac":{
+    "message":"Popup Wait(Mac Only)"
+  },
+  "millisecond":{
+    "message":"ms"
+  },
+  "display_telop":{
+    "message":"Display Telop"
+  },
+  "auth_time":{
+    "message":"Authenticate time"
   }
 }
 
