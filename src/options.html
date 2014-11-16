@@ -9,7 +9,6 @@
   <script type="text/javascript" src="options.js"></script>
 </head>
 <body>
-<script>dataLayer=[];</script>
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -23,6 +22,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </header>
  <section>
     <article>
+      <h2><span class="MSG_license"></span></h2>
+      <table>
+        <tr>
+          <td><span class="MSG_license_user"></span></td>
+          <td><span id="license_user"></span></td>
+        </tr>
+        <tr>
+          <td><span class="MSG_license_status"></span></td>
+          <td><span id="license_status"></span></td>
+        </tr>
+        <tr id="license_expire_row">
+          <td><span class="MSG_license_expire"></span></td>
+          <td><span id="license_expire"></span></td>
+        </tr>
+      </table>
+    </article>
+    <article>
       <h2><span id="special_option_list_title"
                  class="MSG_special_option_list"></span></h2>
       <table>
@@ -32,7 +48,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </tr>
       </table>
     </article>
-    <article id="experimental_option_list" styple="display:none">
+    <article id="experimental_option_list">
       <h2><span id="experimental_option_list_title"
                  class="MSG_experimental_option_list"></span></h2>
       <table>
@@ -47,9 +63,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <tr>
           <td></td>
           <td><label><span class="MSG_popup_wait_for_mac"></span></label></td>
-          <td><input type="number" id="popup_wait_for_mac" size="5"
-                     max="1000" min="0" required="required"
-                     style="text-align:right">
+          <td><input type="number" id="popup_wait_for_mac"
+                     max="1000" min="0" required="required" />
               <span class="MSG_millisecond"></span></td>
         </tr>
         <tr>

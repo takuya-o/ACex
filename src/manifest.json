@@ -4,12 +4,21 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.0.5.9",
+  "version": "0.0.6.2",
+  "minimum_chrome_version": "37",
 
   "permissions": [
+    "identity",
     "tabs",
-    "https://www.bbt757.com/svlAC/"
+    "https://www.bbt757.com/svlAC/",
+    "storage",
+    "https://www.googleapis.com/"
   ],
+  "oauth2": {
+    "client_id": "942009117399-avs1lkpaf4t09cshpgrbamv4rnsm67vh.apps.googleusercontent.com",
+    "scopes": [ "https://www.googleapis.com/auth/chromewebstore.readonly" ]
+  },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA62XQw3q23NQyFGYHZsEu2NF6sH4rZmm79MIzkslMT+70nWF4OyhX3vU+pRG9ncYPSsI/Yr/I8zsUYwLM1qX2QCeyVfjkbHuoJsYjSQ8ix9AP0Wg6jdCuzAtNPrEPknAdapxJFPuvGbzBbsSlTs7Lv7d9SVgAUFH6SHNTrcg2WPCua9XiOn3rkNOcpoiiu8lctarsFjokwUkKbXQD023EzpIzGjqmi20OfU/xaj2/UhzOuiOhhubILNb2HNUz36WZ9SY0zS+xmqdnVgvWzW1z7sgDPDTDP5KO/44eiwVTDDCaSmn1/Sl16mPBe6X1MQB98a00TzAexgsVFtYPcanmQwIDAQAB",
   "content_scripts": [ {
     "matches": ["https://www.bbt757.com/ac/web/*", "http://accontent.bbt757.com/content/*"],
     "js": ["tagmanager.js", "lib/prototype.js", "script.js"],
@@ -21,7 +30,7 @@
     "default_popup": "popup.html"
   },
   "content_security_policy":
-          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; object-src 'self'; 'unsafe-inline'",
+          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; object-src 'self'",
   "icons": {
     "128": "icon_128.png",
     "48": "icon_48.png",

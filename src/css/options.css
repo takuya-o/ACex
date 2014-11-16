@@ -1,4 +1,15 @@
 /* -*- coding: utf-8-unix -*- */
+#experimental_option_list {
+display:none
+}
+
+#popup_wait_for_mac {
+text-align:right
+}
+
+.buttons {
+
+}
 
 .MSG_ACex_name {
 
@@ -20,6 +31,22 @@
 
 }
 
-.buttons {
+.MSG_experimental_option_list {
+
+}
+
+.MSG_display_popup_menu {
+
+}
+
+.MSG_popup_wait_for_mac {
+
+}
+
+.MSG_millisecond {
+
+}
+
+.MSG_display_telop {
 
 }

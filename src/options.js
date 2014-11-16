@@ -11,6 +11,7 @@
     start: function() {
       this.assignMessages();
       this.assignEventHandlers();
+      this.displayLicenseStatus();
       this.restoreConfigurations();
     },
     assignMessages: function() {
@@ -31,11 +32,54 @@
       }
       return ret;
     },
+    displayLicenseStatus: function() {
+      var validDate = this.bg.getLicenseValidDate();
+      if ( validDate && validDate > Date.now() ) {
+        console.log("ACex: License is Valid.");
+      }else{
+        console.log("ACex: License is not Valid.");
+        this.bg.setupAuth(true);
+      }
+
+      var status = this.bg.getLicenseStatus();
+      var createDate = this.bg.getLicenseCreateDate();//Date
+      var expireDate = this.bg.getLicenseExpireDate();//Date
+      if (status) {
+        $("license_status").textContent
+          = this.getMessage(["license_MSG_"+ status]);
+      }
+      if ( status == "FULL" ) {
+        $("license_status").style["color"]="Black";
+        expireDate = null;
+      } else if ( status == "FREE_TRIAL" || status == "FREE_TRIAL_EXPIRED" ) {
+	$("license_status").style["color"]="Black";
+      } else {
+	$("license_status").style["color"]="Red";
+      }
+      if (expireDate) {
+	$("license_expire").textContent = expireDate.toLocaleString();
+	if ( Date.now() > expireDate ) {
+	  $("license_expire").style["color"]="Red";
+	} else {
+	  $("license_expire").style["color"]="Black";
+	}
+        $("license_expire_row").show(); //style["display"]="table";
+      } else {
+        $("license_expire_row").hide(); //style["display"]="none";
+      }
+      chrome.identity.getProfileUserInfo(function(userInfo) {
+        if (userInfo) {
+	  var displayName = userInfo.id;
+	  if (userInfo.email) { displayName +=  " <" +  userInfo.email + ">" };
+	  $("license_user").textContent = displayName;
+        }
+      }.bind(this));
+    },
     displayExperimentalOptionList: function() {
       if(this.bg.isExperimentalEnable()) {
-        $("experimental_option_list").show();
+        $("experimental_option_list").style["display"]="inline";
       } else {
-        $("experimental_option_list").hide();
+        $("experimental_option_list").style["display"]="none";
       }
     },
     assignEventHandlers: function() {
@@ -58,7 +102,7 @@
       var experimental = $("experimental_option").checked;
       var coursenameRestriction = $("coursename_rectriction_option").checked;
       var displayPopupMenu = $("display_popup_menu_option").checked;
-      var popupWaitForMac = $("popup_wait_for_mac").value;
+      var popupWaitForMac = parseInt($("popup_wait_for_mac").value, 10);
       var displayTelop = $("display_telop_option").checked;
       this.bg.setSpecial(experimental, coursenameRestriction,
                          displayPopupMenu, popupWaitForMac,

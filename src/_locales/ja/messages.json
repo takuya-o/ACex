@@ -140,5 +140,32 @@
   },
   "auth_time":{
     "message":"認証時刻"
+  },
+  "license":{
+    "message":"ライセンス"
+  },
+  "license_user":{
+    "message":"ユーザ"
+  },
+  "license_status":{
+    "message":"ライセンス状態"
+  },
+  "license_MSG_UNKNOWN":{
+    "message":"不明"
+  },
+  "license_MSG_FREE_TRIAL":{
+    "message":"無料試用"
+  },
+  "license_MSG_FREE_TRIAL_EXPIRED":{
+    "message":"無料試用(期限切れ)"
+  },
+  "license_MSG_FULL":{
+    "message":"フルライセンス"
+  },
+  "license_MSG_NONE":{
+    "message":"ライセンスなし"
+  },
+  "license_expire":{
+    "message":"ライセンス期限"
   }
 }
