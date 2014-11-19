@@ -26,30 +26,10 @@ var Background = Class.create({
           //pageActionのicon表示
           chrome.pageAction.show(sender.tab.id);
           sendResponse();
-        }else if (msg.cmd == "isDisplayTelop" ) {
+        } else if (msg.cmd == "isDisplayTelop" ) {
           sendResponse({isDisplayTelop: this.isDisplayTelop()});
-        }
-      }.bind(this)
-    );
-    //タブがクローズされた時判定 TODO:すべてのタブで効いてしまうけど…
-    chrome.tabs.onRemoved.addListener(
-      //閉じたときにtabListから削除する
-      function(tabId, removeInfo) {
-        console.log("--- tab closed:" + tabId);
-        this.removeTabId(tabId);
-      }.bind(this)
-    );
-    //タブが変更された時判定
-    chrome.tabs.onUpdated.addListener(
-      function(tabId, changeInfo, tab) {
-        var url = changeInfo.url;
-        if ( url != null ) {
-          //urlが変更されたので、新しいURLがリストあるか確認
-          url = url.replace(new RegExp(".+/", "g"), "");
-          if( this.getTabId(url) != tabId ) {
-            //見あたらないURLなので、変更されたらしいからTabListから外す
-            this.removeTabId(tabId);
-          }
+        } else {
+          console("------ Backgroupd Recv ACex: Unknown message.");
         }
       }.bind(this)
     );
@@ -74,7 +54,7 @@ var Background = Class.create({
             if (license.createDate) {
               this.license.createDate = new Date(license.createDate);
             } else {
-              this.license.createDate = null;
+              if (this.license.createDate) delete this.license[createDate];
             }
             console.log("ACex: storage changed"+JSON.stringify(this.license));
             // console.log('Storage key "%s" in namespace "%s" changed. ' +
@@ -86,6 +66,25 @@ var Background = Class.create({
       }
     }.bind(this));
   },
+  // タブへonRemoveハンドラー設定指示メッセージ送信
+  sendMessageAssignTabHandler: function(tabId, retry) {
+    if ( this.handlerTab == null ) { //eventHandler登録が必要
+      console.log("--- assignTabHandlers() " + tabId);
+      chrome.tabs.sendMessage(tabId, "assignTabHander", function(response) {
+          if (chrome.runtime.lastError) {
+            console.log("####: sendMessage:",chrome.runtime.lastError);
+            if (retry) {//送信が早すぎるとタブが受信準備出来ていないのでリトライ
+              console.log("----: sendMessage: Retry.");
+              setTimeout(function() {
+                this.sendMessageAssignTabHandler(tabId, false);
+              }.bind(this), 200);
+            }
+          }else{ //送信成功
+            this.handlerTab = tabId;
+          }
+      }.bind(this));
+    }
+  },
   /* フォーラムを開いているタブのIDを記憶
      fid:   forum ID
      tabId: chromeのタブID
@@ -94,6 +93,9 @@ var Background = Class.create({
     console.log("--- addTabId:" + fid + " = " + tabId);
     try {
       this.tabList[fid] = tabId;
+      if ( this.handlerTab == null ) { //eventHandler登録が必要
+        this.sendMessageAssignTabHandler(tabId, true);
+      }
     } catch (e) {
       console.log("#-- addTabId()" + e.name + " " + e.message);
     }
@@ -135,6 +137,11 @@ var Background = Class.create({
             console.log("--- removeTabId:" + tabId);
             delete this.tabList[element];
             doneFlg = true;
+            if ( this.handlerTab == tabId ) {
+              //ハンドラー登録していたタブが閉じられた
+              console.log("--- removeTabId: remove tabHandler.");
+              this.handlerTab = null;
+            }
           }
         }
       } catch (e) {
@@ -142,14 +149,23 @@ var Background = Class.create({
       }
       if ( !doneFlg ) {
         console.log("#-- removeTabId() not found:" + tabId);
+      } else {
+        if ( this.handlerTab == null ) {
+          //タブハンドラーが空席状態なので最初に見つかったタブに登録
+          for(var element in this.tabList) {
+            this.sendMessageAssignTabHandler(this.tabList[element], true);
+            break;
+          }
+        }
       }
     }
   },
   //インスタンス変数
   license: {status: "UNKNOWN", //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
-            validDate: new Date(),
-            createDate: null   //store.syncだと{}になる
+            validDate: new Date()
+            //不明時はメモリも確保しないcreateDate: null//store.syncだと{}になる
            },
+  handlerTab: null,
   userID: "up=",
   sessionA: "a=",
   coursenameRestrictionEnable: false,
@@ -157,10 +173,18 @@ var Background = Class.create({
   displayPopupMenu: false,
   popupWaitForMac: 500,
   displayTelop: false,
+  useLicenseInfo: false,
   trialPriodDays: 30,
 
   //インスタンス変数管理
   initializeClassValue: function() {
+    //マイグレーション
+    //V0.0.0.3以前(11bf542b)であまりに古いので消すだけ
+    localStorage.removeItem("Oyo");
+    localStorage.removeItem("userID");
+    localStorage.removeItem("sessionA");
+    //現用 "ACsession" "Special"
+
     var value = localStorage["ACsession"];
     if (value) {
       var acSession = JSON.parse(value);
@@ -178,7 +202,12 @@ var Background = Class.create({
       if (popupWaitForMac) { this.popupWaitForMac = popupWaitForMac; }
       var displayTelop = special["displayTelop"];
       if (displayTelop) { this.displayTelop = Boolean(displayTelop); }
+      var useLicenseInfo = special["useLicenseInfo"];
+      if (useLicenseInfo) { this.useLicenseInfo = Boolean(useLicenseInfo); }
+      var trialPriodDays = special["trialPriodDays"];
+      if (trialPriodDays) { this.trialPriodDays = trialPriodDays; }
     }
+    //ライセンス情報
     chrome.storage.sync.get("License", function(items){
       if (chrome.runtime.lastError) {
         console.log("####: storage.sync.get() ERR:",chrome.runtime.lastError);
@@ -198,6 +227,8 @@ var Background = Class.create({
           var licenseCreateDate = license.createDate;
           if ( licenseCreateDate ) {
             this.license.createDate = new Date(licenseCreateDate);
+          }else{
+            if (this.license.createDate) delete this.license[createDate];
           }
         }
       }
@@ -217,18 +248,22 @@ var Background = Class.create({
   },
   setSpecial: function(experimental, coursenameRestriction,
                        displayPopupMenu, popupWaitForMac,
-                       displayTelop ) {
+                       displayTelop, useLicenseInfo, trialPriodDays) {
     this.coursenameRestrictionEnable = Boolean(coursenameRestriction);
     this.experimentalEnable = Boolean(experimental);
     this.displayPopupMenu = displayPopupMenu;
     this.popupWaitForMac = popupWaitForMac;
     this.displayTelop = displayTelop;
+    this.useLicenseInfo = useLicenseInfo;
+    this.trialPriodDays = trialPriodDays;
     localStorage["Special"]
       = JSON.stringify({"couresenameRestriction":coursenameRestriction,
                         "experimental": experimental,
                         "displayPopupMenu": displayPopupMenu,
                         "popupWaitForMac": popupWaitForMac,
-                        "displayTelop": displayTelop });
+                        "displayTelop": displayTelop,
+                        "useLicenseInfo": useLicenseInfo,
+                        "trialPriodDays": trialPriodDays });
   },
   isCRmode: function() {
     return this.coursenameRestrictionEnable;
@@ -245,6 +280,12 @@ var Background = Class.create({
   isDisplayTelop: function() {
     return this.displayTelop;
   },
+  isUseLicenseInfo: function() {
+    return this.useLicenseInfo;
+  },
+  getTrialPriodDays: function() {
+    return this.trialPriodDays;
+  },
   setLicense: function(status, validDate, createDate) {
     var key = "UNKNOWN";
     for (key in ["FREE_TRIAL","FREE_TRIAL_EXPIRED","FULL","NONE","UNKNOWN"]){
@@ -254,14 +295,20 @@ var Background = Class.create({
       this.license = {}; //chrome.storage.sync.remove("License");
       this.license.status = status;  //String
       this.license.validDate = validDate;  //Date
-      if ( createDate ) { this.license.createDate = createDate; }//Date or null
+      var storeLicense = {};
+      if ( createDate ) {//Date or null
+        this.license.createDate = createDate;
+        storeLicense = {status: this.license.status,
+                        validDate: this.license.validDate.getTime(),
+                        createDate: this.license.createDate.getTime()};
+      } else {
+        if (this.license.createDate) delete this.license[createDate];
+        storeLicense = {status: this.license.status,
+                        validDate: this.license.validDate.getTime() };
+      }
       console.log("ACex: storage.sync.set(",this.license, ")");
       chrome.storage.sync.set( //Date型は保存できないみたいなので数値で保管
-        {License:
-         {status: this.license.status,
-          validDate: this.license.validDate.getTime(),
-          createDate: this.license.createDate.getTime()}
-        }, function() {
+        {License: storeLicense }, function() {
           if (chrome.runtime.lastError) {
             console.log("####: storage.sync.set() ERR:",
                         chrome.runtime.lastError);
@@ -276,7 +323,11 @@ var Background = Class.create({
     return this.license.validDate;
   },
   getLicenseCreateDate: function() {
-    return this.license.createDate;
+    if (this.license.createDate ) {
+      return this.license.createDate;
+    } else {
+      return undefined;
+    }
   },
   getLicenseExpireDate: function() {
     if ( this.license.createDate &&
@@ -285,17 +336,17 @@ var Background = Class.create({
            return new Date(this.license.createDate.getTime() +
                            this.trialPriodDays*24*60*60*1000);
          } else {
-           return null;
+           return undefined;
          }
   },
   //ライセンス管理
   setupAuth: function(interactive) {
     var CWS_LICENSE_API_URL = 'https://www.googleapis.com/chromewebstore/v1.1/userlicenses/';
-    if ( this.isExperimentalEnable() ) {
+    if ( this.isUseLicenseInfo() ) {
       //まだ実験的機能
       getLicense();
     }else{
-      console.log("ACex: not getLicense(), becouse disable experimental.");
+      console.log("ACex: not getLicense(), becouse disable license check.");
     }
     /*************************************************************************
      * Call to license server to request the license
@@ -409,6 +460,6 @@ var Background = Class.create({
         }
       }
     }
-  },
+  }
 });
 var bg = new Background();

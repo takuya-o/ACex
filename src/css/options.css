@@ -7,6 +7,10 @@ display:none
 text-align:right
 }
 
+#trial_priod_days {
+text-align:right
+}
+
 .buttons {
 
 }
@@ -48,5 +52,33 @@ text-align:right
 }
 
 .MSG_display_telop {
+
+}
+
+.MSG_license {
+
+}
+
+.MSG_license_user {
+
+}
+
+.MSG_license_status {
+
+}
+
+.MSG_license_expire {
+
+}
+
+.MSG_check_license_by_chrome_web_store {
+
+}
+
+.MSG_trial_priod_days {
+
+}
+
+.MSG_days {
 
 }

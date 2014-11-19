@@ -19,7 +19,13 @@
       Array.prototype.forEach.call(elems, function (node) {
         var key = node.className.match(/MSG_(\w+)/)[1];
         var message = chrome.i18n.getMessage(key);
-        if (message) node.textContent = message;
+        if (message) {
+          node.textContent = message;
+        } else { //リソースバンドルが無かった
+          if ( node.textContent == "" ) { //元の文字も無ければ
+            node.textContent = key.replace(/_/g, " ");
+          }
+        }
       });
     },
     getMessage: function(args) {//arg:配列
@@ -89,6 +95,9 @@
       $("display_popup_menu_option").onclick = this.onClickSave.bind(this);
       $("popup_wait_for_mac").onchange = this.onClickSave.bind(this);
       $("display_telop_option").onclick = this.onClickSave.bind(this);
+      $("check_license_by_chrome_web_store").onclick
+        = this.onClickSave.bind(this);
+      $("trial_priod_days").onchange = this.onClickSave.bind(this);
     },
     restoreConfigurations: function() {
       $("experimental_option").checked = this.bg.isExperimentalEnable();
@@ -96,6 +105,9 @@
       $("display_popup_menu_option").checked = this.bg.isDisplayPopupMenu();
       $("popup_wait_for_mac").value = this.bg.getPopupWaitForMac();
       $("display_telop_option").checked = this.bg.isDisplayTelop();
+      $("check_license_by_chrome_web_store").checked
+        = this.bg.isUseLicenseInfo();
+      $("trial_priod_days").value = this.bg.getTrialPriodDays();
       this.displayExperimentalOptionList();
     },
     onClickSave: function(evt) {
@@ -104,9 +116,12 @@
       var displayPopupMenu = $("display_popup_menu_option").checked;
       var popupWaitForMac = parseInt($("popup_wait_for_mac").value, 10);
       var displayTelop = $("display_telop_option").checked;
+      var useLicenseInfo= $("check_license_by_chrome_web_store").checked;
+      var trial_priod_days = parseInt($("trial_priod_days").value, 10);
+
       this.bg.setSpecial(experimental, coursenameRestriction,
                          displayPopupMenu, popupWaitForMac,
-                         displayTelop );
+                         displayTelop, useLicenseInfo, trial_priod_days );
       this.displayExperimentalOptionList();
 
       $('message').update(this.getMessage(["options_saved"]));

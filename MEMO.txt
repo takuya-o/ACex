@@ -22,7 +22,7 @@ $ git co develop           #開発ブランチで
 $ git format-patch HEAD~5  #パッチファイル作成
 $ git co master -b release #安全のためreleaseブランチ作成
 $ git am <0001-...         #パッチ適応
-$ git rebase -i        #前のリリースから後のdevelopの変更を残して1つにまとめる
+$ git rebase -i HEAD~5     #前のリリースから後のdevelopの変更を残して1つにまとめる
 
 $ git commit --amend -C HEAD --date=2014-03-18T00:00:00
 $ git rebase --commiter-date-is-auther-date HEAD~1

@@ -43,6 +43,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                  class="MSG_special_option_list"></span></h2>
       <table>
         <tr>
+          <td><input type="checkbox" id="coursename_rectriction_option" /></td>
+          <td colspan="2"><span class="MSG_coursename_rectriction"></span></td>
+        </tr>
+        <tr>
           <td><input type="checkbox" id="experimental_option" /></td>
           <td><span class="MSG_experimental_enable"></span></td>
         </tr>
@@ -52,10 +56,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2><span id="experimental_option_list_title"
                  class="MSG_experimental_option_list"></span></h2>
       <table>
-        <tr>
-          <td><input type="checkbox" id="coursename_rectriction_option" /></td>
-          <td colspan="2"><span class="MSG_coursename_rectriction"></span></td>
-        </tr>
         <tr>
           <td><input type="checkbox" id="display_popup_menu_option" /></td>
           <td colspan="2"><span class="MSG_display_popup_menu"></span></td>
@@ -71,6 +71,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <td><input type="checkbox" id="display_telop_option" /></td>
           <td colspan="2"><span class="MSG_display_telop"></span></td>
         </tr>
+        <tr>
+          <td><input type="checkbox" id="check_license_by_chrome_web_store" /></td>
+          <td colspan="2"><span class="MSG_check_license_by_chrome_web_store"></span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><label><span class="MSG_trial_priod_days"></span></label></td>
+          <td><input type="number" id="trial_priod_days"
+                     max="90" min="1" required="required" />
+              <span class="MSG_days"></span></td>
+        </tr>
+ 
       </table>
     </article>
     <article>

@@ -11,6 +11,7 @@
     start: function() {
       this.assignMessages();
       this.createTable();
+      assignMessageHandlers(this); //backgroundからの通信受信設定
     },
     assignMessages: function() {
       var elems = document.querySelectorAll('*[class^="MSG_"]');

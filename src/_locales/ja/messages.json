@@ -167,5 +167,14 @@
   },
   "license_expire":{
     "message":"ライセンス期限"
+  },
+  "check_license_by_chrome_web_store": {
+    "message":"Chromeウェブストアのライセンス情報を確認する"
+  },
+  "trial_priod_days": {
+    "message":"試用期間"
+  },
+  "days": {
+    "message":"日"
   }
 }

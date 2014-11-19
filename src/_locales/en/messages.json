@@ -167,6 +167,15 @@
   },
   "license_expire":{
     "message":"License Expire"
+  },
+  "check_license_by_chrome_web_store": {
+    "message":"Check License Information by Chrome Web Store"
+  },
+  "trial_priod_days": {
+    "message":"Trial Priod Days"
+  },
+  "days": {
+    "message":"days"
   }
 }
 
