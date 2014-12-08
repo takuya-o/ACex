@@ -9,27 +9,9 @@
       }.bind(this));
     },
     start: function() {
-      this.assignMessages();
+      messageUtil.assignMessages();
+      tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
       this.createList();
-      assignMessageHandlers(this); //backgroundからの通信受信設定
-    },
-    assignMessages: function() {
-      var elems = document.querySelectorAll('*[class^="MSG_"]');
-      Array.prototype.forEach.call(elems, function (node) {
-        var key = node.className.match(/MSG_(\w+)/)[1];
-        var message = chrome.i18n.getMessage(key);
-        if (message) { node.textContent = message; }
-      });
-    },
-    getMessage: function(args) {//arg:配列
-      var ret = "";
-      for(var i=0; i<args.length; i++ ) {
-        if ( i != 0 ) { ret = ret + " "; };
-        var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i]; };
-        ret = ret + message;
-      }
-      return ret;
     },
     createList: function() {
       var query = window.location.search.toQueryParams();
@@ -37,8 +19,8 @@
       if ( cmd == "reader" ) { cmd = "reader"; }
       else if ( cmd == "count" ) { cmd = "count"; }
       else {  cmd="count";  } //サニタイズ
-      $('cmd_name').insert(this.getMessage([cmd, "selectCourse"]));
-      $('message').insert(this.getMessage(["loding"]));
+      $('cmd_name').insert(messageUtil.getMessage([cmd, "selectCourse"]));
+      $('message').insert(messageUtil.getMessage(["loding"]));
 
       var courseListAjax = new Ajax.Request(
         "https://www.bbt757.com/svlAC/GetCourseList3",
@@ -50,14 +32,14 @@
           }.bind(this),
           onFailure: function(response) {
             $('message').update(
-              this.getMessage(["program_list", "loding_fail"] )
+              messageUtil.getMessage(["program_list", "loding_fail"] )
                 + response.statusText );
             dataLayer.push({'event': 'Failure-GetCourseList3'
                             + response.statusText });
           }.bind(this),
           onException: function(response, e) {
             $('message').update(
-              this.getMessage(["program_list", "loding_exception"])
+              messageUtil.getMessage(["program_list", "loding_exception"])
                 + e.message );
             dataLayer.push({'event': 'Exception-GetCourseList3' + e.message });
           }.bind(this)
@@ -65,7 +47,7 @@
       );
     },
     programItemList: function(xml, cmd) {
-      $('message').update(this.getMessage(["course_list", "loding_success"]));
+      $('message').update(messageUtil.getMessage(["course_list", "loding_success"]));
       var now = new Date();
       var programs = xml.getElementsByTagName("program");
       for(var i=0; i<programs.length; i++) {
@@ -170,14 +152,14 @@
             }.bind(this),
             onFailure: function(response) {
               $('message').update(
-                this.getMessage(["course_list", "logind_fail", "id",
+                messageUtil.getMessage(["course_list", "logind_fail", "id",
                                  courseID, response.statusText]) );
               dataLayer.push({'event': 'Failure-GetCourseItemList'
                               + courseID + response.statusText });
             }.bind(this),
             onException: function(response, e) {
               $('message').update(
-                this.getMessage(["course_list", "logind_exception", "id",
+                messageUtil.getMessage(["course_list", "logind_exception", "id",
                                  courseID, e.message]) );
               dataLayer.push({'event': 'Exception-GetCourseItemList'
                               + courseID + e.message });
@@ -188,7 +170,7 @@
     },
     courseItemList: function(xml, courseID) {
       $('message').update(
-        this.getMessage(["forum_list", "loding_success", "id"])
+        messageUtil.getMessage(["forum_list", "loding_success", "id"])
           + courseID);
       var outlines = xml.getElementsByTagName("outline");
       $( 'course' + courseID ).insert(

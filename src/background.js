@@ -70,14 +70,16 @@ var Background = Class.create({
   sendMessageAssignTabHandler: function(tabId, retry) {
     if ( this.handlerTab == null ) { //eventHandler登録が必要
       console.log("--- assignTabHandlers() " + tabId);
-      chrome.tabs.sendMessage(tabId, "assignTabHander", function(response) {
+      chrome.tabs.sendMessage(tabId, "assignTabHandler", function(response) {
           if (chrome.runtime.lastError) {
-            console.log("####: sendMessage:",chrome.runtime.lastError);
+            console.log("####: sendMessage:",chrome.runtime.lastError.message);
             if (retry) {//送信が早すぎるとタブが受信準備出来ていないのでリトライ
               console.log("----: sendMessage: Retry.");
               setTimeout(function() {
                 this.sendMessageAssignTabHandler(tabId, false);
               }.bind(this), 200);
+            } else {
+              console.log("####: sendMessage: Retry Fail.");
             }
           }else{ //送信成功
             this.handlerTab = tabId;
@@ -160,6 +162,14 @@ var Background = Class.create({
       }
     }
   },
+  localStorageMigration: function() {
+    //マイグレーション
+    //V0.0.0.3以前(11bf542b)であまりに古いので消すだけ
+    localStorage.removeItem("Oyo");
+    localStorage.removeItem("userID");
+    localStorage.removeItem("sessionA");
+    //現用 "ACsession" "Special"
+  },
   //インスタンス変数
   license: {status: "UNKNOWN", //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
             validDate: new Date()
@@ -178,13 +188,7 @@ var Background = Class.create({
 
   //インスタンス変数管理
   initializeClassValue: function() {
-    //マイグレーション
-    //V0.0.0.3以前(11bf542b)であまりに古いので消すだけ
-    localStorage.removeItem("Oyo");
-    localStorage.removeItem("userID");
-    localStorage.removeItem("sessionA");
-    //現用 "ACsession" "Special"
-
+    this.localStorageMigration();
     var value = localStorage["ACsession"];
     if (value) {
       var acSession = JSON.parse(value);
@@ -377,6 +381,8 @@ var Background = Class.create({
      *  - if license.accessLevel == "FREE_TRIAL" they haven't paid
      *    - If they've used the app for less than TRIAL_PERIOD_DAYS days, free trial
      *    - Otherwise, the free trial has expired 
+     *    @param {{result: boolean, accessLevel: string, createTinme: number,
+     *     maxAgeSecs: number }} license Chromeウェブストアのライセンス情報
      **************************************************************************/
     function parseLicense(license) {
       console.log("ACex: Full License=" + license.result);
@@ -422,6 +428,10 @@ var Background = Class.create({
     }
     /**************************************************************************
      * Helper method for making authenticated requests
+     * @param {string} method
+     * @param {string} url
+     * @param {boolean} interactive
+     * @param {function(?string, number, strting)} callback
      **************************************************************************/
     // Helper Util for making authenticated XHRs
     function xhrWithAuth(method, url, interactive, callback) {

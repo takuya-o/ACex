@@ -8,7 +8,7 @@
       }.bind(this));
     },
     start: function() {
-      this.assignMessages();
+      messageUtil.assignMessages();
       if ( window.document.URL.match(
           /^http:\/\/accontent\.bbt757\.com\/content\//) ) {
         //視聴画面の時
@@ -25,27 +25,6 @@
         //ACweb画面の時
         this.getACconfig();
       }
-    },
-    assignMessages: function() {
-      var elems = document.querySelectorAll('*[class^="MSG_"]');
-      Array.prototype.forEach.call(elems, function(node) {
-        var key = node.className.match(/MSG_(\w+)/)[1];
-        var message = chrome.i18n.getMessage(key);
-        if (message) {
-          node.textContent = message;
-        }
-        ;
-      });
-    },
-    getMessage: function(args) {//arg:配列
-      var ret = "";
-      for(var i=0; i<args.length; i++ ) {
-        if ( i != 0 ) { ret = ret + " "; };
-        var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i]; };
-        ret = ret + message;
-      }
-      return ret;
     },
     getACtelop: function () {
       var telops;
@@ -69,7 +48,7 @@
           console.log("ACex: time=" + telop);
           var tab=document.getElementById('content-tab1');
           if (tab) { //入れるの早すぎると消されるがリロードで出てくる
-            tab.insert('<p>'+this.getMessage(["auth_time"])+ telop +'</p>');
+            tab.insert('<p>'+messageUtil.getMessage(["auth_time"])+ telop +'</p>');
           }
         }
       }else{

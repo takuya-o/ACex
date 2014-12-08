@@ -9,41 +9,14 @@
       }.bind(this));
     },
     start: function() {
-      this.assignMessages();
+      messageUtil.assignMessages();
+      tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
       this.createTable();
-      assignMessageHandlers(this); //backgroundからの通信受信設定
-    },
-    assignMessages: function() {
-      var elems = document.querySelectorAll('*[class^="MSG_"]');
-      Array.prototype.forEach.call(elems, function (node) {
-        var key = node.className.match(/MSG_(\w+)/)[1];
-        var message = chrome.i18n.getMessage(key);
-        if (message) { node.textContent = message; }
-        //ツールチップも有れば更新
-        var attrs = node.attributes;
-        Array.prototype.forEach.call(attrs, function(attr) {
-          if (attr.name == "title") {
-            var key = attr.value.match(/MSG_(\w+)/)[1];
-            var message = chrome.i18n.getMessage(key);
-            if (message) { attr.value = message; }
-          }
-        });
-      });
-    },
-    getMessage: function(args) {//arg:配列
-      var ret = "";
-      for(var i=0; i<args.length; i++ ) {
-        if ( i != 0 ) { ret = ret + " "; };
-        var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i]; };
-        ret = ret + message;
-      }
-      return ret;
     },
     createTable: function() {
       var query = window.location.search.toQueryParams();
       var fid = query["fid"];
-      $('message').insert(this.getMessage(["loding"]));
+      $('message').insert(messageUtil.getMessage(["loding"]));
 
       if ( false ) {
         //キャッシュに有った場合
@@ -53,7 +26,7 @@
         //まだ無かった
         console.log("--- Create Forum Data:" + fid);
         dataLayer.push({'event': 'forum-' + fid });
-        $('message').update(this.getMessage(["discussion_data", "loding", "id"])
+        $('message').update(messageUtil.getMessage(["discussion_data", "loding", "id"])
                             + fid);
         var courseListAjax = new Ajax.Request(
           "https://www.bbt757.com/svlAC/GetForumContents",
@@ -65,14 +38,14 @@
             }.bind(this),
             onFailure: function(response) {
               $('message').update(
-                this.getMessage(["discussion_data", "loding_fail"
+                messageUtil.getMessage(["discussion_data", "loding_fail"
                                  , fid, response.statusText]) );
               dataLayer.push({'event': 'Failure-GetForumContents'
                               + fid + response.statusText });
             }.bind(this),
             onException: function(response,e) {
               $('message').update(
-                this.getMessage(["discussion_data", "loding_exception"
+                messageUtil.getMessage(["discussion_data", "loding_exception"
                                  , fid, e.message]) );
               dataLayer.push({'event': 'Exception-GetForumContents'
                               + fid + e.message });
@@ -91,7 +64,7 @@
       var ownReply = {};
       var replied = {};
       $('message').update(
-        this.getMessage(["discussion_data", "loding_success", "id"])
+        messageUtil.getMessage(["discussion_data", "loding_success", "id"])
           + fid);
       var title = xml.getElementsByTagName("title")[0].innerHTML;
       $('title').update(title);
@@ -144,7 +117,7 @@
           deleted[uuid]++;
         }
       }
-      $('message').update(this.getMessage(["count_finish", "id"]) + fid);
+      $('message').update(messageUtil.getMessage(["count_finish", "id"]) + fid);
       var ranking = [];
       for(var key in counter) {
         ranking.push({"name": namemap[key], "count": counter[key]

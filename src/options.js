@@ -9,34 +9,10 @@
       }.bind(this));
     },
     start: function() {
-      this.assignMessages();
+      messageUtil.assignMessages();
       this.assignEventHandlers();
       this.displayLicenseStatus();
       this.restoreConfigurations();
-    },
-    assignMessages: function() {
-      var elems = document.querySelectorAll('*[class^="MSG_"]');
-      Array.prototype.forEach.call(elems, function (node) {
-        var key = node.className.match(/MSG_(\w+)/)[1];
-        var message = chrome.i18n.getMessage(key);
-        if (message) {
-          node.textContent = message;
-        } else { //リソースバンドルが無かった
-          if ( node.textContent == "" ) { //元の文字も無ければ
-            node.textContent = key.replace(/_/g, " ");
-          }
-        }
-      });
-    },
-    getMessage: function(args) {//arg:配列
-      var ret = "";
-      for(var i=0; i<args.length; i++ ) {
-        if ( i != 0 ) { ret = ret + " "; };
-        var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i]; };
-        ret = ret + message;
-      }
-      return ret;
     },
     displayLicenseStatus: function() {
       var validDate = this.bg.getLicenseValidDate();
@@ -52,7 +28,7 @@
       var expireDate = this.bg.getLicenseExpireDate();//Date
       if (status) {
         $("license_status").textContent
-          = this.getMessage(["license_MSG_"+ status]);
+          = messageUtil.getMessage(["license_MSG_"+ status]);
       }
       if ( status == "FULL" ) {
         $("license_status").style["color"]="Black";
@@ -76,7 +52,7 @@
       chrome.identity.getProfileUserInfo(function(userInfo) {
         if (userInfo) {
 	  var displayName = userInfo.id;
-	  if (userInfo.email) { displayName +=  " <" +  userInfo.email + ">" };
+	  if (userInfo.email) { displayName +=  " <" +  userInfo.email + ">"; }
 	  $("license_user").textContent = displayName;
         }
       }.bind(this));
@@ -124,7 +100,7 @@
                          displayTelop, useLicenseInfo, trial_priod_days );
       this.displayExperimentalOptionList();
 
-      $('message').update(this.getMessage(["options_saved"]));
+      $('message').update(messageUtil.getMessage(["options_saved"]));
       setTimeout( function() {
         $('message').innerHTML=""; //一秒後にメッセージを消す
       }, 1000);

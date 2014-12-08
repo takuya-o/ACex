@@ -9,30 +9,12 @@
       }.bind(this));
     },
     start: function() {
-      this.assignMessages();
+      utilMessage.assignMessages();
+      tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
       this.createList();
-      assignMessageHandlers(this); //backgroundからの通信受信設定
-    },
-    assignMessages: function() {
-      var elems = document.querySelectorAll('*[class^="MSG_"]');
-      Array.prototype.forEach.call(elems, function (node) {
-        var key = node.className.match(/MSG_(\w+)/)[1];
-        var message = chrome.i18n.getMessage(key);
-        if (message) { node.textContent = message; }
-      });
-    },
-    getMessage: function(args) {//arg:配列
-      var ret = "";
-      for(var i=0; i<args.length; i++ ) {
-        if ( i != 0 ) { ret = ret + " "; };
-        var message = chrome.i18n.getMessage(args[i]);
-        if (!message) { message = args[i]; };
-        ret = ret + message;
-      }
-      return ret;
     },
     createList: function() {
-      $('message').insert(this.getMessage(["loding"]));
+      $('message').insert(messageUtil.getMessage(["loding"]));
     }
   });
   new ACReader();
