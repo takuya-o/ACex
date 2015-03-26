@@ -38,15 +38,16 @@ git -c core.editor="sed -i '2,/^$/s/^pick\b/s/'" rebase -i "before_am_$OLD" ||
 git tag -d "before_am_$OLD"
 
 #日付の更新
-git commit --amend -C HEAD --date="date +%FT23:00:00" || exit 1
+git commit --amend -m `echo "$NEW"|sed '1s/^V//'` --date=`date +%FT23:00:00` ||
+    exit 1
 git rebase --committer-date-is-author-date  HEAD~1 || exit 1
-git commit --amend -m `echo "$NEW"|sed '1s/^V//'`
 
 
 #masterに戻ってマージ
 #git checkout master
 #git merge release$NEW || exit 1
 #  リポジトリにpush
-#git push origin master || exit1 #githubへ
+#git push origin master  #githubへ
+#git push origin --tags
 #  developに戻る
 #git checkout develop

@@ -9,8 +9,8 @@
     },
     start: function() {
       messageUtil.assignMessages();
-      if ( window.document.URL.match(
-          /^http:\/\/accontent\.bbt757\.com\/content\//) ) {
+      var url = window.document.URL;
+      if ( url.match(/^http:\/\/accontent\.bbt757\.com\/content\//) ) {
         //視聴画面の時
         chrome.runtime.sendMessage(
           {cmd: "isDisplayTelop"}, function(response) {
@@ -18,11 +18,68 @@
             console.log("ACex: isDisplayTelop() = " + response.isDisplayTelop);
             if ( response.isDisplayTelop ) {
               //オプションOnのときだけ表示
-	      this.getACtelop();
+              this.getACtelop();
             }
           }.bind(this) );
+      } else if (url.match(/^https?:\/\/[^.\/]+\.aircamp\.us\/course\//) ) {
+        //HTML5版でコース画面
+        this.getACconfig();
+        //RexExp準備 ツリーからの更新は#以下のURLしか変えない
+        //おしらせ一覧などを経由すると/informationなどが入る
+        var regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|\/.*)#forum\/(\d+)/;
+        //navにボタンをinjection
+        var navs =document.getElementsByTagName('nav');
+        if ( navs.length > 0 ) { //入れるの早すぎると消されるがリロードで出てくる
+          var uls = navs[0].getElementsByTagName('ul');
+          if ( uls.length > 0 ) {
+            var input = document.createElement('input');
+            input.disabled = true;
+            input.setAttribute('id', 'ACexCountButton');
+            input.setAttribute('type', 'button');
+            input.setAttribute('value', messageUtil.getMessage(["Count"]));
+            input.addEventListener("click", function() {
+              //AjaxでURLが毎回変わっていることがあるので取りなおす
+              var match = window.document.URL.match(regexp);
+              if ( !match ) {
+                alert("Faital Error: Can't get forum ID.");
+              } else {
+                var fid = match[2];
+                var href= chrome.runtime.getURL("countresult.html"
+                                                + "?fid=" + encodeURI(fid));
+                chrome.runtime.sendMessage(
+                  {cmd: "open", url: href}, function(response) {
+                    //レスポンスでもらう値なしだかコネクション閉じるために受信
+                  });
+              }
+            });
+            var li = document.createElement('li');
+            uls[0].insert( li.insert(input) );
+          }
+        }
+        if ( url.match(regexp) ) {
+          //フォーラムを開いているのでボタン有効
+          var input =document.getElementById('ACexCountButton');
+          input.disabled = false;
+        } else {
+          //HTML5画面でフォーラム以外
+          console.log("AirCumpus HTML5 page.");
+        }
+        //URL変更検知
+        window.addEventListener( "hashchange", function(event) {
+          var url = event.newURL;
+          var input =document.getElementById('ACexCountButton');
+          if ( input && url.match(regexp) ) {
+            //フォーラムを開いているのでボタン有効
+            input.disabled = false;
+            console.log("ACexCountButton enable.");
+          } else {
+            input.disabled = true;
+            console.log("ACexCountButton disable.");
+          }
+        });
       } else {
         //ACweb画面の時
+        console.log("AirCumpus for Web.");
         this.getACconfig();
       }
     },

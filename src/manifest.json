@@ -4,7 +4,7 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.0.6.5",
+  "version": "0.0.7.0",
   "minimum_chrome_version": "37",
 
   "permissions": [
@@ -20,7 +20,7 @@
   },
    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA62XQw3q23NQyFGYHZsEu2NF6sH4rZmm79MIzkslMT+70nWF4OyhX3vU+pRG9ncYPSsI/Yr/I8zsUYwLM1qX2QCeyVfjkbHuoJsYjSQ8ix9AP0Wg6jdCuzAtNPrEPknAdapxJFPuvGbzBbsSlTs7Lv7d9SVgAUFH6SHNTrcg2WPCua9XiOn3rkNOcpoiiu8lctarsFjokwUkKbXQD023EzpIzGjqmi20OfU/xaj2/UhzOuiOhhubILNb2HNUz36WZ9SY0zS+xmqdnVgvWzW1z7sgDPDTDP5KO/44eiwVTDDCaSmn1/Sl16mPBe6X1MQB98a00TzAexgsVFtYPcanmQwIDAQAB",
   "content_scripts": [ {
-    "matches": ["https://www.bbt757.com/ac/web/*", "http://accontent.bbt757.com/content/*"],
+      "matches": ["https://www.bbt757.com/ac/web/*", "http://accontent.bbt757.com/content/*", "*://*.aircamp.us/course/*"],
     "js": ["lib/prototype.js", "tagmanager.js", "messageUtil.js", "script.js"],
     "run_at": "document_end"
   } ],

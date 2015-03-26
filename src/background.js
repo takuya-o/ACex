@@ -28,8 +28,12 @@ var Background = Class.create({
           sendResponse();
         } else if (msg.cmd == "isDisplayTelop" ) {
           sendResponse({isDisplayTelop: this.isDisplayTelop()});
+        } else if (msg.cmd == "open" ) {
+          this.openTab(msg.url);
+        } else if (msg.cmd == "log" ) {
+          console.log("--- Backgroupd Recv ACex:" + msg.message);
         } else {
-          console("------ Backgroupd Recv ACex: Unknown message.");
+          console.log("------ Backgroupd Recv ACex: Unknown message.");
         }
       }.bind(this)
     );
@@ -160,6 +164,24 @@ var Background = Class.create({
           }
         }
       }
+    }
+  },
+  openTab: function(url) { //courselist.jsからcopy共通化が必要
+    //該当のURLをタブで開く。既に開いていたらそれを使う
+    var tabId = this.getTabId(url);
+    if ( tabId == null ) { //nullとの==比較でundefined見つけてる
+      //開いているタブが無かったので作る
+      chrome.tabs.create( //タブを開く 引数省略すると「新しいタブ」
+        { url: url },
+        function(tab) {
+          //tabが閉じられるまでキャッシュとして利用する
+          console.log("--- opened tab:" + tab.id);
+          this.addTabId(url, tab.id);
+        }.bind(this)
+      );
+    } else {
+      //forumを開いているタブを開く
+      chrome.tabs.update(tabId,{highlighted:true});
     }
   },
   localStorageMigration: function() {
