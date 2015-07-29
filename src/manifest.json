@@ -4,14 +4,14 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.0.7.0",
+  "version": "0.0.8.0",
   "minimum_chrome_version": "37",
 
   "permissions": [
     "identity",
     "tabs",
     "https://www.bbt757.com/svlAC/",
-    "storage",
+    "storage", "unlimitedStorage",
     "https://www.googleapis.com/"
   ],
   "oauth2": {

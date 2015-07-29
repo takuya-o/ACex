@@ -85,6 +85,7 @@
     },
     getACtelop: function () {
       var telops;
+      var datas;
       var elements = window.document.getElementsByTagName("script");
       console.log("ACex: getACtelop" + elements.length );
       for (var i = 0; i < elements.length; i++) {
@@ -92,7 +93,9 @@
         if (text) {
           var match = text.match(/var settings = ({.*});/);
           if (match) {
-            telops = JSON.parse(match[1]).telop;
+            var strings = JSON.parse(match[1]);
+            telops = strings.telop;
+            datas = strings.data.split(";");
             break;
           }
         }
@@ -101,11 +104,25 @@
         //console.log("ACex: telops=" + telops );
         for(var i=0; i<telops.length; i++) {
           var d = new Date( telops[i].time * 1000 );
-          var telop = d.getUTCHours()+":"+d.getUTCMinutes()+":"+d.getUTCSeconds();
+          var telop = d.getUTCHours() + ":"
+                + ("00" + d.getUTCMinutes()).slice(-2) + ":"
+                + ("00" + d.getUTCSeconds()).slice(-2);
+          if ( datas.length > (i+1) ) {
+            //telop = telop + " " + datas[i+1].slice(2); //頭二文字"I,"削除
+            var dataCmd = datas[i+1].split(",");
+            if ( dataCmd.length > 2 ) { //dataCmd[0] == "I"
+              d = new Date( dataCmd[2] * 1000 );
+              telop = telop + "  " + dataCmd[1] + ";"
+                + d.getUTCHours() + ":"
+                + ("00" + d.getUTCMinutes()).slice(-2) + ":"
+                + ("00" + d.getUTCSeconds()).slice(-2);
+            }
+          }
           console.log("ACex: time=" + telop);
           var tab=document.getElementById('content-tab1');
           if (tab) { //入れるの早すぎると消されるがリロードで出てくる
-            tab.insert('<p>'+messageUtil.getMessage(["auth_time"])+ telop +'</p>');
+            tab.insert('<p>'+messageUtil.getMessage(["auth_time"]) +
+                       telop +'</p>');
           }
         }
       }else{

@@ -32,6 +32,9 @@
   "loding":{
     "message":"Loding..."
   },
+  "cache_hit":{
+    "message":"Cache Hit"
+  },
   "program_list":{
     "message":"Program List"
   },
@@ -43,6 +46,9 @@
   },
   "loding_success":{
     "message":"Loding success."
+  },
+  "create_table":{
+    "message":"Creating table."
   },
   "course_list":{
     "message":"Course List"
@@ -58,6 +64,18 @@
   },
   "count_finish":{
     "message":"Count Finish."
+  },
+  "last_update":{
+    "message":"Last Update:"
+  },
+  "end_day":{
+    "message":"End Day:"
+  },
+  "UNKNOWN":{
+    "message":"Unknown"
+  },
+  "force_reload":{
+    "message":"Reload"
   },
   "number_column":{
     "message":"#"

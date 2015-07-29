@@ -7,6 +7,9 @@
     border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
     padding: 5px; /* セル内の余白 */
 }
+#update_time {
+    /*text-align: right; 右寄せ*/
+}
 
 .MSG_number_column {
 

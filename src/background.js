@@ -207,6 +207,8 @@ var Background = Class.create({
   displayTelop: false,
   useLicenseInfo: false,
   trialPriodDays: 30,
+  //キャッシュ
+  forums: null,
 
   //インスタンス変数管理
   initializeClassValue: function() {
@@ -232,6 +234,12 @@ var Background = Class.create({
       if (useLicenseInfo) { this.useLicenseInfo = Boolean(useLicenseInfo); }
       var trialPriodDays = special["trialPriodDays"];
       if (trialPriodDays) { this.trialPriodDays = trialPriodDays; }
+    }
+    value = localStorage["Forums"];
+    if (value) {
+      this.forums = JSON.parse(value);
+    } else {
+      this.forums = {};
     }
     //ライセンス情報
     chrome.storage.sync.get("License", function(items){
@@ -311,6 +319,21 @@ var Background = Class.create({
   },
   getTrialPriodDays: function() {
     return this.trialPriodDays;
+  },
+  getCacheFormatVer: function () {
+    return 1;
+  },
+  setCache: function (forum) {
+    forum.cacheFormatVer = this.getCacheFormatVer();
+    this.forums[forum.fid] = forum;
+    localStorage["Forums"] = JSON.stringify(this.forums);
+  },
+  getCache: function (fid) {
+    var forum = this.forums[fid];
+    if ( forum && ( !forum.cacheFormatVer || (forum.cacheFormatVer < this.getCacheFormatVer())) ) {
+      forum = null;
+    }
+    return forum;
   },
   setLicense: function(status, validDate, createDate) {
     var key = "UNKNOWN";
