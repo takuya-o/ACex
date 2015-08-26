@@ -1,9 +1,28 @@
 // -*- coding: utf-8-unix -*-
 (function() {
   var CountResult = Class.create({
+    WEEK_MILSEC: 604800000,
     bg: null,
+    chartData: null,
+    setChartData: function(data, minWeek, maxWeek){
+      this.chartData = {};
+      this.chartData.data = data
+      this.chartData.minWeek = minWeek;
+      this.chartData.maxWeek = maxWeek;
+      //チャートデータが算出できたのでグラフ表示
+      this.drawChart();
+      return({data, minWeek, maxWeek});
+    },
+    getChartData: function() {
+      if ( !this.chartData ) {
+        console.log("chartData is null.");
+      }
+      return this.chartData;
+    },
     initialize: function() {
       this.bg = chrome.extension.getBackgroundPage().bg;
+      google.load('visualization', '1.1', {packages: ['line']});
+      google.setOnLoadCallback(this.drawChart.bind(this));
       window.addEventListener("load", function(evt) {
         this.start();
       }.bind(this));
@@ -12,29 +31,44 @@
       messageUtil.assignMessages();
       tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
       $("force_reload_button").onclick = this.onClickForceReload.bind(this);
-      this.createTable();
+      this.createContents();
     },
     onClickForceReload: function () {
       var orgUrl = location.href;
       location.replace( orgUrl + "&force=true");
     },
-    createTable: function() {
+    createContents: function() {
       var query = window.location.search.toQueryParams();
       var fid = query["fid"];
-      var forceLoad = query["force"]; //何かいれていないとダメ
+      var forceLoad = query["force"]; //何か入れていないと有効にならない
 
       $('message').insert(messageUtil.getMessage(["loding"]));
 
-      var forum = this.bg.getCache(fid);
-      if ( !forceLoad && forum ) {
+      var forum = this.bg.getForumCache(fid);
+      var doing = true; //開講中の場合は強制更新にするための開講中フラグ
+      if ( forum ) {
+        var cacheDate = new Date(forum.cacheDate);
+        var endDay = new Date(forum.end);
+        if ( endDay < cacheDate ) {
+          doing = false;
+          $( "force_reload_button" ).style.display = "";
+        } else {
+          $( "force_reload_button" ).style.display="none"; //開講中は常に強制更新なのでボタン消す
+        }
+      }
+
+      if ( !forceLoad && forum && !doing) {
         //キャッシュに有った場合
         console.log("--- Cache Hit Forum Data:" + fid);
         $('message').update(
           messageUtil.getMessage(["discussion_data", "cache_hit", "id"])
             + fid);
-        this.createContents(forum);
+        if ( doing ) {
+          //TODO: 差分キャッシュ更新
+        }
+        this.createTable(forum);
       } else {
-        //まだ無かった
+        //まだ無かった 強制更新の場合 開講中の場合
         console.log("--- Create Forum Data:" + fid);
         dataLayer.push({'event': 'forum-' + fid });
         $('message').update(messageUtil.getMessage(["discussion_data", "loding", "id"])
@@ -51,7 +85,7 @@
                 location.href = location.href.replace(/&force=.*$/, "");
               } else {
                 //location.hrefを変えるとリロードされるので変えないときだけ
-                this.createContents(forum);
+                this.createTable(forum);
               }
             }.bind(this),
             onFailure: function(response) {
@@ -67,6 +101,7 @@
                                  , fid, e.message]) );
               dataLayer.push({'event': 'Exception-GetForumContents'
                               + fid + e.message });
+              console.log("ACex: Exception:" + e.name + " " + e.message + " " + e.lineNumber);
             }.bind(this)
           }
         );
@@ -86,9 +121,9 @@
           + fid);
 
       //キャッシュ生成
+      var authors = {};
       var forum = {};
       forum.fid = fid;
-      //bgでやる forum.cacheFormatVar = this.bg.getCacheFormatVar();
       forum.title = xml.getElementsByTagName("title")[0].innerHTML;
       forum.updated = this.getDate(xml, "updated").toISOString();
       forum.start = this.getDate(xml, "start").toISOString();
@@ -104,10 +139,11 @@
         var number //記事番号
             = entries[i].getElementsByTagName("identifier")[0].innerHTML;
         forum.entry[number] = {};
-        //forum.entry[number].author = author;
-        forum.entry[number].name
-          = author.getElementsByTagName("name")[0].innerHTML;
         forum.entry[number].uuid = author.getElementsByTagName("uuid")[0].innerHTML;
+        if ( !this.bg.getAuthorCache(forum.entry[number].uuid) ) { //キャッシュに無かったら
+          var name = author.getElementsByTagName("name")[0].innerHTML;
+          this.bg.setAuthorCache(forum.entry[number].uuid, name);
+        }
         forum.entry[number].deletedFlg
           = entries[i].getElementsByTagName("deleted")[0].innerHTML;
         forum.entry[number].relation   //参照先
@@ -124,13 +160,13 @@
       }
 
       //キャッシュ記録
-      this.bg.setCache(forum);
+      this.bg.setForumCache(forum);
       return forum;
     },
-    createContents: function(forum) {
+    updateTableHeader: function(forum, msg) {
       var fid = forum.fid;
       $('message').update(
-        messageUtil.getMessage(["discussion_data", "create_table", "id"])
+        messageUtil.getMessage(["discussion_data", msg, "id"])
           + fid);
 
       //更新時刻表示
@@ -141,14 +177,125 @@
       var endDay = new Date(forum.end);
       $('end_day').update(endDay.toLocaleString());
 
-      //終了後にキャッシュした場合は強制更新ボタンを無効にする
-      if ( endDay < cacheDate ) {
-        $( "force_reload_button" ).disabled = true;
+      //終了後にキャッシュしてある場合は強制更新ボタンを有効にする
+      if ( endDay > cacheDate ) {
+        $( "force_reload_button" ).disabled = false;
       }
+
+      //タイトル表示
+      var title = forum.title;
+      $('title').update(title);
+      document.title = title + " " + document.title;
+    },
+    calcWeeklyData: function(forum) {
+      var chartData = this.getChartData();
+      if ( chartData != null ) {
+        console.log("Chart data cache hit.");
+        return chartData; //キャッシュ・ヒット
+      }
+      //人別 週別 データ作成
+      var start = new Date(forum.start).getTime();
+      var data = new Array();
+      var uuids = {};
+      var index = 0;
+      var minWeek = 999;
+      var maxWeek = -999;
+      for(var number in forum.entry) {
+        if ( forum.entry[number] && "false" == forum.entry[number].deletedFlg ) {
+          //削除されていないものだけ収集
+          var uuid = forum.entry[number].uuid;
+          var relation = forum.entry[number].relation;  //参照先
+          if ( relation==0 || forum.entry[relation].uuid != uuid ) {
+            //返信先が無いか、自分以外からの返信だった
+            var update = new Date( forum.entry[number].updated ).getTime(); //日付
+            //第1週〜 ただし事務はそれ以前の発言もある
+            var week = Math.floor( (update - start)/this.WEEK_MILSEC )+1; //切り捨て
+            if ( week < 0 ) { week = 0; } //開始以前は0週目とする -1週避け
+            if ( week < minWeek ) { minWeek = week; }
+            if ( week > maxWeek ) { maxWeek = week; }
+
+            var uuidIndex = uuids[uuid];
+            if ( isNaN(uuidIndex) ) {  //初めて出てきた人
+              data[index] = {};
+              data[index].d = new Array();
+              data[index].d[week] = 1;
+              data[index].uuid = uuid;
+              uuids[uuid] = index;
+              index++;
+            } else {
+              if ( isNaN(data[uuidIndex].d[week]) ) { //その人で初めて出てきた週
+                data[uuidIndex].d[week] = 1;
+              } else {
+                data[uuidIndex].d[week]++;
+              }
+            }
+          }
+        }
+      }
+      data.sort( function(a,b) {
+        var bSum = this.arraySum(b);
+        var aSum = this.arraySum(a);
+        return( bSum - aSum );
+      }.bind(this) );
+      return( this.setChartData(data, minWeek, maxWeek) );
+    },
+    arraySum: function(data) {
+      var sum = 0;
+      data.d.forEach(function(element) {
+        sum += element;
+      });
+      return sum;
+    },
+    drawChart: function() {
+      var chartData = this.getChartData();
+      if ( !chartData ) {
+        console.log("nothing chart Data.");
+        return;
+      }
+      var data = new google.visualization.DataTable();
+      //タイトル行
+      data.addColumn('number', messageUtil.getMessage(["week_column"]));
+      for(var i=0; i<chartData.data.length; i++) {
+        data.addColumn('number', this.bg.getAuthorCache(chartData.data[i].uuid));
+      }
+      //データ
+      var rows = new Array();
+      var last = new Array(chartData.data.length);
+      for(var week=chartData.minWeek; week<=chartData.maxWeek; week++ ){
+        var row = new Array();
+        row.push(week);
+        for(var i=0; i<chartData.data.length; i++) {
+          var count = chartData.data[i].d[week];
+          if ( isNaN(count) ) { count = 0; }
+          if ( isNaN(last[i]) ) { last[i] = 0; };
+          last[i] = last[i] + count; //累積
+          row.push(last[i]);
+        }
+        if ( week > 0 ) { //開講以前のグラフは表示しない
+          rows.push(row);
+        }
+      }
+      data.addRows(rows);
+      //指定位置にグラフ描画
+      var hight = 33 * chartData.data.length;
+      if ( hight < 500 ) { hight = 500; }
+      var options = {
+        chart: {
+          title: ' ', //TODO: タイトルセット
+          subtitle: ' '
+        },
+        width: 900,
+        height: hight
+      };
+      var chart = new google.charts.Line(document.getElementById('linechart_material'));
+      chart.draw(data, options);
+    },
+    createTable: function(forum) {
+      this.updateTableHeader(forum, "create_table");
+      $( "ranking_table" ).style.display = "";
 
       //カウント用の変数準備
       var postuser = {};
-      var namemap = {};
       var counter = {};
       var deleted = {};
       var reply = {};
@@ -156,10 +303,6 @@
       var replied = {};
 
       //キャッシュからページ生成
-      var title = forum.title;
-      $('title').update(title);
-      document.title = title + " " + document.title;
-
       for(var i in forum.entry) {
         var entry = forum.entry[i];
         if ( !entry ) {
@@ -172,8 +315,7 @@
           //削除されていないものだけカウント
           if ( isNaN(counter[uuid] ) ) {
             counter[uuid] = 0;
-            //最初に見つかった名前を利用する
-            namemap[uuid] = entry.name;
+            //最初に見つかった名前を利用する→最初にキャッシュされた名前を利用する
           }
           counter[uuid]++; //発言数カウント
           var identifier = i; //記事番号
@@ -192,7 +334,8 @@
               reply[uuid]++;
               replied[postuser[relation]]++;
             } else {
-              //自分でのリプライだった
+              //自分での返信だった
+              counter[uuid]--; //発言数カウント訂正
               if ( isNaN(ownReply[uuid]) ) {
                 ownReply[uuid] = 0; //初期化が大切
               }
@@ -205,13 +348,23 @@
           deleted[uuid]++;
         }
       }
-      $('message').update(messageUtil.getMessage(["count_finish", "id"]) + fid);
+
+      $('message').update(messageUtil.getMessage(["count_finish", "id"]) + forum.fid);
+
+      var data = this.calcWeeklyData(forum); //週別も計算
+
+      //週別情報のテーブルヘッタ追加
+      $('week_header').setAttribute("colspan", data.maxWeek-data.minWeek+1);
+      for(var week=data.minWeek; week<=data.maxWeek; week++) {
+        $('table_header_bottom').insert("<th>" + week + "</th>");
+      }
+
       var ranking = [];
-      for(var key in counter) {
-        ranking.push({"name": namemap[key], "count": counter[key]
-                      ,"deleted": deleted[key]
-                      ,"reply": reply[key], "ownReply": ownReply[key]
-                      ,"replied": replied[key] });
+      for(var uuid in counter) {
+        ranking.push({"name": this.bg.getAuthorCache(uuid), "count": counter[uuid]
+                      ,"deleted": deleted[uuid]
+                      ,"reply": reply[uuid], "ownReply": ownReply[uuid]
+                      ,"replied": replied[uuid], "uuid": uuid });
       }
       ranking.sort( function(a,b) {
         return( b["count"] - a["count"] );
@@ -235,13 +388,26 @@
           + '<td align="right">' + reply + '</td>'
           + '<td align="right">' + Math.round(reply/count*100) + '%</td>'
           + '<td align="right">' + replied + '</td>'
-          + '<td align="right">' + Math.round(replied/count*100) + '%</td>'
-          + '</tr>';
+          + '<td align="right">' + Math.round(replied/count*100) + '%</td>';
+        var d = new Array();
+        for( var j=0; j<data.data.length; j++ ) {
+          if ( ranking[i].uuid == data.data[j].uuid ) {
+            d = data.data[j].d; break;
+          }
+        }
+        for(var week=data.minWeek; week<=data.maxWeek; week++) {
+          var count = d[week];
+          if ( isNaN(count) ) { count = 0; }
+          item = item + ('<td align="right">' + count + "</td>");
+        }
+        item = item + '</tr>';
         $( "ranking_table").insert(item);
       }
 
-    }
+    },
 
+    end: function(forum) {
+    }
   });
   new CountResult();
 })();

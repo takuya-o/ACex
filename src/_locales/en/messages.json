@@ -50,6 +50,9 @@
   "create_table":{
     "message":"Creating table."
   },
+  "create_graph":{
+    "message":"Creating graph."
+  },
   "course_list":{
     "message":"Course List"
   },
@@ -92,8 +95,14 @@
   "count_column":{
     "message":"Posted"
   },
+  "week_column":{
+    "message":"Week"
+  },
+  "tips_week_column":{
+    "message":"Posted per week"
+  },
   "tips_posted_without_deleted":{
-    "message":"Posted count without deleted message."
+    "message":"Posted count without deleted message and own reply."
   },
   "deleted_column":{
     "message":"Deleted"
@@ -138,6 +147,9 @@
   "experimental_enable":{
     "message":"Enable experimental function."
   },
+  "count_button_enable":{
+    "message":"Display 'Count' button on course page."
+  },
   "coursename_rectriction":{
     "message":"Trim course name"
   },
@@ -152,6 +164,9 @@
   },
   "millisecond":{
     "message":"ms"
+  },
+  "downloadable":{
+    "message":"Enable Download link"
   },
   "display_telop":{
     "message":"Display Telop"
@@ -194,6 +209,9 @@
   },
   "days": {
     "message":"days"
+  },
+  "forum_memory_cache_size": {
+    "message":"Forum Memory Cache Size"
   }
 }
 

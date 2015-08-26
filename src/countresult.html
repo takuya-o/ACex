@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="css/countresult.css">
     <title>Count Result - AirCampus for Web Extender</title>
     <script type="text/javascript" src="lib/prototype.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="tabhanders.js"></script>
     <script type="text/javascript" src="messageUtil.js"></script>
     <script type="text/javascript" src="countresult.js"></script>
@@ -33,32 +34,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </button>
       </div>
       <table id="ranking_table">
-        <tr id="table_header">
-          <th><span class="MSG_number_column"
+        <tr id="table_header_top">
+          <th rowspan=2><span class="MSG_number_column"
                     title="MSG_tips_number_column">#</span></th>
-          <th><span class="MSG_name_column"
+          <th rowspan=2><span class="MSG_name_column"
                     title="MSG_tips_name_column">Name</span></th>
-          <th><span class="MSG_count_column"
+          <th rowspan=2><span class="MSG_count_column"
                     title="MSG_tips_posted_without_deleted">
               Posted</span></th>
-          <th><span class="MSG_deleted_column"
+          <th rowspan=2><span class="MSG_deleted_column"
                     title="MSG_tips_deleted_column">Deleted</span></th>
-          <th><span class="MSG_ownreply_column"
+          <th rowspan=2><span class="MSG_ownreply_column"
                     title="MSG_tips_ownreply_column">Own Reply</span></th>
-          <th><span class="MSG_reply_column"
+          <th rowspan=2><span class="MSG_reply_column"
                     title="MSG_tips_reply_without_own">
               Reply</span></th>
-          <th><span class="MSG_reply_ratio_column"
+          <th rowspan=2><span class="MSG_reply_ratio_column"
                     title="MSG_tips_retio_of_reply_by_posted">
               Reply Ratio</span></th>
-          <th><span class="MSG_replied_column"
+          <th rowspan=2><span class="MSG_replied_column"
                     title="MSG_tips_replied_without_ownreply">
               Replied</span></th>
-          <th><span class="MSG_replied_ratio_column"
+          <th rowspan=2><span class="MSG_replied_ratio_column"
                     title="MSG_tips_ratio_of_replied_by_posted">
               Replied Ratio</span></th>
+          <th id="week_header"><span class="MSG_week_column"
+                    title="MSG_tips_week_column">
+              Week</span></th>
+        </tr>
+        <tr id="table_header_bottom">
         </tr>
       </table>
+    </div>
+    <div id="graph_area">
+      <div id="linechart_material"></div>
     </div>
   </body>
 </html>

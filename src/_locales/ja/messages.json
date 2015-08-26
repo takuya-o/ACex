@@ -50,6 +50,9 @@
   "create_table":{
     "message":"表を作成中..."
   },
+  "create_graph":{
+    "message":"グラフを作成中..."
+  },
   "course_list":{
     "message":"コース一覧"
   },
@@ -93,7 +96,13 @@
     "message":"発言数"
   },
   "tips_posted_without_deleted":{
-    "message":"削除を除いた発言数"
+    "message":"削除と自己返信を除いた発言数"
+  },
+  "week_column":{
+    "message":"週"
+  },
+  "tips_week_column":{
+    "message":"週ごとの発言数"
   },
   "deleted_column":{
     "message":"削除数"
@@ -138,6 +147,9 @@
   "experimental_enable":{
     "message":"実験的な機能を有効にする"
   },
+  "count_button_enable":{
+    "message":"コースの画面で「カウント」ボタンを表示する"
+  },
   "coursename_rectriction":{
     "message":"コース名を制限し短くする"
   },
@@ -152,6 +164,9 @@
   },
   "millisecond":{
     "message":"ms"
+  },
+  "downloadable":{
+    "message":"ダウンロードを可能にする"
   },
   "display_telop":{
     "message":"認証情報表示"
@@ -194,5 +209,8 @@
   },
   "days": {
     "message":"日"
+  },
+  "forum_memory_cache_size": {
+    "message":"フォーラムメモリキャッシュ個数"
   }
 }

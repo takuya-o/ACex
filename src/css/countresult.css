@@ -7,6 +7,14 @@
     border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
     padding: 5px; /* セル内の余白 */
 }
+#graph_table {
+    border-collapse: collapse; /* 枠線の表示方法 */
+    border: 1px #1C79C6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
+}
+#graph_table TD, TH {
+    border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
+    padding: 5px; /* セル内の余白 */
+}
 #update_time {
     /*text-align: right; 右寄せ*/
 }

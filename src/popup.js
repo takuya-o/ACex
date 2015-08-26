@@ -9,8 +9,8 @@
       }.bind(this));
     },
     start: function() {
-      messageUtil.assignMessages();
       if (this.bg.isDisplayPopupMenu()) {
+        messageUtil.assignMessages();  //表示をするときのみI18N文字列置き換え
         this.assignEventHandlers();
       } else {
         //通常モード
@@ -39,18 +39,28 @@
       this.preview(cmd);
     },
     preview: function(cmd) {
-      var url = "courselist.html" + "?cmd=" + encodeURI(cmd);
-      var tabId = this.bg.getTabId(url);
-      if (tabId == null) { //nullとの==比較でundefined見つけてる
-        //新しいタブを開く 引数省略すると「新しいタブ」
-        chrome.tabs.create({active: true, url: url}, function(tab) {
-          this.bg.addTabId(url, tab.id);
-          window.close();  // popupを閉じる処理 MacOSで重要
-        }.bind(this));
-      } else {
-        //既に開いているタブを使う
-        chrome.tabs.update(tabId, {highlighted: true});
+      var url = "";
+      var openedUrl = this.bg.getOpenedUrl();
+      if ( cmd=="count" && openedUrl.match(/^https?:\/\/[^.\/]+\.aircamp\.us\/course\//) ) {
+        //HTML5版でコース画面
+        var regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|\/.*)#forum\/(\d+)/;
+        var match = openedUrl.match(regexp);
+        if ( match ) {
+          url =  "countresult.html" + "?fid=" + encodeURI(match[2]);
+        }
       }
+      if ( url == "" ) {
+        url = "courselist.html" + "?cmd=" + encodeURI(cmd);
+      }
+
+      chrome.runtime.sendMessage(
+        {cmd: "open", url: url}, function(response) {
+          if (chrome.runtime.lastError) {
+            //bgへのメッセージ送信失敗でtab開けず
+            console.log("####: sendMessage open:",chrome.runtime.lastError.message);
+          }
+        });
+      window.close();  // popupを閉じる処理 MacOSで重要
     }
   });
   new PopUp();

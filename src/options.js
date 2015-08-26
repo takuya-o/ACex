@@ -67,37 +67,48 @@
     assignEventHandlers: function() {
       $("options_save").onclick = this.onClickSave.bind(this);
       $("experimental_option").onclick = this.onClickSave.bind(this);
+      $("count_button_option").onclick = this.onClickSave.bind(this);
       $("coursename_rectriction_option").onclick = this.onClickSave.bind(this);
       $("display_popup_menu_option").onclick = this.onClickSave.bind(this);
       $("popup_wait_for_mac").onchange = this.onClickSave.bind(this);
+      $("downloadable_option").onclick = this.onClickSave.bind(this);
       $("display_telop_option").onclick = this.onClickSave.bind(this);
       $("check_license_by_chrome_web_store").onclick
         = this.onClickSave.bind(this);
       $("trial_priod_days").onchange = this.onClickSave.bind(this);
+      $("forum_memory_cache_size").onchange = this.onClickSave.bind(this);
     },
     restoreConfigurations: function() {
       $("experimental_option").checked = this.bg.isExperimentalEnable();
+      $("count_button_option").checked = this.bg.isCountButton();
       $("coursename_rectriction_option").checked = this.bg.isCRmode();
       $("display_popup_menu_option").checked = this.bg.isDisplayPopupMenu();
       $("popup_wait_for_mac").value = this.bg.getPopupWaitForMac();
+      $("downloadable_option").checked = this.bg.isDownloadable();
       $("display_telop_option").checked = this.bg.isDisplayTelop();
       $("check_license_by_chrome_web_store").checked
         = this.bg.isUseLicenseInfo();
       $("trial_priod_days").value = this.bg.getTrialPriodDays();
+      $("forum_memory_cache_size").value = this.bg.getForumMemoryCacheSize();
       this.displayExperimentalOptionList();
     },
     onClickSave: function(evt) {
       var experimental = $("experimental_option").checked;
+      var countButton = $("count_button_option").checked;
       var coursenameRestriction = $("coursename_rectriction_option").checked;
       var displayPopupMenu = $("display_popup_menu_option").checked;
       var popupWaitForMac = parseInt($("popup_wait_for_mac").value, 10);
+      var downloadable = $("downloadable_option").checked;
       var displayTelop = $("display_telop_option").checked;
       var useLicenseInfo= $("check_license_by_chrome_web_store").checked;
       var trial_priod_days = parseInt($("trial_priod_days").value, 10);
+      var forumMemoryCacheSize
+            = parseInt($("forum_memory_cache_size").value, 10);
 
       this.bg.setSpecial(experimental, coursenameRestriction,
                          displayPopupMenu, popupWaitForMac,
-                         displayTelop, useLicenseInfo, trial_priod_days );
+                         displayTelop, useLicenseInfo, trial_priod_days,
+                         forumMemoryCacheSize, downloadable, countButton);
       this.displayExperimentalOptionList();
 
       $('message').update(messageUtil.getMessage(["options_saved"]));

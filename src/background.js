@@ -1,6 +1,11 @@
 // -*- coding: utf-8-unix -*-
 var Background = Class.create({
+  //定数
+  ASSIGN_TAB_HANDLER_MAX_RETRY:   10, //回
+  ASSIGN_TAB_HANDLER_RETRY_WAIT: 200, //msまつ
+  //クラス変数
   tabList: new Object(),  //Tab管理用連想記憶配列 {}
+  openedUrl: "", //HTML5コース画面で最後に開かれたURL
   initialize: function() {
     this.initializeClassValue();
     this.assignEventHandlers();
@@ -16,7 +21,23 @@ var Background = Class.create({
     }
   },
   assignEventHandlers: function() {
-    //script.jsとの通信
+    //外部のChrome拡張との通信受信
+    chrome.runtime.onMessageExternal.addListener(
+      function(msg, sender, sendResponse) {
+        console.log("--- Backgroupd External Recv ACex:" + msg.cmd);
+        if (msg.cmd == "enableDownloadable" ) {
+          this.enableDownloadable();
+          sendResponse();
+        } else if (msg.cmd == "log" ) {
+          console.log("--- Logging ACex:" + msg.message);
+          sendResponse();
+        } else {
+          console.log("------ Backgroupd External Recv ACex: Unknown message.");
+          sendResponse();
+        }
+      }.bind(this)
+    );
+    //ACex.jsとの通信受信
     chrome.runtime.onMessage.addListener(
       function(msg, sender, sendResponse) {
         console.log("--- Backgroupd Recv ACex:" + msg.cmd);
@@ -26,14 +47,32 @@ var Background = Class.create({
           //pageActionのicon表示
           chrome.pageAction.show(sender.tab.id);
           sendResponse();
+        } else if (msg.cmd == "setIcon" ) {
+          //pageActionのiconのイメージ変更
+          chrome.pageAction.setIcon({tabId: sender.tab.id, path: msg.path});
+          sendResponse();
+        } else if (msg.cmd == "isDownloadable" ) {
+          sendResponse({isDownloadable: this.isDownloadable()});
+        } else if (msg.cmd == "enableDownloadable" ) {
+          this.enableDownloadable();
+          sendResponse();
         } else if (msg.cmd == "isDisplayTelop" ) {
           sendResponse({isDisplayTelop: this.isDisplayTelop()});
+        } else if (msg.cmd == "isCountButton" ) {
+          sendResponse({isCountButton: this.isCountButton()});
         } else if (msg.cmd == "open" ) {
           this.openTab(msg.url);
+          sendResponse();
+        } else if (msg.cmd == "openedUrl" ) {
+          this.openedUrl = msg.url; //最後にcontent scriptで開かれたURL保存
+          console.log("--- ACex: openedUrl=" + this.openedUrl);
+          sendResponse();
         } else if (msg.cmd == "log" ) {
-          console.log("--- Backgroupd Recv ACex:" + msg.message);
+          console.log("--- Logging ACex:" + msg.message);
+          sendResponse();
         } else {
           console.log("------ Backgroupd Recv ACex: Unknown message.");
+          sendResponse();
         }
       }.bind(this)
     );
@@ -71,17 +110,20 @@ var Background = Class.create({
     }.bind(this));
   },
   // タブへonRemoveハンドラー設定指示メッセージ送信
-  sendMessageAssignTabHandler: function(tabId, retry) {
+  sendMessageAssignTabHandler: function(tabId, retryCount) {
     if ( this.handlerTab == null ) { //eventHandler登録が必要
-      console.log("--- assignTabHandlers() " + tabId);
+      console.log("--- assignTabHandlers(" + tabId + ", " + retryCount-- + ")");
       chrome.tabs.sendMessage(tabId, "assignTabHandler", function(response) {
           if (chrome.runtime.lastError) {
-            console.log("####: sendMessage:",chrome.runtime.lastError.message);
-            if (retry) {//送信が早すぎるとタブが受信準備出来ていないのでリトライ
+            console.log("####: sendMessage assignTabHandler:",
+                        chrome.runtime.lastError.message);
+            if (retryCount>0) {//送信が早すぎるとタブが受信準備出来ていないのでリトライ
               console.log("----: sendMessage: Retry.");
-              setTimeout(function() {
-                this.sendMessageAssignTabHandler(tabId, false);
-              }.bind(this), 200);
+              setTimeout(
+                function() {
+                  this.sendMessageAssignTabHandler(tabId, retryCount);
+                }.bind(this),
+                this.ASSIGN_TAB_HANDLER_RETRY_WAIT); //何ms待ってリトライするか
             } else {
               console.log("####: sendMessage: Retry Fail.");
             }
@@ -91,16 +133,23 @@ var Background = Class.create({
       }.bind(this));
     }
   },
+  /* タブID記録用のurlをきれいにする */
+  cleanupUrl: function(url) {
+    //Chrome拡張のprotocol:path/削除
+    url = url.replace(chrome.runtime.getURL(""), "");
+    return url;
+  },
   /* フォーラムを開いているタブのIDを記憶
      fid:   forum ID
      tabId: chromeのタブID
   */
   addTabId: function(fid, tabId) {
+    fid = this.cleanupUrl(fid);
     console.log("--- addTabId:" + fid + " = " + tabId);
     try {
       this.tabList[fid] = tabId;
       if ( this.handlerTab == null ) { //eventHandler登録が必要
-        this.sendMessageAssignTabHandler(tabId, true);
+        this.sendMessageAssignTabHandler(tabId, this.ASSIGN_TAB_HANDLER_MAX_RETRY);
       }
     } catch (e) {
       console.log("#-- addTabId()" + e.name + " " + e.message);
@@ -110,6 +159,7 @@ var Background = Class.create({
      fid: forum ID
   */
   getTabId: function(fid) {
+    fid = this.cleanupUrl(fid);
     console.log("--- getTabId(" + fid + ")");
     try {
       var tabId =this.tabList[fid];
@@ -118,7 +168,7 @@ var Background = Class.create({
         //念の為に存在確認して既に無ければ削除
         //その場合、非同期なので一回目はゴミが返る
         chrome.tabs.get(tabId, function(tab) {
-          if (tab == null ) {
+          if ( chrome.runtime.lastError || tab == null ) {
             console.log("#-- tab was closed." + tabId);
             this.removeTabId(tabId); //遅いがとりあえず次のために削除
           }
@@ -159,7 +209,8 @@ var Background = Class.create({
         if ( this.handlerTab == null ) {
           //タブハンドラーが空席状態なので最初に見つかったタブに登録
           for(var element in this.tabList) {
-            this.sendMessageAssignTabHandler(this.tabList[element], true);
+            this.sendMessageAssignTabHandler(this.tabList[element],
+                                             this.ASSIGN_TAB_HANDLER_MAX_RETRY);
             break;
           }
         }
@@ -184,6 +235,9 @@ var Background = Class.create({
       chrome.tabs.update(tabId,{highlighted:true});
     }
   },
+  getOpenedUrl: function() {
+    return this.openedUrl;
+  },
   localStorageMigration: function() {
     //マイグレーション
     //V0.0.0.3以前(11bf542b)であまりに古いので消すだけ
@@ -191,6 +245,7 @@ var Background = Class.create({
     localStorage.removeItem("userID");
     localStorage.removeItem("sessionA");
     //現用 "ACsession" "Special"
+    //キャッシュ用 "Authors" "Forums"
   },
   //インスタンス変数
   license: {status: "UNKNOWN", //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
@@ -204,11 +259,15 @@ var Background = Class.create({
   experimentalEnable: false,
   displayPopupMenu: false,
   popupWaitForMac: 500,
+  downloadable: false,
   displayTelop: false,
   useLicenseInfo: false,
   trialPriodDays: 30,
+  forumMemoryCacheSize: 100,
+  countButton: true,
   //キャッシュ
-  forums: null,
+  forums: {},
+  authors: {},
 
   //インスタンス変数管理
   initializeClassValue: function() {
@@ -228,19 +287,50 @@ var Background = Class.create({
       if (displayPopupMenu) { this.displayPopupMenu = Boolean(displayPopupMenu); }
       var popupWaitForMac = special["popupWaitForMac"];
       if (popupWaitForMac) { this.popupWaitForMac = popupWaitForMac; }
+      var downloadable = special["downloadable"];
+      if (downloadable) { this.downloadable = Boolean(downloadable); }
       var displayTelop = special["displayTelop"];
       if (displayTelop) { this.displayTelop = Boolean(displayTelop); }
       var useLicenseInfo = special["useLicenseInfo"];
       if (useLicenseInfo) { this.useLicenseInfo = Boolean(useLicenseInfo); }
       var trialPriodDays = special["trialPriodDays"];
       if (trialPriodDays) { this.trialPriodDays = trialPriodDays; }
+      var forumMemoryCacheSize = special["forumMemoryCacheSize"];
+      if (forumMemoryCacheSize) { this.forumMemoryCacheSize = forumMemoryCacheSize; }
+      var countButton = special["countButton"];
+      if ( countButton!=null ) { this.countButton = Boolean(countButton); }
     }
     value = localStorage["Forums"];
     if (value) {
-      this.forums = JSON.parse(value);
+      try {
+        this.forums = JSON.parse(value);
+      } catch (e) {
+        console.log("#Exception:" + e.name + " " + e.message);
+      }
+      cacheFormatVer = this.forums.cacheFormatVer;
+      if ( !cacheFormatVer ||  cacheFormatVer != this.getFormsCacheFormatVer() ) {
+        //キャッシュのフォーマットバージョンが違ったらクリア
+        this.forums = {};
+      }
     } else {
       this.forums = {};
     }
+    value = localStorage["Authors"];
+    if (value) {
+      try {
+        this.authors = JSON.parse(value);
+      } catch (e) {
+        console.log("#Exception:" + e.name + " " + e.message);
+      }
+      cacheFormatVer = this.authors.cacheFormatVer;
+      if ( !cacheFormatVer ||  cacheFormatVer != this.getAuthorsCacheFormatVer() ) {
+        //キャッシュのフォーマットバージョンが違ったらクリア
+        this.authors = {};
+      }
+    } else {
+      this.authors = {};
+    }
+
     //ライセンス情報
     chrome.storage.sync.get("License", function(items){
       if (chrome.runtime.lastError) {
@@ -282,22 +372,40 @@ var Background = Class.create({
   },
   setSpecial: function(experimental, coursenameRestriction,
                        displayPopupMenu, popupWaitForMac,
-                       displayTelop, useLicenseInfo, trialPriodDays) {
+                       displayTelop, useLicenseInfo, trialPriodDays,
+                       forumMemoryCacheSize, downloadable, countButton) {
     this.coursenameRestrictionEnable = Boolean(coursenameRestriction);
     this.experimentalEnable = Boolean(experimental);
     this.displayPopupMenu = displayPopupMenu;
     this.popupWaitForMac = popupWaitForMac;
+    this.downloadable = downloadable;
     this.displayTelop = displayTelop;
     this.useLicenseInfo = useLicenseInfo;
     this.trialPriodDays = trialPriodDays;
+    this.forumMemoryCacheSize = forumMemoryCacheSize;
+    this.countButton = countButton;
     localStorage["Special"]
-      = JSON.stringify({"couresenameRestriction":coursenameRestriction,
+      = JSON.stringify({"couresenameRestriction": coursenameRestriction,
                         "experimental": experimental,
                         "displayPopupMenu": displayPopupMenu,
                         "popupWaitForMac": popupWaitForMac,
+                        "downloadable": downloadable,
                         "displayTelop": displayTelop,
                         "useLicenseInfo": useLicenseInfo,
-                        "trialPriodDays": trialPriodDays });
+                        "trialPriodDays": trialPriodDays,
+                        "forumMemoryCacheSize": forumMemoryCacheSize,
+                        "countButton": countButton
+                       });
+  },
+  enableDownloadable: function() { //downloadableだけ変える
+    this.downloadable = true;
+    var special = {};
+    var value = localStorage["Special"];
+    if (value) {
+      special = JSON.parse(value);
+    }
+    special["downloadable"] = true; //ここらへんは将来的には共通化
+    localStorage["Special"] = JSON.stringify(special);
   },
   isCRmode: function() {
     return this.coursenameRestrictionEnable;
@@ -311,6 +419,9 @@ var Background = Class.create({
   getPopupWaitForMac: function() {
     return this.popupWaitForMac;
   },
+  isDownloadable: function() {
+    return this.downloadable;
+  },
   isDisplayTelop: function() {
     return this.displayTelop;
   },
@@ -320,20 +431,68 @@ var Background = Class.create({
   getTrialPriodDays: function() {
     return this.trialPriodDays;
   },
-  getCacheFormatVer: function () {
+  isCountButton: function() {
+    return this.countButton;
+  },
+  getForumMemoryCacheSize: function() {
+    //まずはメモリキャッシュサイズをサポート
+    //TODO: ファイルキャッシュも欲しいね
+    //TODO: Authorsキャッシュのサイズも欲しいね
+    return this.forumMemoryCacheSize;
+  },
+  getCacheFormsFormatVer: function () {
     return 1;
   },
-  setCache: function (forum) {
-    forum.cacheFormatVer = this.getCacheFormatVer();
+  getCacheAuthorsFormatVer: function () {
+    return 1;
+  },
+  setForumCache: function (forum) {
     this.forums[forum.fid] = forum;
+    var diff = Object.keys(this.forums).length - this.getForumMemoryCacheSize();
+    if ( diff > 0 ) {
+      //キャッシュ多すぎなのでキャッシュリテンションする
+      //日付別でソート
+      var sorting = new Array();
+      for(var fid in this.forums) {
+        sorting.push({ "fid": fid, "date": new Date(this.forums[fid].cacheDate) });
+      }
+      sorting.sort(function(a,b) { return( a.date - b.date ); });
+      //古いキャッシュから削除
+      while ( diff-- > 0 ) {
+        if ( sorting.length <= 0 ) {  //failsafe
+          console.log("ACex: Warning: unexpected over retantion.");
+          break;
+        }
+        var fid = sorting.shift().fid;
+        if (fid != forum.fid) { //今登録したのは削除対象外にする
+          var f = this.forums[fid];
+          console.log("ACex: cache retention "+fid+" "+f.cacheDate+" "+f.title);
+          delete this.forums[fid];
+        } else {
+          diff++;
+        }
+      }
+    }
     localStorage["Forums"] = JSON.stringify(this.forums);
   },
-  getCache: function (fid) {
+  getForumCache: function (fid) {
     var forum = this.forums[fid];
-    if ( forum && ( !forum.cacheFormatVer || (forum.cacheFormatVer < this.getCacheFormatVer())) ) {
-      forum = null;
-    }
     return forum;
+  },
+  setAuthorCache: function (uuid, name) {
+    var author = {};
+    author.name = name;
+    author.cacheDate = new Date().toISOString(); //キャッシュ更新日付
+    this.authors[uuid] = author;
+    localStorage["Authors"] = JSON.stringify(this.authors);
+  },
+  getAuthorCache: function (uuid) {
+    var author = this.authors[uuid];
+    var name = null;
+    if ( author ) {
+      name = author.name;
+    }
+    return name;
   },
   setLicense: function(status, validDate, createDate) {
     var key = "UNKNOWN";

@@ -198,22 +198,13 @@
       this.openTab(url);
     },
     openTab: function(url) {
-      //該当のURLをタブで開く。既に開いていたらそれを使う
-      var tabId = this.bg.getTabId(url);
-      if ( tabId == null ) { //nullとの==比較でundefined見つけてる
-        //開いているタブが無かったので作る
-        chrome.tabs.create( //タブを開く 引数省略すると「新しいタブ」
-          { url: url },
-          function(tab) {
-            //tabが閉じられるまでキャッシュとして利用する
-            console.log("--- opened tab:" + tab.id);
-            this.bg.addTabId(url, tab.id);
-          }.bind(this)
-        );
-      } else {
-        //forumを開いているタブを開く
-        chrome.tabs.update(tabId,{highlighted:true});
-      }
+      chrome.runtime.sendMessage(
+        {cmd: "open", url: url}, function(response) {
+          if (chrome.runtime.lastError) {
+            //bgへのメッセージ送信失敗でtab開けず
+            console.log("####: sendMessage open:",chrome.runtime.lastError.message);
+          }
+        });
     }
   });
   new CurseList();
