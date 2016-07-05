@@ -1,17 +1,20 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome, google,  messageUtil, dataLayer, tabHandler, Ajax, e */
 (function() {
   var CountResult = Class.create({
     WEEK_MILSEC: 604800000,
+    DAY_MILSEC:  86400000,
+    HOUR_MILSEC:  3600000,
     bg: null,
     chartData: null,
     setChartData: function(data, minWeek, maxWeek){
       this.chartData = {};
-      this.chartData.data = data
+      this.chartData.data = data;
       this.chartData.minWeek = minWeek;
       this.chartData.maxWeek = maxWeek;
       //チャートデータが算出できたのでグラフ表示
       this.drawChart();
-      return({data, minWeek, maxWeek});
+      return(this.chartData);
     },
     getChartData: function() {
       if ( !this.chartData ) {
@@ -21,7 +24,14 @@
     },
     initialize: function() {
       this.bg = chrome.extension.getBackgroundPage().bg;
-      google.load('visualization', '1.1', {packages: ['line']});
+      try {
+        google.load('visualization', '1.1', {packages: ['line']});
+      } catch (e) {
+        $('message').update(
+                messageUtil.getMessage(["exception_occurred", e.message]));
+        dataLayer.push({'event': 'Exception-Occurred'+ e.message});
+        console.log("ACex: Exception:" + e.name + " " + e.message + " " + e.lineNumber);
+      }
       google.setOnLoadCallback(this.drawChart.bind(this));
       window.addEventListener("load", function(evt) {
         this.start();
@@ -169,9 +179,13 @@
         messageUtil.getMessage(["discussion_data", msg, "id"])
           + fid);
 
-      //更新時刻表示
+      //データ更新時刻表示
       var cacheDate = new Date(forum.cacheDate);
       $('update_time').update(cacheDate.toLocaleString());
+
+      //開始日時表示
+      var startDay = new Date(forum.start);
+      $('start_day').update(startDay.toLocaleString());
 
       //終了日時表示
       var endDay = new Date(forum.end);
@@ -193,8 +207,23 @@
         console.log("Chart data cache hit.");
         return chartData; //キャッシュ・ヒット
       }
+      forum.minPost = 1; //最低投稿数 普通は週に1件 2件もあるので黄色
       //人別 週別 データ作成
-      var start = new Date(forum.start).getTime();
+      var startDate= new Date(forum.start);
+      var start = startDate.getTime();
+
+      if (  forum.title.indexOf("RTOCS") != -1 ) { //RTOCSだった
+        var days = startDate.getDay();
+        if (days == 0 || days == 7 ) { //スタートが日曜日だったら20:00にする RTOCS補正
+          start = start + ( this.HOUR_MILSEC * 20 );
+          //開始日時刻 表示更新
+          $('start_day').update(new Date(start).toLocaleString());
+        }
+        if (  forum.title.indexOf("振り返り") == -1 ) { //振り返り以外のRTOCSだった
+          forum.minPost = 3; //RTOCSは週に3件必要
+        } //振り返りは1件
+      }
+
       var data = new Array();
       var uuids = {};
       var index = 0;
@@ -398,7 +427,14 @@
         for(var week=data.minWeek; week<=data.maxWeek; week++) {
           var count = d[week];
           if ( isNaN(count) ) { count = 0; }
-          item = item + ('<td align="right">' + count + "</td>");
+          var redClass = "";
+          if ( count < forum.minPost ) {
+            redClass = ' class="red_cell"';
+          }else if ( count < (forum.minPost+1) ) {
+            redClass = ' class="yellow_cell"';
+          }
+
+          item = item + ('<td align="right"' + redClass + '>' + count + '</td>');
         }
         item = item + '</tr>';
         $( "ranking_table").insert(item);

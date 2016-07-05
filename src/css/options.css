@@ -15,6 +15,10 @@ text-align:right
 text-align:right
 }
 
+#count_button_option {
+
+}
+
 .buttons {
 
 }
@@ -84,5 +88,17 @@ text-align:right
 }
 
 .MSG_days {
+
+}
+
+.MSG_count_button_enable {
+
+}
+
+.MSG_downloadable {
+
+}
+
+.MSG_forum_memory_cache_size {
 
 }

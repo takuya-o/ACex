@@ -38,6 +38,9 @@
   "program_list":{
     "message":"プログラム一覧"
   },
+  "exception_occurred":{
+    "message":"例外発生"
+  },
   "loding_fail":{
     "message":"取得失敗"
   },
@@ -57,7 +60,7 @@
     "message":"コース一覧"
   },
   "forum_list":{
-    "message":"フォーラム一覧"
+    "message":"ディスカッション一覧"
   },
   "id":{
     "message":"ID="
@@ -69,10 +72,13 @@
     "message":"計測完了"
   },
   "last_update":{
-    "message":"更新時刻:"
+    "message":"データ更新時刻:"
+  },
+  "start_day":{
+    "message":"ディスカッション 開始日時:"
   },
   "end_day":{
-    "message":"終了日:"
+    "message":"終了日時:"
   },
   "UNKNOWN":{
     "message":"不明"
@@ -211,6 +217,6 @@
     "message":"日"
   },
   "forum_memory_cache_size": {
-    "message":"フォーラムメモリキャッシュ個数"
+    "message":"ディスカッションメモリキャッシュ個数"
   }
 }

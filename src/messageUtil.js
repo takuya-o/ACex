@@ -1,4 +1,5 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome */
 var messageUtil = null;
 (function() {
   var MessageUtil = Class.create({
@@ -36,7 +37,7 @@ var messageUtil = null;
         ret = ret + message;
       }
       return ret;
-    },
+    }
   });
   messageUtil = new MessageUtil();
 })();

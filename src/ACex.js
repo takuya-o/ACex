@@ -1,4 +1,5 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome, messageUtil */
 (function() {
   console.log("--- Start ACex ---");
   var ContentScript = Class.create({
@@ -84,23 +85,33 @@
     },
     updateIcon: function(url, regexp) { //private
       var input =document.getElementById('ACexCountButton'); //ボタンが無い場合がある
-      var icon = "icon_19.png";
+      var iconText = "";
+      //PageActionではバッチテキスト使えない var badgeText = ""
       if ( url.match(regexp) ) {
         //フォーラムを開いているのでボタン有効
         if ( input != null ) { input.disabled = false; }
         console.log("ACexCountButton enable.");
-        icon="count_19.png"; //countマーク入りアイコン
+        iconText="COUNT"; //countマーク入りアイコン
+        //badgeText="Count";
       } else {
         if ( input != null ) { input.disabled = true; }
         console.log("ACexCountButton disable.");
-        icon="icon_19.png";  //defaultのアイコン
+        iconText="";  //defaultのアイコン
+        //badgeText="";
       }
       //Backgroundに最新icon通知
-      chrome.runtime.sendMessage( {cmd: "setIcon", path: icon}, function(response) {
+      chrome.runtime.sendMessage( {cmd: "setIcon", text: iconText}, function(response) {
         if (chrome.runtime.lastError) {
           console.log("####: sendMessage setIcon:",chrome.runtime.lastError.message);
         }
       } );
+      // //Backgroundに最新iconバッチテキスト通知
+      // chrome.runtime.sendMessage( {cmd: "setBadgeText", text: badgeText}, function(response) {
+      //   if (chrome.runtime.lastError) {
+      //     console.log("####: sendMessage setBadgeText:",
+      //                 chrome.runtime.lastError.message);
+      //   }
+      // } );
     },
     injectCountButton: function(regexp) { //private
       //navにボタンをinjection

@@ -1,4 +1,5 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome, e */
 var Background = Class.create({
   //定数
   ASSIGN_TAB_HANDLER_MAX_RETRY:   10, //回
@@ -20,7 +21,7 @@ var Background = Class.create({
       this.setupAuth(true);
     }
   },
-  assignEventHandlers: function() {
+  assignEventHandlers: function() { //private
     //外部のChrome拡張との通信受信
     chrome.runtime.onMessageExternal.addListener(
       function(msg, sender, sendResponse) {
@@ -49,8 +50,19 @@ var Background = Class.create({
           sendResponse();
         } else if (msg.cmd == "setIcon" ) {
           //pageActionのiconのイメージ変更
-          chrome.pageAction.setIcon({tabId: sender.tab.id, path: msg.path});
+          chrome.pageAction.setIcon({
+            tabId: sender.tab.id,
+            imageData: this.getImageData(null/*this.service.icon*/, msg.text)
+          });
+          // chrome.pageAction.setTitle({
+          //   tabId: sender.tab.id,
+          //   title: this.icon_title.filter(function(s){return s;}).join('\n')
+          // });
           sendResponse();
+        // } else if (msg.cmd == "setBadgeText" ) {
+        //   //pageActionのバッチテスキスの変更
+        //   chrome.browserAction.setBadgeText({text: msg.text});
+        //   sendResponse();
         } else if (msg.cmd == "isDownloadable" ) {
           sendResponse({isDownloadable: this.isDownloadable()});
         } else if (msg.cmd == "enableDownloadable" ) {
@@ -97,7 +109,7 @@ var Background = Class.create({
             if (license.createDate) {
               this.license.createDate = new Date(license.createDate);
             } else {
-              if (this.license.createDate) delete this.license[createDate];
+              if (this.license.createDate) delete this.license.createDate;
             }
             console.log("ACex: storage changed"+JSON.stringify(this.license));
             // console.log('Storage key "%s" in namespace "%s" changed. ' +
@@ -134,7 +146,7 @@ var Background = Class.create({
     }
   },
   /* タブID記録用のurlをきれいにする */
-  cleanupUrl: function(url) {
+  cleanupUrl: function(url) { //private
     //Chrome拡張のprotocol:path/削除
     url = url.replace(chrome.runtime.getURL(""), "");
     return url;
@@ -352,7 +364,7 @@ var Background = Class.create({
           if ( licenseCreateDate ) {
             this.license.createDate = new Date(licenseCreateDate);
           }else{
-            if (this.license.createDate) delete this.license[createDate];
+            if (this.license.createDate) delete this.license.createDate;
           }
         }
       }
@@ -674,6 +686,29 @@ var Background = Class.create({
         }
       }
     }
+  },
+  //アイコンbadgeテキスト
+  getImageData: function(img,  text) {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var width = canvas.width;
+    var height = canvas.height;
+    ctx.clearRect(0, 0, width, height);
+    if (!img) {//iconが取れなそうなのでhtmlにicon置いておいて使う
+      img = document.getElementById('icon');
+    }
+    if (img) {
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+    }
+    if (text) {
+      //ctx.fillStyle = '#000000';
+      //ctx.fillRect(0, height - 9, width, 9);
+      ctx.font = 'bold 8px "arial" sans-serif';
+      ctx.fillStyle = '#ff0000';
+      ctx.textAlign = "center";
+      ctx.fillText(text, width/2, height-1, height);
+    }
+    return ctx.getImageData(0, 0, width, height);
   }
 });
 var bg = new Background();

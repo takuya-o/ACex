@@ -1,4 +1,5 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome, messageUtil */
 (function() {
   var PopUp = Class.create({
     bg: null,

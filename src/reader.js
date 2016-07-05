@@ -1,4 +1,5 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome, tabHandler, messageUtil */
 (function() {
   var ACReader = Class.create({
     bg: null,
@@ -9,7 +10,7 @@
       }.bind(this));
     },
     start: function() {
-      utilMessage.assignMessages();
+      messageUtil.assignMessages();
       tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
       this.createList();
     },

@@ -1,4 +1,5 @@
 // -*- coding: utf-8-unix -*-
+/* global Class, chrome */
 var tabHandler = null;
 (function() {
   var TabHandler = Class.create({

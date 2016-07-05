@@ -38,6 +38,9 @@
   "program_list":{
     "message":"Program List"
   },
+  "exception_occurred":{
+    "message":"Exception occurred"
+  },
   "loding_fail":{
     "message":"Loding Fail."
   },
@@ -57,22 +60,25 @@
     "message":"Course List"
   },
   "forum_list":{
-    "message":"Forum List"
+    "message":"Discussion List"
   },
   "id":{
     "message":"ID="
   },
   "discussion_data":{
-    "message":"Discuttion Data"
+    "message":"Discussion Data"
   },
   "count_finish":{
     "message":"Count Finish."
   },
   "last_update":{
-    "message":"Last Update:"
+    "message":"Data Last Update:"
+  },
+  "start_day":{
+    "message":"Discussion Start:"
   },
   "end_day":{
-    "message":"End Day:"
+    "message":"End:"
   },
   "UNKNOWN":{
     "message":"Unknown"
@@ -211,7 +217,7 @@
     "message":"days"
   },
   "forum_memory_cache_size": {
-    "message":"Forum Memory Cache Size"
+    "message":"Discussion Memory Cache Size"
   }
 }
 

@@ -1,0 +1,13 @@
+image: "ruby:2.3"
+
+before_script:
+  - gem install crxmake
+#  - gem install openssl_pkcs8
+
+build:
+  script:
+  #Buildなので毎回キーを作り直している。同じキーを使うようにDeploy時には考えないと。
+  - crxmake --pack-extension="src" --extension-output="ACex.crx" \
+    --key-output=ACex-tmp.pem  \
+    --ignore-file="/(\.swp|.*~)/" --ignore-dir="/\.(?:svn|git|cvs)/" --verbose
+#  - ./build.rb

@@ -18,6 +18,19 @@
 #update_time {
     /*text-align: right; 右寄せ*/
 }
+#week_header {
+}
+#table_header_bottom {
+}
+#end_day {
+}
+
+td.red_cell { /*そのセルを赤くする*/
+    color: red;
+}
+td.yellow_cell { /*そのセルを黄色くする*/
+    color: #AA0;
+}
 
 .MSG_number_column {
 
@@ -54,3 +67,24 @@
 .MSG_replied_ratio_column {
 
 }
+
+.MSG_end_day {
+
+}
+
+.MSG_UNKNOWN {
+
+}
+
+.MSG_last_update {
+
+}
+
+.MSG_force_reload {
+
+}
+
+.MSG_week_column {
+
+}
+
