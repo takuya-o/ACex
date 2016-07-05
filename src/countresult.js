@@ -84,12 +84,14 @@
         $('message').update(messageUtil.getMessage(["discussion_data", "loding", "id"])
                             + fid);
         var courseListAjax = new Ajax.Request(
-          "https://www.bbt757.com/svlAC/GetForumContents",
+          "https://www.bbt757.com/svlAC/GetForumContents", //https://bbtmba.aircamp.us/svlAC/GetForumContents
           { method: "get",
-            parameters: "fid=" + fid + "&" + this.bg.getUserID() + "&" + this.bg.getSessionA(),
+            parameters: "fid=" + fid + "&" + this.bg.getUserID() + "&" + this.bg.getSessionA()
+            + "&format=json", // &body=1&format=json&tag=1&msgtype=0
             asynchronous: true,
             onSuccess: function(response) {
-              forum = this.createCache(response.responseXML, fid);
+              var json=JSON.parse(response.responseText);
+              forum = this.createCache(json, fid);
               //URLからforceクリア
               if ( forceLoad ) {
                 location.href = location.href.replace(/&force=.*$/, "");
@@ -117,14 +119,13 @@
         );
       }
     },
-    getDate: function(xml, tag) {
-      var dateStr = xml.getElementsByTagName(tag)[0].innerHTML;
+    getDate: function(dateStr) {
       //"2012-09-08T23:59:59+09:00"
       var date = dateStr.match(/(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/);
       return new Date(date[1], date[2]-1, date[3]
                       , date[4], date[5], date[6], 0);
     },
-    createCache: function(xml, fid) {
+    createCache: function(json, fid) {
       //発言一覧から 発言回数取得
       $('message').update(
         messageUtil.getMessage(["discussion_data", "loding_success", "id"])
@@ -134,36 +135,33 @@
       var authors = {};
       var forum = {};
       forum.fid = fid;
-      forum.title = xml.getElementsByTagName("title")[0].innerHTML;
-      forum.updated = this.getDate(xml, "updated").toISOString();
-      forum.start = this.getDate(xml, "start").toISOString();
-      forum.end = this.getDate(xml, "end").toISOString();
+      forum.title = json.title.value;
+      forum.updated = this.getDate(json.updated).toISOString();
+      forum.start = this.getDate(json.start).toISOString();
+      forum.end = this.getDate(json.end).toISOString();
       forum.entry = new Array();
       forum.cacheDate = new Date().toISOString();
 
-      var entries = xml.getElementsByTagName("entry"); //author, ac:deleted
+      var entries = json.entry; //author, ac:deleted
       console.log("--- Post:" + entries.length);
       for(var i=0; i<entries.length; i++) {
         //キャッシュ生成 エントリー
-        var author = entries[i].getElementsByTagName("author")[0]; //name, uuid
-        var number //記事番号
-            = entries[i].getElementsByTagName("identifier")[0].innerHTML;
+        var author = entries[i].author; //name, uuid
+        var number = entries[i].identifier; //記事番号
         forum.entry[number] = {};
-        forum.entry[number].uuid = author.getElementsByTagName("uuid")[0].innerHTML;
+        forum.entry[number].uuid = author.uuid;
         if ( !this.bg.getAuthorCache(forum.entry[number].uuid) ) { //キャッシュに無かったら
-          var name = author.getElementsByTagName("name")[0].innerHTML;
+          var name = author.name;
           this.bg.setAuthorCache(forum.entry[number].uuid, name);
         }
-        forum.entry[number].deletedFlg
-          = entries[i].getElementsByTagName("deleted")[0].innerHTML;
-        forum.entry[number].relation   //参照先
-          = entries[i].getElementsByTagName("relation")[0].innerHTML;
-        forum.entry[number].updated = this.getDate(entries[i], "updated").toISOString();
+        forum.entry[number].deletedFlg = entries[i].deleted;
+        forum.entry[number].relation = entries[i].relation;  //参照先
+        forum.entry[number].updated = this.getDate(entries[i].updated).toISOString();
 
         //クライアントタイプは無いときがある
-        var clientTypeTag  = entries[i].getElementsByTagName("clienttype");
-        if ( clientTypeTag.length > 0 ) {
-          forum.entry[number].clienttype = clientTypeTag[0].innerHTML;
+        var clientTypeTag  = entries[i].clienttype;
+        if ( clientTypeTag ) {
+          forum.entry[number].clienttype = clientTypeTag;
         } else {
           forum.entry[number].clienttype = "none";
         }
@@ -229,8 +227,8 @@
       var index = 0;
       var minWeek = 999;
       var maxWeek = -999;
-      for(var number in forum.entry) {
-        if ( forum.entry[number] && "false" == forum.entry[number].deletedFlg ) {
+      for(var number=0; number<forum.entry.length; number++) { //for inはダメで実際は1からだけど
+        if ( forum.entry[number] && !forum.entry[number].deletedFlg ){
           //削除されていないものだけ収集
           var uuid = forum.entry[number].uuid;
           var relation = forum.entry[number].relation;  //参照先
@@ -332,7 +330,7 @@
       var replied = {};
 
       //キャッシュからページ生成
-      for(var i in forum.entry) {
+      for(var i=0; i<forum.entry.length; i++) {
         var entry = forum.entry[i];
         if ( !entry ) {
           continue;
@@ -340,7 +338,7 @@
         var uuid = entry.uuid;
         var deletedFlg =  entry.deletedFlg;
 
-        if ( "false" == deletedFlg ) {
+        if ( !deletedFlg ) {
           //削除されていないものだけカウント
           if ( isNaN(counter[uuid] ) ) {
             counter[uuid] = 0;
