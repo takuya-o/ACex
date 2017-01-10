@@ -59,7 +59,7 @@
           + ( this.bg.isCRmode() ?
               programs[i].getAttribute('name').replace(/・*大学院*/g,""):
               programs[i].getAttribute('name'))
-          +'</button></li>';
+          + '</button></li>';
         $( 'ProgramList' ).insert(item);
         $( programID ).onclick = this.onClickProgram.bind(this);
         $( "programItem" + programID ).insert(
@@ -78,13 +78,16 @@
           items[courseID] =
             '<li class="CourseItem" id="course' + courseID
             + '" end="'+ ( now > end ) + '" name="courseItem" >'
+            + '<a href="https://bbtmba.aircamp.us/course/' + courseID + '">'
+            + '<img src="https://bbtmba.aircamp.us/statics/user/images/ico_close_folder.png">'
+            + '</a>'
             + '<button type="button" id="' + courseID
             + '" cmd="' + cmd
             + '" value="' + courseID + '">'
             + ( this.bg.isCRmode() ?
                 courses[j].getAttribute('name').replace(/・*大学院*/g,""):
                 courses[j].getAttribute('name'))
-            + '</botton></li>';
+            + '</button></li>';
         }
         for(var key in items) {
           $( "program" + programID ).insert(items[key]);
@@ -184,9 +187,13 @@
           console.log("---- find BBS fid:" + fid);
           var title = outlines[i].getAttribute('text');
           var item = '<li id="BBS' + fid + '">'
-            + '<button type="botton" id="' + fid
+            + '<a href="https://bbtmba.aircamp.us/course/' + courseID
+            + '#forum/' + fid + '">'
+            + '<img src="https://bbtmba.aircamp.us/statics/user/images/ico_discussion.png">'
+            + '</a>'
+            + '<button type="button" id="' + fid
             + '" value="' + fid + '">'
-            + title + '</botton></li>';
+            + title + '</button></li>';
           $ ( "courseItemList" + courseID ).insert(item);
           $( fid ).onclick = this.onClickBBS.bind(this);
         }

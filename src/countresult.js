@@ -25,14 +25,14 @@
     initialize: function() {
       this.bg = chrome.extension.getBackgroundPage().bg;
       try {
-        google.load('visualization', '1.1', {packages: ['line']});
+        google.charts.load('45', {packages: ['line']});
+        google.charts.setOnLoadCallback(this.drawChart.bind(this));
       } catch (e) {
         $('message').update(
                 messageUtil.getMessage(["exception_occurred", e.message]));
         dataLayer.push({'event': 'Exception-Occurred'+ e.message});
         console.log("ACex: Exception:" + e.name + " " + e.message + " " + e.lineNumber);
       }
-      google.setOnLoadCallback(this.drawChart.bind(this));
       window.addEventListener("load", function(evt) {
         this.start();
       }.bind(this));
@@ -302,20 +302,26 @@
           rows.push(row);
         }
       }
-      data.addRows(rows);
-      //指定位置にグラフ描画
-      var hight = 33 * chartData.data.length;
-      if ( hight < 500 ) { hight = 500; }
-      var options = {
-        chart: {
-          title: ' ', //TODO: タイトルセット
-          subtitle: ' '
-        },
-        width: 900,
-        height: hight
-      };
-      var chart = new google.charts.Line(document.getElementById('linechart_material'));
-      chart.draw(data, options);
+      //表示すべきデータが無いときにはグラフ表示は行わない
+      if ( rows.length <= 0) {
+        console.log("nothing chart row Data.");
+      } else {
+        data.addRows(rows);
+        //指定位置にグラフ描画
+        var hight = 33 * chartData.data.length;
+        if ( hight < 500 ) { hight = 500; }
+        var options = {
+          chart: {
+            //効かず hAxis: { minValue: (chartData.minWeek>0?chartData.minWeek:1), maxValue: chartData.maxWeek },
+            title: ' ', //TODO: タイトルセット
+            subtitle: ' '
+          },
+          width: 900,
+          height: hight
+        };
+        var chart = new google.charts.Line(document.getElementById('linechart_material'));
+        chart.draw(data, options);
+      }
     },
     createTable: function(forum) {
       this.updateTableHeader(forum, "create_table");

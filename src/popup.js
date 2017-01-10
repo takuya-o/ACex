@@ -44,7 +44,7 @@
       var openedUrl = this.bg.getOpenedUrl();
       if ( cmd=="count" && openedUrl.match(/^https?:\/\/[^.\/]+\.aircamp\.us\/course\//) ) {
         //HTML5版でコース画面
-        var regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|\/.*)#forum\/(\d+)/;
+        var regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/;
         var match = openedUrl.match(regexp);
         if ( match ) {
           url =  "countresult.html" + "?fid=" + encodeURI(match[2]);

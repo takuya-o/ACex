@@ -54,7 +54,7 @@
         this.getACconfig();
         //RexExp準備 ツリーからの更新は#以下のURLしか変えない
         //おしらせ一覧などを経由すると/informationなどが入る
-        var regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|\/.*)#forum\/(\d+)/;
+        var regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/; //この正規表現使いまわされるから()の追加には注意
         chrome.runtime.sendMessage({cmd: "isCountButton"}, function(response) {
           //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
           if (chrome.runtime.lastError) {
