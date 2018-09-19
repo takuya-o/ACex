@@ -86,6 +86,9 @@
   "force_reload":{
     "message":"Reload"
   },
+  "data_download":{
+    "message":"Data Download"
+  },
   "number_column":{
     "message":"#"
   },
@@ -172,7 +175,7 @@
     "message":"ms"
   },
   "downloadable":{
-    "message":"Enable Download link"
+    "message":"Enable Video Download Link"
   },
   "display_telop":{
     "message":"Display Telop"
@@ -218,6 +221,9 @@
   },
   "forum_memory_cache_size": {
     "message":"Discussion Memory Cache Size"
+  },
+  "save_content_in_cache": {
+    "message":"Save Content in Cache"
   }
 }
 

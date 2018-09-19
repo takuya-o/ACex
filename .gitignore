@@ -5,3 +5,6 @@
 *.crx
 *.zip
 /nbproject/private/
+/built/
+/deploy/
+

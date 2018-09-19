@@ -86,6 +86,9 @@
   "force_reload":{
     "message":"強制更新"
   },
+  "data_download":{
+    "message":"データダウンロード"
+  },
   "number_column":{
     "message":"順位"
   },
@@ -172,7 +175,7 @@
     "message":"ms"
   },
   "downloadable":{
-    "message":"ダウンロードを可能にする"
+    "message":"映像ダウンロードを可能にする"
   },
   "display_telop":{
     "message":"認証情報表示"
@@ -218,5 +221,8 @@
   },
   "forum_memory_cache_size": {
     "message":"ディスカッションメモリキャッシュ個数"
+  },
+  "save_content_in_cache": {
+    "message":"キャッシュにコンテンツ本文も保存する"
   }
 }

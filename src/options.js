@@ -78,6 +78,7 @@
         = this.onClickSave.bind(this);
       $("trial_priod_days").onchange = this.onClickSave.bind(this);
       $("forum_memory_cache_size").onchange = this.onClickSave.bind(this);
+      $("save_content_in_cache").onchange = this.onClickSave.bind(this);
     },
     restoreConfigurations: function() {
       $("experimental_option").checked = this.bg.isExperimentalEnable();
@@ -91,6 +92,7 @@
         = this.bg.isUseLicenseInfo();
       $("trial_priod_days").value = this.bg.getTrialPriodDays();
       $("forum_memory_cache_size").value = this.bg.getForumMemoryCacheSize();
+      $("save_content_in_cache").checked = this.bg.isSaveContentInCache();
       this.displayExperimentalOptionList();
     },
     onClickSave: function(evt) {
@@ -104,12 +106,14 @@
       var useLicenseInfo= $("check_license_by_chrome_web_store").checked;
       var trial_priod_days = parseInt($("trial_priod_days").value, 10);
       var forumMemoryCacheSize
-            = parseInt($("forum_memory_cache_size").value, 10);
+          = parseInt($("forum_memory_cache_size").value, 10);
+      var saveContentInCache = $("save_content_in_cache").checked;
 
       this.bg.setSpecial(experimental, coursenameRestriction,
                          displayPopupMenu, popupWaitForMac,
                          displayTelop, useLicenseInfo, trial_priod_days,
-                         forumMemoryCacheSize, downloadable, countButton);
+                         forumMemoryCacheSize, downloadable, countButton,
+                         saveContentInCache);
       this.displayExperimentalOptionList();
 
       $('message').update(messageUtil.getMessage(["options_saved"]));

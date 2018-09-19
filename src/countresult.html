@@ -10,12 +10,12 @@
     <script type="text/javascript" src="tabhanders.js"></script>
     <script type="text/javascript" src="messageUtil.js"></script>
     <script type="text/javascript" src="countresult.js"></script>
+    <script type="text/javascript" src="tagmanager.js"></script>
   </head>
   <body>
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<script type="text/javascript" src="tagmanager.js"></script>
 <!-- End Google Tag Manager -->
     <div id="message"></div>
     <br />
@@ -35,6 +35,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button type="button" id="force_reload_button">
           <span class="MSG_force_reload">Reload</span>
         </button>
+	<a id="download" href="#" download="data.json">
+	  <span class="MSG_data_download">Data Download</span>
+	</a>
       </div>
       <table id="ranking_table">
         <tr id="table_header_top">

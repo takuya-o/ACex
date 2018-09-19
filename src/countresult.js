@@ -23,9 +23,8 @@
       return this.chartData;
     },
     initialize: function() {
-      this.bg = chrome.extension.getBackgroundPage().bg;
       try {
-        google.charts.load('45', {packages: ['line']});
+        google.charts.load('45.2', {packages: ['line']}); //'current'
         google.charts.setOnLoadCallback(this.drawChart.bind(this));
       } catch (e) {
         $('message').update(
@@ -34,23 +33,35 @@
         console.log("ACex: Exception:" + e.name + " " + e.message + " " + e.lineNumber);
       }
       window.addEventListener("load", function(evt) {
-        this.start();
+        //start
+        messageUtil.assignMessages();
+        tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
+        $("force_reload_button").onclick = this.onClickForceReload.bind(this);
+        $("download").onclick = this.onClickDownload.bind(this);
+        chrome.runtime.getBackgroundPage( function(backgroundPage) {
+          this.bg = backgroundPage.bg;
+          this.createContents(); //bg揃ってから起動
+        }.bind(this) );
       }.bind(this));
-    },
-    start: function() {
-      messageUtil.assignMessages();
-      tabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
-      $("force_reload_button").onclick = this.onClickForceReload.bind(this);
-      this.createContents();
     },
     onClickForceReload: function () {
       var orgUrl = location.href;
       location.replace( orgUrl + "&force=true");
     },
+    onClickDownload: function () {
+      var query = window.location.search.toQueryParams();
+      var fid = query["fid"];
+      var forum = this.bg.getForumCache(fid);
+      var content = JSON.stringify( forum );
+      var blob = new Blob([ content ], { "type" : "text/json" });
+      document.getElementById("download").download = forum.title + ".json";
+      document.getElementById("download").href = window.URL.createObjectURL(blob);
+    },
     createContents: function() {
       var query = window.location.search.toQueryParams();
       var fid = query["fid"];
       var forceLoad = query["force"]; //何か入れていないと有効にならない
+      var isSaveContentInCache = this.bg.isSaveContentInCache();
 
       $('message').insert(messageUtil.getMessage(["loding"]));
 
@@ -62,6 +73,10 @@
         if ( endDay < cacheDate ) {
           doing = false;
           $( "force_reload_button" ).style.display = "";
+          if ( isSaveContentInCache && !forum.saveContentInCache ) {
+            //オプションでキャッシュに本文保存となっていたけどキャッシュに無い場合
+            forceLoad = true;
+          }
         } else {
           $( "force_reload_button" ).style.display="none"; //開講中は常に強制更新なのでボタン消す
         }
@@ -87,14 +102,15 @@
           "https://www.bbt757.com/svlAC/GetForumContents", //https://bbtmba.aircamp.us/svlAC/GetForumContents
           { method: "get",
             parameters: "fid=" + fid + "&" + this.bg.getUserID() + "&" + this.bg.getSessionA()
-            + "&format=json", // &body=1&format=json&tag=1&msgtype=0
+            + "&format=json" + (isSaveContentInCache?"&body=1":""), // &tag=1&msgtype=0&l=ja
             asynchronous: true,
             onSuccess: function(response) {
               var json=JSON.parse(response.responseText);
               forum = this.createCache(json, fid);
               //URLからforceクリア
               if ( forceLoad ) {
-                location.href = location.href.replace(/&force=.*$/, "");
+                location.replace(location.href.replace(/&force=.*$/, "")); //履歴にforce=true残さない
+                //forceリロードすると再描画(F5リロード)してしまう
               } else {
                 //location.hrefを変えるとリロードされるので変えないときだけ
                 this.createTable(forum);
@@ -135,12 +151,13 @@
       var authors = {};
       var forum = {};
       forum.fid = fid;
-      forum.title = json.title.value;
+      forum.title = json.title.value; //フォーラムタイトル コース名は入っていない
       forum.updated = this.getDate(json.updated).toISOString();
       forum.start = this.getDate(json.start).toISOString();
       forum.end = this.getDate(json.end).toISOString();
       forum.entry = new Array();
       forum.cacheDate = new Date().toISOString();
+      forum.saveContentInCache = this.bg.isSaveContentInCache(); //Entryにcontent入っているか?
 
       var entries = json.entry; //author, ac:deleted
       console.log("--- Post:" + entries.length);
@@ -157,7 +174,6 @@
         forum.entry[number].deletedFlg = entries[i].deleted;
         forum.entry[number].relation = entries[i].relation;  //参照先
         forum.entry[number].updated = this.getDate(entries[i].updated).toISOString();
-
         //クライアントタイプは無いときがある
         var clientTypeTag  = entries[i].clienttype;
         if ( clientTypeTag ) {
@@ -165,8 +181,15 @@
         } else {
           forum.entry[number].clienttype = "none";
         }
+        //伊藤さんご要望のスレッドデータ - 発言数カウントには利用していない
+        forum.entry[number].treeid = entries[i].treeid; //スレッドID = 大元の発言の発言ID
+        forum.entry[number].depth = entries[i].depth;   //スレッドでの深さ
+        //さらにオプションでコンテンツも保存 数百KB → 1.3MBとかに膨れるので注意
+        if (forum.saveContentInCache) {
+          forum.entry[number].title = entries[i].title;           //発言のタイトル
+          forum.entry[number].content = entries[i].content.value; //発言の内容
+        }
       }
-
       //キャッシュ記録
       this.bg.setForumCache(forum);
       return forum;

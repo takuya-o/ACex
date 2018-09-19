@@ -5,6 +5,9 @@ before_script:
 #  - gem install openssl_pkcs8
 
 build:
+  artifacts:
+    paths:
+    - ACex.crx
   script:
   #Buildなので毎回キーを作り直している。同じキーを使うようにDeploy時には考えないと。
   - crxmake --pack-extension="src" --extension-output="ACex.crx" \

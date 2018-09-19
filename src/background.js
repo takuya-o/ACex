@@ -280,6 +280,7 @@ var Background = Class.create({
   //キャッシュ
   forums: {},
   authors: {},
+  saveContentInCache: false,
 
   //インスタンス変数管理
   initializeClassValue: function() {
@@ -293,6 +294,8 @@ var Background = Class.create({
     value = localStorage["Special"];
     if (value) {
       var special = JSON.parse(value);
+      var countButton = special["countButton"];
+      if ( countButton!=null ) { this.countButton = Boolean(countButton); } //Default true
       this.coursenameRestrictionEnable = Boolean(special["couresenameRestriction"]);
       this.experimentalEnable = Boolean(special["experimental"]);
       var displayPopupMenu = special["displayPopupMenu"];
@@ -309,8 +312,8 @@ var Background = Class.create({
       if (trialPriodDays) { this.trialPriodDays = trialPriodDays; }
       var forumMemoryCacheSize = special["forumMemoryCacheSize"];
       if (forumMemoryCacheSize) { this.forumMemoryCacheSize = forumMemoryCacheSize; }
-      var countButton = special["countButton"];
-      if ( countButton!=null ) { this.countButton = Boolean(countButton); }
+      var saveContentInCache = special["saveContentInCache"];
+      if ( saveContentInCache ) { this.saveContentInCache = Boolean(saveContentInCache); }
     }
     value = localStorage["Forums"];
     if (value) {
@@ -385,7 +388,8 @@ var Background = Class.create({
   setSpecial: function(experimental, coursenameRestriction,
                        displayPopupMenu, popupWaitForMac,
                        displayTelop, useLicenseInfo, trialPriodDays,
-                       forumMemoryCacheSize, downloadable, countButton) {
+                       forumMemoryCacheSize, downloadable, countButton,
+                       saveContentInCache ) {
     this.coursenameRestrictionEnable = Boolean(coursenameRestriction);
     this.experimentalEnable = Boolean(experimental);
     this.displayPopupMenu = displayPopupMenu;
@@ -396,6 +400,7 @@ var Background = Class.create({
     this.trialPriodDays = trialPriodDays;
     this.forumMemoryCacheSize = forumMemoryCacheSize;
     this.countButton = countButton;
+    this.saveContentInCache = saveContentInCache;
     localStorage["Special"]
       = JSON.stringify({"couresenameRestriction": coursenameRestriction,
                         "experimental": experimental,
@@ -406,7 +411,8 @@ var Background = Class.create({
                         "useLicenseInfo": useLicenseInfo,
                         "trialPriodDays": trialPriodDays,
                         "forumMemoryCacheSize": forumMemoryCacheSize,
-                        "countButton": countButton
+                        "countButton": countButton,
+                        "saveContentInCache": saveContentInCache
                        });
   },
   enableDownloadable: function() { //downloadableだけ変える
@@ -445,6 +451,9 @@ var Background = Class.create({
   },
   isCountButton: function() {
     return this.countButton;
+  },
+  isSaveContentInCache: function() {
+    return this.saveContentInCache;
   },
   getForumMemoryCacheSize: function() {
     //まずはメモリキャッシュサイズをサポート
@@ -492,6 +501,7 @@ var Background = Class.create({
     return forum;
   },
   setAuthorCache: function (uuid, name) {
+    //TODO: Authorキャッシュのリテンション
     var author = {};
     author.name = name;
     author.cacheDate = new Date().toISOString(); //キャッシュ更新日付
