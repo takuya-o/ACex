@@ -5,10 +5,10 @@
   <link rel="stylesheet" type="text/css" href="css/acexbase.css">
   <link rel="stylesheet" type="text/css" href="css/options.css">
   <title>AC Extender Options</title>
-  <script type="text/javascript" src="lib/prototype.js"></script>
-  <script type="text/javascript" src="messageUtil.js"></script>
-  <script type="text/javascript" src="options.js"></script>
-  <script type="text/javascript" src="tagmanager.js"></script>
+  <script type="text/javascript" src="lib/tagmanager.js"></script>
+  <script type="text/javascript" src="MessageUtil.js"></script>
+  <script type="text/javascript" src="Options.js"></script>
+  <!-- <script data-main="Options.js" src="lib/require.js"></script> -->
 </head>
 <body>
 <!-- Google Tag Manager -->
@@ -16,26 +16,15 @@
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager -->
   <header>
-    <div>
-      <img src="icon_19.png" alt="[ACex]" />
-      <span class="MSG_ACex_name">AirCampus for Web Extender</span>
-    </div>
   </header>
  <section>
     <article>
-      <h2><span class="MSG_license"></span></h2>
+      <h2><span id="option_list_title"
+                 class="MSG_option_list"></span></h2>
       <table>
         <tr>
-          <td><span class="MSG_license_user"></span></td>
-          <td><span id="license_user"></span></td>
-        </tr>
-        <tr>
-          <td><span class="MSG_license_status"></span></td>
-          <td><span id="license_status"></span></td>
-        </tr>
-        <tr id="license_expire_row">
-          <td><span class="MSG_license_expire"></span></td>
-          <td><span id="license_expire"></span></td>
+          <td><input type="checkbox" id="downloadable_option" /></td>
+          <td colspan="2"><span class="MSG_downloadable"></span></td>
         </tr>
       </table>
     </article>
@@ -62,10 +51,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                  class="MSG_experimental_option_list"></span></h2>
       <table>
         <tr>
-          <td><input type="checkbox" id="display_popup_menu_option" /></td>
-          <td colspan="2"><span class="MSG_display_popup_menu"></span></td>
-        </tr>
-        <tr>
           <td></td>
           <td><label><span class="MSG_popup_wait_for_mac"></span></label></td>
           <td><input type="number" id="popup_wait_for_mac"
@@ -73,12 +58,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <span class="MSG_millisecond"></span></td>
         </tr>
         <tr>
-          <td><input type="checkbox" id="downloadable_option" /></td>
-          <td colspan="2"><span class="MSG_downloadable"></span></td>
-        </tr>
-        <tr>
           <td><input type="checkbox" id="display_telop_option" /></td>
           <td colspan="2"><span class="MSG_display_telop"></span></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="save_content_in_cache" /></td>
+          <td colspan="2"><span class="MSG_save_content_in_cache"></span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <label><span class="MSG_forum_memory_cache_size"></span></label>
+          </td>
+          <td><input type="number" id="forum_memory_cache_size"
+                     max="1000" min="1" required="required" /></td>
         </tr>
         <tr>
           <td><input type="checkbox" id="check_license_by_chrome_web_store" /></td>
@@ -91,17 +84,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                      max="90" min="1" required="required" />
               <span class="MSG_days"></span></td>
         </tr>
+      </table>
+      <h2><span class="MSG_license"></span></h2>
+      <table>
         <tr>
-          <td></td>
-          <td>
-            <label><span class="MSG_forum_memory_cache_size"></span></label>
-          </td>
-          <td><input type="number" id="forum_memory_cache_size"
-                     max="1000" min="1" required="required" /></td>
+          <td><span class="MSG_license_user"></span></td>
+          <td><span id="license_user"></span></td>
         </tr>
         <tr>
-          <td><input type="checkbox" id="save_content_in_cache" /></td>
-          <td colspan="2"><span class="MSG_save_content_in_cache"></span></td>
+          <td><span class="MSG_license_status"></span></td>
+          <td><span id="license_status"></span></td>
+        </tr>
+        <tr id="license_expire_row">
+          <td><span class="MSG_license_expire"></span></td>
+          <td><span id="license_expire"></span></td>
         </tr>
       </table>
     </article>

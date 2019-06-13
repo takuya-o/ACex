@@ -149,7 +149,9 @@
   "tips_ratio_of_replied_by_posted":{
     "message":"発言数に対する被返信数の割合"
   },
-
+  "option_list":{
+    "message":"オプション"
+  },
   "special_option_list":{
     "message":"特殊オプション"
   },

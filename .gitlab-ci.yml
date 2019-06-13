@@ -1,16 +1,112 @@
-image: "ruby:2.3"
+# -*- coding: utf-8 -*-
+image: alpine:latest
 
-before_script:
-  - gem install crxmake
-#  - gem install openssl_pkcs8
+variables:
+  DOCKER_DRIVER: overlay2
 
-build:
+  #Dependency Scan remote is  ULTIMATE GOLD only Gemnasiumでのライブラリ脆弱性
+  DEP_SCAN_DISABLE_REMOTE_CHECKS: local
+  GITLAB_FEATURES: "$GITLAB_FEATURES container_scanning dependency_scanning license_management sast "
+
+stages:
+  - build
+  - test
+#  - deploy # dummy stage to follow the template guidelines
+#  - review
+  - dast
+#  - staging
+#  - canary
+#  - production
+#  - incremental rollout 10%
+#  - incremental rollout 25%
+#  - incremental rollout 50%
+#  - incremental rollout 100%
+#  - performance
+#  - cleanup
+
+
+include:
+  - template: Jobs/Build.gitlab-ci.yml
+#  - template: Jobs/Test.gitlab-ci.yml
+  - template: Jobs/Code-Quality.gitlab-ci.yml
+#  - template: Jobs/Deploy.gitlab-ci.yml
+#  - template: Jobs/Browser-Performance-Testing.gitlab-ci.yml
+#  - template: Security/DAST.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/License-Management.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
+build: #上書きと追加項目
+  image: "ruby:alpine" #2.5=2.5.3 2.3  / apline=2.5.3-alpine3.8
+  tags:
+  - Docker
+  services:
+  script:
+  - |
+    function install_crxmake() {
+      export PATH=`gem environment gempath|sed 's/:.*$//'`/bin:$PATH
+      gem install --user-install crxmake
+    }
+    function unofficial_build() {
+      crxmake --pack-extension="src" --zip-output="${CI_PROJECT_NAME}.zip" \
+      --key-output=src-tmp.pem  \
+      --ignore-file="/(\.swp|.*~)/" --ignore-dir="/\.(?:svn|git|cvs)/" --verbose
+    }
+    function offical_build() {
+      ./build.rb
+    }
+    install_crxmake
+    if [ -z "$PRIVATE_KEY" ];then
+      unofficial_build
+    else
+      cp "$PRIVATE_KEY" src.pem
+      offical_build
+    fi
   artifacts:
     paths:
-    - ACex.crx
-  script:
-  #Buildなので毎回キーを作り直している。同じキーを使うようにDeploy時には考えないと。
-  - crxmake --pack-extension="src" --extension-output="ACex.crx" \
-    --key-output=ACex-tmp.pem  \
-    --ignore-file="/(\.swp|.*~)/" --ignore-dir="/\.(?:svn|git|cvs)/" --verbose
-#  - ./build.rb
+    - ${CI_PROJECT_NAME}.zip
+
+code_quality:  #STARTER BRONZE
+  tags: #追加項目
+  - DinD
+#  script:
+#  - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
+
+container_scanning: #Docker image形式を検査する
+  tags: #追加項目
+  - DinD
+
+dependency_scanning:  #ULTIMATE GOLD
+  tags: #追加項目
+  - DinD
+#  script:
+#    - cat gl-dependency-scanning-report.json
+
+license_management: #ULTIMATE GOLD
+  tags: #追加項目
+  - DinD
+#  script:
+#    - cat gl-license-management-report.json
+#    paths:
+#    - gl-license-management-report.html
+#    - gl-license-management-report.json
+
+sast: #ULTIMATE GOLD
+  tags: #追加項目
+  - DinD
+#  script:
+#    - sast  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
+#    - cat gl-sast-report.json
+
+#のこりのテストはreviewが必要
+# dast:
+# performance:
+
+# ---------------------------------------------------------------------------
+.auto_devops: &auto_devops |
+  # Auto DevOps variables and functions
+  [[ "$TRACE" ]] && set -x
+
+before_script:
+  - *auto_devops

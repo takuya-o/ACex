@@ -149,7 +149,9 @@
   "tips_retio_of_replied_by_posted":{
     "message":"Ratio of Reply by Posted. "
   },
-
+  "option_list":{
+    "message":"Options"
+  },
   "special_option_list":{
     "message":"Spetial Options"
   },

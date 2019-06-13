@@ -7,4 +7,6 @@
 /nbproject/private/
 /built/
 /deploy/
-
+/src/*.js.map
+/src/*.js
+/node_modules/
