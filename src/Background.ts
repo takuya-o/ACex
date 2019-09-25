@@ -609,12 +609,13 @@ class Background{
       console.log(error, status, response);
       //ユーザが承認しないとerror.message="The user did not approve access."
       //statusDiv.text("Parsing license...");
-      let responseObj = <{[key:string]:string}>JSON.parse(response);
-      //$("#license_info").text(JSON.stringify(response, null, 2));
-      //console.log("ACex: Parsing license " + JSON.stringify(response, null, 2));
       if (status === "200") {
+        let responseObj = <{[key:string]:string}>JSON.parse(response);
+        //$("#license_info").text(JSON.stringify(response, null, 2));
+        //console.log("ACex: Parsing license " + JSON.stringify(response, null, 2));
         parseLicense(responseObj);
       } else {
+        console.error(error);  //"The user turned off browser signin"など
         //$("#dateCreated").text("N/A");
         //$("#licenseState").addClass("alert-danger");
         //$("#licenseStatus").text("Error");

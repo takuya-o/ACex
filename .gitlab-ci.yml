@@ -70,8 +70,24 @@ build: #上書きと追加項目
 code_quality:  #STARTER BRONZE
   tags: #追加項目
   - DinD
-#  script:
-#  - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
+  script:
+  - |
+    if ! docker info &>/dev/null; then
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    fi
+  - docker run
+      --env SOURCE_CODE="$PWD"
+      --volume "$PWD":/code
+      --volume /var/run/docker.sock:/var/run/docker.sock
+      "registry.gitlab.com/gitlab-org/security-products/codequality:$CI_SERVER_VERSION_MAJOR-0-stable" /code
+  - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
+  artifacts:
+#    reports:
+#      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
 
 container_scanning: #Docker image形式を検査する
   tags: #追加項目
@@ -81,23 +97,27 @@ dependency_scanning:  #ULTIMATE GOLD
   tags: #追加項目
   - DinD
 #  script:
-#    - cat gl-dependency-scanning-report.json
+#    - cat gl-dependency-scanning-report.json #Defaultで出力済み
 
 license_management: #ULTIMATE GOLD
   tags: #追加項目
   - DinD
-#  script:
-#    - cat gl-license-management-report.json
-#    paths:
-#    - gl-license-management-report.html
-#    - gl-license-management-report.json
+  script: #置換え
+    - /run.sh analyze .
+    - cat gl-license-management-report.json #for CE defaultで出ない?
+  artifacts:
+#    reports:
+#      license_management: gl-license-management-report.json
+    paths: #追加される?
+    - gl-license-management-report.html
+    - gl-license-management-report.json
 
 sast: #ULTIMATE GOLD
   tags: #追加項目
   - DinD
 #  script:
 #    - sast  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
-#    - cat gl-sast-report.json
+#    - cat gl-sast-report.json #Default出力済み
 
 #のこりのテストはreviewが必要
 # dast:

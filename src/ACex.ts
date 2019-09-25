@@ -19,7 +19,7 @@ class ACex {
         console.log("####: sendMessage openUrl:",chrome.runtime.lastError.message);
       }
     } );
-    if ( url.match(/^https?:\/\/(accontent|www)\.bbt757\.com\/content\//) ) {
+    if ( url.match(/^https?:\/\/(accontent|www)\.(bbt757\.com|ohmae\.ac\.jp)\/content\//) ) {
       //視聴画面の時
       let settings = this.getSettings();
       if ( settings ) { //セッティング情報が見つかったら
