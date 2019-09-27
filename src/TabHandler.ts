@@ -7,7 +7,7 @@ class TabHandler {
     chrome.tabs.onRemoved.addListener( function(tabId:number, _removeInfo:chrome.tabs.TabRemoveInfo){
         //閉じたときにtabListから削除する
         console.log("--- tab closed:" + tabId);
-        kore["bg"].removeTabId(tabId);
+        kore["bg"].removeTabId(tabId);  //TODO: Event Background未対応 kore["bg"]なんて無い?
       }.bind(kore)
     )
     //タブが変更された時判定 新規に開かれたときにも呼ばれる

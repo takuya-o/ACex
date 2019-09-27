@@ -4,7 +4,7 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.6.2019.6131",
+  "version": "0.6.2019.6132",
   "minimum_chrome_version": "37",
 
   "permissions": [
@@ -27,7 +27,7 @@
       "https://www.bbt757.com/ac/web/*",
       "*://*.aircamp.us/course/*",
       "*://*.aircamp.us/" ],
-    "js": ["lib/jquery.min.js", "MessageUtil.js", "ACex.js"],
+    "js": ["lib/jquery.min.js", "Types.js", "MessageUtil.js", "ACex.js"],
     "run_at": "document_idle"
   } ],
   "page_action": {

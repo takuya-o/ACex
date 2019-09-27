@@ -53,5 +53,10 @@ class MessageUtil {
     return ret;
   };
 
+  public static checkRuntimeError(msg:string) {
+    if (chrome.runtime.lastError) {
+      console.log("####: sendMessage " + msg + ":" ,chrome.runtime.lastError.message);
+    }
+  }
 }
 //export = MessageUtil

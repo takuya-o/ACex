@@ -15,7 +15,7 @@ class Background{
     validDate: new Date(),
     //不明時はメモリも確保しないcreateDate: null//store.syncだと{}になる
   }
-  private handlerTab:number|null =  null
+  private handlerTab:number|null =  null //TODO: Eventからの立ち上がりでnullのまま
   private userID = "u="
   private sessionA = "a="
   private coursenameRestrictionEnable = false
@@ -344,7 +344,7 @@ class Background{
         this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
       }
       let cacheFormatVer = this.authors.cacheFormatVer;
-      if ( !cacheFormatVer ||  cacheFormatVer !== this.getCacheAuthorsFormatVer() ) {
+      if ( !cacheFormatVer ||  cacheFormatVer !== this.getCacheAuthorsFormatVer() ) { //Potential timing attack on the right side of expression
         //キャッシュのフォーマットバージョンが違ったらクリア
         console.warn("Cache version mismatch:", cacheFormatVer)
         this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
@@ -353,31 +353,35 @@ class Background{
       this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
     }
     //ライセンス情報
-    chrome.storage.sync.get("License", (items)=>{
-      if (chrome.runtime.lastError) {
-        console.log("####: storage.sync.get() ERR:",chrome.runtime.lastError);
-        return;
-      }
-      if (items) {
-        let license = items.License;
-        if (license ){
-          let licenseStatus = license.status;
-          if ( licenseStatus ) {
-            this.license.status = licenseStatus;
-          }
-          let licenseValidDate = license.validDate;
-          if ( licenseValidDate ) {
-            this.license.validDate = new Date(licenseValidDate);
-          }
-          let licenseCreateDate = license.createDate;
-          if ( licenseCreateDate ) {
-            this.license.createDate = new Date(licenseCreateDate);
-          }else{
-            if (this.license.createDate) delete this.license.createDate;
+    initializeLicenseValue()
+
+    function initializeLicenseValue() {
+      chrome.storage.sync.get("License", (items)=>{
+        if (chrome.runtime.lastError) {
+          console.log("####: storage.sync.get() ERR:",chrome.runtime.lastError);
+          return;
+        }
+        if (items) {
+          let license = items.License;
+          if (license ){
+            let licenseStatus = license.status;
+            if ( licenseStatus ) {
+              this.license.status = licenseStatus;
+            }
+            let licenseValidDate = license.validDate;
+            if ( licenseValidDate ) {
+              this.license.validDate = new Date(licenseValidDate);
+            }
+            let licenseCreateDate = license.createDate;
+            if ( licenseCreateDate ) {
+              this.license.createDate = new Date(licenseCreateDate);
+            }else{
+              if (this.license.createDate) delete this.license.createDate;
+            }
           }
         }
-      }
-    })
+      })
+    }
   }
   private setACsession(userID:string, sessionA:string) {
     this.userID = userID;
@@ -610,7 +614,7 @@ class Background{
       //ユーザが承認しないとerror.message="The user did not approve access."
       //statusDiv.text("Parsing license...");
       if (status === "200") {
-        let responseObj = <{[key:string]:string}>JSON.parse(response);
+        let responseObj = <ChromeWebStoreLicense>JSON.parse(response);
         //$("#license_info").text(JSON.stringify(response, null, 2));
         //console.log("ACex: Parsing license " + JSON.stringify(response, null, 2));
         parseLicense(responseObj);
@@ -631,7 +635,7 @@ class Background{
      *    @param {{result: boolean, accessLevel: string, createTinme: number,
      *     maxAgeSecs: number }} license Chromeウェブストアのライセンス情報
      **************************************************************************/
-    function parseLicense(license:{[key:string]:string}) {
+    function parseLicense(license:ChromeWebStoreLicense) {
       console.log("ACex: Full License=" + license.result);
       //let licenseStatus:string
       let licenseStatusText:string

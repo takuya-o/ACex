@@ -35,6 +35,52 @@ type BackgroundResponse = {
   forum?: Forum
 }
 
+//AirCampus Settings
+type Sources = {
+  file: string,  //URL .mp4?stalken... //USE
+  label: string, //"244k" //USE
+}[]
+type Settings = {
+  prg: string, //31614
+  current_position: string, //1700
+  bit_data: string,  //1222111133
+  img_path: string,  //URL .../doc/
+  play_id: string, //4759509
+  playlist: {
+    sources:Sources, //USE
+    image: string, //URL *.jpg
+  },
+  slides: {
+    index_type: number, //0
+    index_time: number, //0 1264
+    doc: string //00.jpg
+  }[],
+  rtmplist: {
+    type: string, //rtmp
+    streamer: string, //URL rtmpte://...mp4
+    file: string //sec/224k/31614_224k.mp4
+  }
+  lo_id: string|null, //null
+  telop: {
+    choices: string, //6FAES ZO7T5
+    id: string, //31614
+    value: string, //6 Z  //USE
+    time: number //537  //USE
+  }[],
+  data: string // "C,S,0,2015/08/10 07:32:01;I,6,537;" 認証済み情報 //USE
+}
+
+//Chrome Web Store license
+//https://developer.chrome.com/webstore/one_time_payments#verifying-payment
+type ChromeWebStoreLicense = {
+  kind: string, //Identifies a Chrome Web Store license "chromewebstore#license"
+  itemId: string, //Your app or extension ID
+  createdTime: string, //The date that the license was created, returned as a Unix timestamp. You can use to limit functionality of a free trial to a specific period of time.
+  result: boolean, //Whether the user has a license (full or trial), true or false
+  accessLevel: string, //FREE_TRIAL, FULL or NONE
+  maxAgeSecs: string // The length of time the response is valid for, once that time has passed your app should query the license server again to check whether the user's access has changed.
+}
+
 //AirCampus GetCourseList プログラム/コース一覧
 type ProgramList = {
   program: Program[]
@@ -127,4 +173,15 @@ type CountingDatum = { //ID毎の各週の投稿数カウント
 
 type ChartData = { //グラフデータ
   data:CountingDatum[], minWeek:number, maxWeek:number
+}
+
+//CountResult
+type Ranking = {
+  name: string,
+  count: number,
+  deleted: number,
+  reply: number,
+  ownReply: number,
+  replied: number,
+  uuid: string
 }

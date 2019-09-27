@@ -60,10 +60,7 @@ class Popup {
     }
 
     chrome.runtime.sendMessage({cmd: "open", url: url}, (_response) => {
-      if (chrome.runtime.lastError) {
-        //bgへのメッセージ送信失敗でtab開けず
-        console.log("####: sendMessage open:",chrome.runtime.lastError.message);
-      }
+      MessageUtil.checkRuntimeError("open") //bgへのメッセージ送信失敗でtab開けず
     })
     window.close();  // popupを閉じる処理 MacOSで重要
   }

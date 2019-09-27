@@ -15,9 +15,7 @@ class ACex {
     let url = window.document.URL;
     //Backgroundに最新url通知
     chrome.runtime.sendMessage( {cmd: "openedUrl", url: url}, (_response) => {
-      if (chrome.runtime.lastError) {
-        console.log("####: sendMessage openUrl:",chrome.runtime.lastError.message);
-      }
+      MessageUtil.checkRuntimeError("openUrl")
     } );
     if ( url.match(/^https?:\/\/(accontent|www)\.(bbt757\.com|ohmae\.ac\.jp)\/content\//) ) {
       //視聴画面の時
@@ -27,9 +25,7 @@ class ACex {
         chrome.runtime.sendMessage(
           {cmd: "isDownloadable"}, (response:BackgroundResponse) => {
             //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
-            if (chrome.runtime.lastError) {
-              console.log("####: sendMessage isDownloadable:",chrome.runtime.lastError.message);
-            }
+            MessageUtil.checkRuntimeError("isDownloadable")
             console.log("ACex: isDawnloadable() = " + response.isDownloadable);
             if ( response.isDownloadable ) {
               this.getVideoSources(settings);
@@ -37,9 +33,7 @@ class ACex {
             //認証情報表示
             chrome.runtime.sendMessage(
               {cmd: "isDisplayTelop"}, (response:BackgroundResponse) => {
-                if (chrome.runtime.lastError) {
-                  console.log("####: sendMessage isDisplayTelop:",chrome.runtime.lastError.message);
-                }
+                MessageUtil.checkRuntimeError("isDisplayTelop")
                 //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
                 console.log("ACex: isDisplayTelop() = " + response.isDisplayTelop);
                 if ( response.isDisplayTelop ) {
@@ -58,9 +52,7 @@ class ACex {
       let regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/; //この正規表現使いまわされるから()の追加には注意
       chrome.runtime.sendMessage({cmd: "isCountButton"}, (response:BackgroundResponse) => {
         //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
-        if (chrome.runtime.lastError) {
-          console.log("####: sendMessage isCountButton:",chrome.runtime.lastError.message);
-        }
+        MessageUtil.checkRuntimeError("isCountButton")
         console.log("ACex: isCountButton() = " + response.isCountButton);
         if ( response.isCountButton ) {
           this.injectCountButton(regexp); //カウントボタン追加
@@ -73,9 +65,7 @@ class ACex {
         this.updateIcon(url, regexp); //アイコンと有ればボタン更新
         //Backgroundに最新url通知
         chrome.runtime.sendMessage( {cmd: "openedUrl", url: url}, (_response:BackgroundResponse) => {
-          if (chrome.runtime.lastError) {
-            console.log("####: sendMessage openedUrl:",chrome.runtime.lastError.message);
-          }
+          MessageUtil.checkRuntimeError("openedUrl")
         })
       })
     } else {
@@ -102,9 +92,7 @@ class ACex {
     }
     //Backgroundに最新icon通知
     chrome.runtime.sendMessage( {cmd: "setIcon", text: iconText}, (_response:BackgroundResponse) => {
-      if (chrome.runtime.lastError) {
-        console.log("####: sendMessage setIcon:",chrome.runtime.lastError.message);
-      }
+      MessageUtil.checkRuntimeError("setIcon")
     } );
     // //Backgroundに最新iconバッチテキスト通知
     // chrome.runtime.sendMessage( {cmd: "setBadgeText", text: badgeText}, function(response) {
@@ -136,9 +124,7 @@ class ACex {
                                             + "?fid=" + encodeURI(fid));
             chrome.runtime.sendMessage({cmd: "open", url: href}, (_response) => {
               //レスポンスでもらう値なしだかコネクション閉じるために受信
-              if (chrome.runtime.lastError) {
-                console.log("####: sendMessage open:",chrome.runtime.lastError.message);
-              }
+              MessageUtil.checkRuntimeError("open")
             });
           }
         });
@@ -147,16 +133,16 @@ class ACex {
       }
     }
   }
-  private getSettings():{[key:string]:(string|{[key:string]:string}[]|{[key:string]:{[key:string]:string}[]})} { //ACのsetting情報を取得する
-    let settings:{[key:string]:(string|{[key:string]:string}[]|{[key:string]:{[key:string]:string}[]})}
+  private getSettings():Settings { //ACのsetting情報を取得する
+    let settings:Settings
     let elements = window.document.getElementsByTagName("script");
-    console.log("ACex: getSettings" + elements.length );
+    console.log("ACex: getSettings " + elements.length );
     for (let i = 0; i < elements.length; i++) {
       let text = elements[i].innerText;
       if (text) {
-        let match = text.match(/let settings = ({.*});/);
+        let match = text.match(/(var|let) settings = ({.*});/);
         if (match) {
-          settings = JSON.parse(match[1]);
+          settings = JSON.parse(match[2]);
           console.log("ACex: getSettings found setting.");
           break;
         }
@@ -164,9 +150,9 @@ class ACex {
     }
     return settings;
   }
-  private getVideoSources(settings:{[key:string]:(string|{[key:string]:string}[]|{[key:string]:{[key:string]:string}[]})}) {
+  private getVideoSources(settings:Settings) {
     //映像ファイル情報取得
-    let sources:{[key:string]:string}[] = (<{[key:string]:{[key:string]:string}[]}>settings.playlist).sources; //[].file & .label
+    let sources:Sources = (settings.playlist).sources; //[].file & .label
     if ( sources ) {
       let tab=document.getElementById('content-tab1'); //概要タブ
       if (tab) { //入れるの早すぎると消されるがリロードで出てくる
@@ -183,7 +169,7 @@ class ACex {
           let aElement = document.createElement("a");
           aElement.setAttribute("href", sources[i].file);
           aElement.setAttribute("download", title);
-          aElement.innerHTML = sources[i].label;
+          aElement.innerText = sources[i].label;
           tab.prepend(aElement)
         }
       } else {
@@ -193,11 +179,11 @@ class ACex {
       console.log("ACex: Can not find Video source information"); //failsafe
     }
   }
-  private getACtelop(settings:{[key:string]:(string|{[key:string]:string}[]|{[key:string]:{[key:string]:string}[]})}) { //{[key:string]:(string|{[key:string]:string}[])}
+  private getACtelop(settings:Settings) {
     let datas:(string|number)[][]
     console.log("ACex: getACtelop" );
     //テロップ情報取得
-    let telops = <{[key:string]:string}[]>settings.telop;
+    let telops = settings.telop;
     if ( telops ) { //テロップ情報が有ったら
       let data:string[]
       if ( settings.data ) { //認証済み情報も取得
@@ -265,9 +251,7 @@ class ACex {
     chrome.runtime.sendMessage(
       {cmd: "setSession", userID: userID, sessionA: sessionA}, () => {
         //レスポンスでもらう値なしだかコネクション閉じるために受信
-        if (chrome.runtime.lastError) {
-          console.log("####: sendMessage setSession:",chrome.runtime.lastError.message);
-        }
+        MessageUtil.checkRuntimeError("setSession")
       });
     console.log("ACex: " + userID + " : " + sessionA);
   }

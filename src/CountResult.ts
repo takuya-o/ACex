@@ -27,7 +27,6 @@ class CountResult {
     this.chartData.data = data;
     this.chartData.minWeek = minWeek;
     this.chartData.maxWeek = maxWeek;
-    return(this.chartData);
   }
   private getChartData() {
     if ( !this.chartData ) {
@@ -228,27 +227,36 @@ class CountResult {
     document.title = title + " " + document.title;
   }
   private calcWeeklyData(forum:Forum) {
+    function getStartTime(title:string, startDate:Date) {
+      //人別 週別 データ作成
+      let start = startDate.getTime();
+      if (  title.indexOf("RTOCS") != -1 ) { //RTOCSだった
+        let days = startDate.getDay();
+        if (days == 0 || days == 7 ) { //スタートが日曜日だったら20:00にする RTOCS補正
+          start = start + ( CountResult.HOUR_MILSEC * 20 );
+          //開始日時刻 表示更新
+          document.getElementById('start_day').innerText = new Date(start).toLocaleString()
+        }
+      }
+      return start
+    }
+    function getMinPost(title:string) {
+      let minPost = 1; //最低投稿数 普通は週に1件 2件もあるので黄色
+      if (  title.indexOf("RTOCS") != -1 ) { //RTOCSだった
+        if (  title.indexOf("振り返り") == -1 ) { //振り返り以外のRTOCSだった
+          minPost = 3; //RTOCSは週に3件必要
+        } //振り返りは1件
+      }
+      return minPost
+    }
+
     let chartData = this.getChartData();
     if ( chartData != null ) {
       console.log("Chart data cache hit.");
       return chartData; //キャッシュ・ヒット
     }
-    forum.minPost = 1; //最低投稿数 普通は週に1件 2件もあるので黄色
-    //人別 週別 データ作成
-    let startDate= new Date(forum.start);
-    let start = startDate.getTime();
-
-    if (  forum.title.indexOf("RTOCS") != -1 ) { //RTOCSだった
-      let days = startDate.getDay();
-      if (days == 0 || days == 7 ) { //スタートが日曜日だったら20:00にする RTOCS補正
-        start = start + ( CountResult.HOUR_MILSEC * 20 );
-        //開始日時刻 表示更新
-        document.getElementById('start_day').innerText = new Date(start).toLocaleString()
-      }
-      if (  forum.title.indexOf("振り返り") == -1 ) { //振り返り以外のRTOCSだった
-        forum.minPost = 3; //RTOCSは週に3件必要
-      } //振り返りは1件
-    }
+    let start = getStartTime(forum.title, new Date(forum.start))
+    forum.minPost = getMinPost(forum.title)
 
     let data = <CountingDatum[]>new Array();
     let uuids = {};
@@ -291,7 +299,8 @@ class CountResult {
       let aSum = this.arraySum(a);
       return( bSum - aSum );
     })
-    return( this.setChartData(data, minWeek, maxWeek) );
+    this.setChartData(data, minWeek, maxWeek)
+    return this.getChartData()
   }
   private arraySum(data:CountingDatum) {
     let sum = 0;
@@ -449,7 +458,7 @@ class CountResult {
       document.getElementById('table_header_bottom').insertAdjacentHTML("beforeend", "<th>" + week + "</th>")
     }
 
-    let ranking = [];
+    let ranking:Ranking[] = [];
     for(let uuid in counter) {
       ranking.push({"name": CountResult.authorNameCache[uuid], "count": counter[uuid]
                     ,"deleted": deleted[uuid]
@@ -457,18 +466,18 @@ class CountResult {
                     ,"replied": replied[uuid], "uuid": uuid });
     }
     ranking.sort( function(a,b) {
-      return( b["count"] - a["count"] );
+      return( b.count - a.count );
     } );
     for(let i=0; i<ranking.length; i++) {
-      let count    = ranking[i]["count"];
-      let deleted  = ranking[i]["deleted"];
-      let reply    = ranking[i]["reply"];
-      let ownReply = ranking[i]["ownReply"];
-      let replied  = ranking[i]["replied"];
-      if ( isNaN(deleted) )  { deleted = ''; };
-      if ( isNaN(reply) )    { reply   = ''; };
-      if ( isNaN(ownReply) ) { ownReply= ''; };
-      if ( isNaN(replied) )  { replied = ''; };
+      let count    = ranking[i].count
+      let deleted  = ranking[i].deleted
+      let reply    = ranking[i].reply
+      let ownReply = ranking[i].ownReply
+      let replied  = ranking[i].replied
+      if ( isNaN(deleted) )  { deleted = 0; };
+      if ( isNaN(reply) )    { reply   = 0; };
+      if ( isNaN(ownReply) ) { ownReply= 0; };
+      if ( isNaN(replied) )  { replied = 0; };
       let item = '<tr>'
         + '<th align="right" class="RankingNumber">'+ (i+1) +'</th>'
         + '<td class="RankingName">' + ranking[i]["name"] + '</td>'
@@ -476,9 +485,32 @@ class CountResult {
         + '<td align="right">' + deleted +  '</td>'
         + '<td align="right">' + ownReply + '</td>'
         + '<td align="right">' + reply + '</td>'
-        + '<td align="right">' + Math.round(reply/count*100) + '%</td>'
+        + '<td align="right">' + Math.round(+reply/count*100) + '%</td>'
         + '<td align="right">' + replied + '</td>'
-        + '<td align="right">' + Math.round(replied/count*100) + '%</td>';
+        + '<td align="right">' + Math.round(+replied/count*100) + '%</td>';
+      let tr = document.createElement("tr")
+      {//ヘッタ
+        let th = document.createElement("th")
+        th.setAttribute("align", "right")
+        th.setAttribute("class", "RankingNumber")
+        th.innerText = ""+(i+1)
+        tr.appendChild(th)
+      }
+      {//一行目
+        let td = document.createElement("td")
+        td.setAttribute("class", "RankingName")
+        td.innerText =  ranking[i]["name"]
+        tr.appendChild(td);
+        [ count, deleted, ownReply, reply,
+          Math.round(+reply/count*100) + '%',
+          replied,
+          Math.round(+replied/count*100) + '%'  ].forEach( (str) => {
+            let td = document.createElement("td")
+            td.setAttribute("align", "right")
+            td.innerText = ""+str
+            tr.appendChild(td)
+          })
+      }
       let d = new Array();
       for( let j=0; j<data.data.length; j++ ) {
         if ( ranking[i].uuid == data.data[j].uuid ) {
@@ -490,14 +522,20 @@ class CountResult {
         if ( isNaN(count) ) { count = 0; }
         let redClass = "";
         if ( count < forum.minPost ) {
-          redClass = ' class="red_cell"';
+          redClass = "red_cell"
         }else if ( count < (forum.minPost+1) ) {
-          redClass = ' class="yellow_cell"';
+          redClass = "yellow_cell"
         }
-        item = item + ('<td align="right"' + redClass + '>' + count + '</td>');
+        item = item + ('<td align="right"' + (redClass!==""?('class="' + redClass + '" '):"") +'>' + count + '</td>');
+        let td = document.createElement("td")
+        td.setAttribute("align", "right")
+        if ( redClass!=="") { td.setAttribute("class", redClass) }
+        td.innerText = count
+        tr.appendChild(td)
       }
       item = item + '</tr>';
-      document.getElementById( "ranking_table").insertAdjacentHTML("beforeend", item)
+      //document.getElementById( "ranking_table").insertAdjacentHTML("beforeend", item)
+      document.getElementById( "ranking_table").appendChild(tr)
     }
 
   }
