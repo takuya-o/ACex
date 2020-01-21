@@ -51,16 +51,18 @@ class CountResult {
       document.getElementById("force_reload_button").onclick = this.onClickForceReload.bind(this);
       (<HTMLAnchorElement>document.getElementById("download")).href = ""
       document.getElementById("download").style.pointerEvents = "none"  //キーでは行けちゃうけどね
-      chrome.runtime.getBackgroundPage( (backgroundPage) => {
-        let bg:Background = backgroundPage["bg"];
-        this.userID = bg.getUserID().replace(/^u=/,"")
-        this.sessionA = bg.getSessionA().replace(/^a=/,"")
-        this.isSaveContentInCache = bg.isSaveContentInCache()
+      chrome.runtime.sendMessage({cmd: "getSession"}, (session:BackgroundResponseSession) => {
+        //start
+        this.userID = session.userID.replace(/^u=/,"")
+        this.sessionA = session.sessionA.replace(/^a=/,"")
+        this.isSaveContentInCache = session.saveContentInCache
         let query = new URL(window.location.href).searchParams
         let fid = query.get("fid")
         let forceLoad = new Boolean(query.get("force")).valueOf() //何か入れていないと有効にならない
-        let forum = bg.getForumCache(+fid);
-        this.createContents(fid, forceLoad, forum); //bg揃ってから起動
+        chrome.runtime.sendMessage({cmd: "getForumCache", fid: +fid}, (res:BackgroundResponseForum) => {
+          let forum = res.forum
+          this.createContents(fid, forceLoad, forum); //bg揃ってから起動
+        })
       })
     })
   }
@@ -313,7 +315,7 @@ class CountResult {
     console.log("filleDataTableHeader()",i) //AuthorNameCache更新
     if ( i<data.length ) {
         if ( data[i] && !CountResult.authorNameCache[data[i].uuid]) { //ACentryのdata[0]はempty
-         ACexMessageSender.send({cmd:"getAuthorCache", uuid:data[i].uuid}, (response) => {
+         ACexMessageSender.send({cmd:"getAuthorCache", uuid:data[i].uuid}, (response:BackgroundResponseName) => {
            if ( !response.name ) {
              console.error("Can not found Author name in Background.", data[i].uuid)
              response.name = "" //Non In Cache

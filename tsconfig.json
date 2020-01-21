@@ -1,19 +1,14 @@
 {
   "compilerOptions": {
-      "module": "amd",
-      "lib": [
-        "dom",
-        "es5",
-        "scripthost",
-        "es2015.promise"
-      ],
+      "module": "ESNext",
       "noImplicitAny": false,
       "removeComments": false,
       "preserveConstEnums": true,
       "sourceMap": true,
       "outDir": "./src",
       "allowJs": true,
-      "target": "es5"
+      "checkJs": true,
+      "target": "ES6"
   },
   "exclude": [
     "node_modules/",

@@ -2,7 +2,7 @@
 # -*- coding: utf-8-unix -*-
 
 npm install
-cp -p node_modules/jquery/dist/jquery.min.js src/lib/
+cp -p node_modules/jquery/dist/jquery.min.js node_modules/jspdf/dist/jspdf.min.js src/lib/
 ./node_modules/.bin/tsc
 
 # rubyいらず、tscも行われて最新のjqueryが入るが、

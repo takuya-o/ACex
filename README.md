@@ -78,52 +78,155 @@ dockerコンテナで、パッケージングをして、CIとしています。
 * 対応済み ~~キャッシュによる高速化~~ from V0.0.8.0
 * キャッシュを利用した更新部分のみの取得による高速化
 
-## 追加/修正された機能
-### 0.2
-・データ分析用にキャッシュしている内容をダウンロードできるようにした
 
-### 0.1.0.0
-・ChromeでのFlashサポート終了によりAirCampus for Webが使えなくなったので、代替機能として
-  コース一覧からアイコンをクリックすることにより該当コース、ディスカッションをAirCampus
-  ポータルで開けるようにした。
+# chromeウェブストアの概要文
 
-### 0.0.9.3
-・投稿数によるカラーリング。RTOCSは週に3件、それ以外は週に1件で黄色、それ以下だと赤色表示。
+## 英語版
 
-### 0.0.8.0
-・キャッシュによる高速化
+* The BBT's website "AirCampus for Web" closed on January 15, 2020, and start "AirCampus Portal" instead.
 
-### 0.0.7.0
-・AirCampusポータルに対応
+The following utility tools add to the "AirCampus Portal" such as https://bbtmba.aircamp.us/ and https://bond.aircamp.us/, etc.
+- Count and graph posted messages in each forum
+- Download lecture video in the lecture screen
+- Create PDF documents from AirSearch's images
+  You can also embed OCR text in PDF documents using Google Vision's API Key.
 
-#### 0.0.6.2
-・Bugfix: 0.0.6.0以降、閉じたタブの管理に不具合がありクローズ済みのタブを再利用しようとしていた。
+The source is published on GitHub https://github.com/takuya-o/ACex.
+It may become unusable due to changes in AirCampus specifications.
 
-### 0.0.6.0
-・Chromeウェブストアでのライセンス管理(実験的サポート)
+It is using Google Tag Manager and Google Analytics to investigate usage.
 
-#### 0.0.5.4
-・Bugfix: 削除数のカウントが、削除された発言の前の人にカウントされていた。
+= YouTube
+ - How to use http://youtu.be/2PkJ6I78uBM - This is a slightly older version, but it is an explanation of how to use the word count.
 
-#### 0.0.5.3
-・Bugfix: Macでポップアップの殻が残る。
-・Bugfix: 0.0.5.2の修正の影響で表示しているタブに飛ばす新たにタブを作成してしまう。
+= What is new!
+Version 0.7
+Supporting the creating PDF documents on AirSearch.
 
-#### 0.0.5.2
-・Bugfix: カウント結果表示タブのURLを変更しても検知できず再利用してしまう。
+Version 0.6
+Reduced memory during execution with background processing as the event page feature.
+The options screen has been improved.
 
-### 0.0.5.0
-・返信数カウント
-・自分の発言への返信をカウント
-・ツールチップ
-・表の罫線
-・Bugfix: 削除数
+Version 0.4
+All data acquiring data from the AirCumpus server use JSON format.
 
-### 0.0.4.0
-* 発言数カウント結果を別タブで表示
-* 削除数を表示
-* 被返信数と発言数に対するその割合を表示
+Version 0.3
+Refactoring some features.
+
+* Permissions
+tabs - Used for switching and managing browser tabs.
+storage, unlimitedStorage - Used to save option setting values ​​and data cache.
+identity - used for license management
+
+## 日本語版
+
+※BBTのウェブサイト「AirCampus for Web」は2020/1/15にサービスが終了し、代わりに「AirCampusポータル」になりました。
+
+以下の機能が https://bbtmba.aircamp.us/ や https://bond.aircamp.us/ のなど「AirCampusポータル」に追加されます。
+- 各フォローラムの発言数カウント・グラフ化する
+- 視聴画面で講義映像をダウンロードする
+- AirSearchの画像からPDF資料を作成する
+  さらに Google VisionのAPI Keyを利用すれば、PDF資料にOCRによるテキストも埋め込むこともできます。
+
+ソースは、GitHub https://github.com/takuya-o/ACex で公開しています。
+AirCampusの仕様変更により使えなくなってしまうことがあるかもしれません。
+
+Google Tag ManagerとGoogle Analyticsを使用して使用状況を調査しています。
+
+■YouTube
+ - 使い方の説明 http://youtu.be/2PkJ6I78uBM - 少し古いバージョンですが、発言数カウントの使い方の説明です。
+
+■What is new!
+Version 0.7
+AirSearchの画像からPDF資料を作成する機能をサポートしました。
+
+Version 0.6
+バックグラウンド処理をイベントにして実行時のメモリ削減を行いました。
+オプション画面の改善を行いました。
+
+Version 0.4
+ACサーバからのデータを全てJSONで取得するようにしました。
+
+Version 0.3
+機能の整理を行いました。
+
+Version 0.2.2019.6060
+- メールセミナーやBond-BBTのURLにも対応
+
+Version 0.2
+- データ分析用にキャッシュしている内容をダウンロードできるようにした。
+
+Version 0.1.0.0
+- ChromeでのFlashサポート終了によりAirCampus for Webが使えなくなったので、代替機能としてコース一覧からアイコンをクリックすることにより該当コース、ディスカッションをAirCampusポータルで開けるようにした。
+
+Version 0.0.9.3
+- 投稿数によるカラーリング。RTOCSは週に3件、それ以外は週に1件で黄色、それ以下だと赤色表示。
+
+Version 0.0.9.0
+- 週ごとの集計とグラフ表示をサポート
+
+Version 0.0.8.0
+- キャッシュによる高速化
+
+Version 0.0.6.6
+- BBT MBAのAirCampusポータルに対応
+
+Version 0.0.6.5
+- Bugfix: タグ削除の検知に失敗することがあった
+
+Version 0.0.6.3
+- 性能改善 タブ削除時のムダな処理を軽減した。
+
+Version 0.0.6.2
+- Bugfix: 0.0.6.0以降、閉じたタブの管理に不具合があり閉じたタブを再利用しようといて開くのに時間がかかることが有った。
+
+Version 0.0.6.0
+- Chromeウェブストアでのライセンス管理(実験的サポート)
+
+Version 0.0.5.4
+- Bugfix: 削除数を削除した人の前の発言者につけていた。
+
+Version 0.0.5.3
+- Bugfix: Macでポップアップの殻が残る。
+- Bugfix: 0.0.5.2の修正の影響で表示しているタブに飛ばす新たにタブを作成してしまう。
+
+Version 0.0.5.2
+- Bugfix: カウント結果表示タブのURLを変更しても検知できず再利用してしまう。
+
+Version 0.0.5.0
+- 返信数カウント
+被返信数だけではなくて、自分の意見だけではなく人の発言に反応しているかを見るために他人への返信数と比率を表示するようにした。
+
+- 自分の発言への返信をカウント
+自分の発言に対する返信は、返信数カウントとは別に数えるようにした。
+
+- ツールチップ
+項目が多くなりカウントルールが複雑になって来たので説明して、表のタイトルにツールチップを入れた。
+
+- 表の罫線
+カラム数が増えてきたので、表に罫線を入れた。
+
+- Bugfix: 削除数
+削除数が正しく数えられていない事が合ったので修正した。
+
+- TODO: 削除数・返信数・被返信数のカウントが正しいか不安になって来た。
+
+Version 0.0.4.0
+- 発言数カウント結果を別タブで表示
+- 削除数を表示
+- 被返信数と発言数に対するその割合を表示
+
+Version 0.0.3.3
+- Chromeウェブストアで「正しくインストールされない」という警告が出ていたのその対策
+
+Version 0.0.3.2
+- 開講中のコースのみフィルタして表示
+- コースを時系列順で表示
+- 削除された発言を除き、発言数の多い人から表示
+など基本機能をサポートしました。
 
 
-
-
+■Permission
+tabs - ブラウザタブの切替・管理のために利用します。
+storage,unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
+identity - ライセンス管理のために利用します

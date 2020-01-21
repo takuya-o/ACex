@@ -23,24 +23,20 @@ class ACex {
       if ( settings ) { //セッティング情報が見つかったら
         //Videoダウンロード表示
         chrome.runtime.sendMessage(
-          {cmd: "isDownloadable"}, (response:BackgroundResponse) => {
+          {cmd: "getConfigurations"}, (response:Configurations) => {
             //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
             MessageUtil.checkRuntimeError("isDownloadable")
-            console.log("ACex: isDawnloadable() = " + response.isDownloadable);
-            if ( response.isDownloadable ) {
+            console.log("ACex: isDownloadable() = " + response.downloadable);
+            if ( response.downloadable ) {
               this.getVideoSources(settings);
             }
             //認証情報表示
-            chrome.runtime.sendMessage(
-              {cmd: "isDisplayTelop"}, (response:BackgroundResponse) => {
-                MessageUtil.checkRuntimeError("isDisplayTelop")
-                //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
-                console.log("ACex: isDisplayTelop() = " + response.isDisplayTelop);
-                if ( response.isDisplayTelop ) {
-                  this.getACtelop(settings);
-                }
-              });
-          });
+            //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
+            console.log("ACex: isDisplayTelop() = " + response.displayTelop);
+            if ( response.displayTelop ) {
+              this.getACtelop(settings);
+          }
+        });
       } else {
         console.log("Can not find settings."); //failsafe
       }
@@ -50,11 +46,11 @@ class ACex {
       //RexExp準備 ツリーからの更新は#以下のURLしか変えない
       //おしらせ一覧などを経由すると/informationなどが入る
       let regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/; //この正規表現使いまわされるから()の追加には注意
-      chrome.runtime.sendMessage({cmd: "isCountButton"}, (response:BackgroundResponse) => {
+      chrome.runtime.sendMessage({cmd: "getConfigurations"}, (response:Configurations) => {
         //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
         MessageUtil.checkRuntimeError("isCountButton")
-        console.log("ACex: isCountButton() = " + response.isCountButton);
-        if ( response.isCountButton ) {
+        console.log("ACex: isCountButton() = " + response.countButton);
+        if ( response.countButton ) {
           this.injectCountButton(regexp); //カウントボタン追加
         }
         this.updateIcon(url, regexp); //アイコンと有ればボタン更新

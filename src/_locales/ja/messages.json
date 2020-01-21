@@ -3,10 +3,10 @@
     "message":"-*- coding: utf-8-unix -*-"
   },
   "ACex_name":{
-    "message":"AirCampus for Web Extender"
+    "message":"AirCampusポータルExtender"
   },
   "ACex_description":{
-    "message":"AirCampus for Webの機能を拡張します"
+    "message":"BBTのWebサイト「AirCampusポータル」に便利な機能を追加します"
   },
   "chrome_extension_name":{
     "message":"AC extender"
@@ -226,5 +226,11 @@
   },
   "save_content_in_cache": {
     "message":"キャッシュにコンテンツ本文も保存する"
+  },
+  "api_key":{
+    "message":"API Key:"
+  },
+  "api_key_tooltip":{
+    "message":"Google Cloud Vision APIのAPI Keyを入力してください。"
   }
 }

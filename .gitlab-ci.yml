@@ -11,7 +11,7 @@ variables:
 stages:
   - build
   - test
-#  - deploy # dummy stage to follow the template guidelines
+  - deploy #for Pages # dummy stage to follow the template guidelines
 #  - review
   - dast
 #  - staging
@@ -77,37 +77,49 @@ code_quality:  #STARTER BRONZE
         export DOCKER_HOST='tcp://localhost:2375'
       fi
     fi
+  - docker pull --quiet "$CODE_QUALITY_IMAGE"
   - docker run
       --env SOURCE_CODE="$PWD"
       --volume "$PWD":/code
       --volume /var/run/docker.sock:/var/run/docker.sock
-      "registry.gitlab.com/gitlab-org/security-products/codequality:$CI_SERVER_VERSION_MAJOR-0-stable" /code
+      "$CODE_QUALITY_IMAGE" /code
   - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
   artifacts:
 #    reports:
 #      codequality: gl-code-quality-report.json
+    expose_as: 'Codeclimate JSON'
     paths:
       - gl-code-quality-report.json
 
 container_scanning: #Docker image形式を検査する
   tags: #追加項目
   - DinD
+  artifacts:
+#    reports:
+#      container_scanning: gl-container-scanning-report.json
+    expose_as: 'Container Scanning Report JSON'
+    paths:
+      - gl-container-scanning-report.json  
 
 dependency_scanning:  #ULTIMATE GOLD
   tags: #追加項目
   - DinD
 #  script:
 #    - cat gl-dependency-scanning-report.json #Defaultで出力済み
+  artifacts:
+    expose_as: "Dependency JSON"
+    paths: [ "gl-dependency-scanning-report.json" ]
 
 license_management: #ULTIMATE GOLD
   tags: #追加項目
   - DinD
-  script: #置換え
-    - /run.sh analyze .
-    - cat gl-license-management-report.json #for CE defaultで出ない?
+#  script: #置換え catでwrite errorがでる
+#    - /run.sh analyze .
+#    - cat gl-license-management-report.json #for CE defaultで出ない?
   artifacts:
 #    reports:
 #      license_management: gl-license-management-report.json
+    expose_as: "License Management Report"
     paths: #追加される?
     - gl-license-management-report.html
     - gl-license-management-report.json
@@ -118,10 +130,44 @@ sast: #ULTIMATE GOLD
 #  script:
 #    - sast  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
 #    - cat gl-sast-report.json #Default出力済み
+  artifacts:
+#    reports:
+#      sast: gl-sast-report.json
+    expose_as: "SAST Report JSON"
+    paths: [ "gl-sast-report.json"]
+
 
 #のこりのテストはreviewが必要
 # dast:
 # performance:
+
+pages:
+  stage: deploy
+  script:
+  - mkdir .public
+  - cp -r -p
+        gl-code-quality-report.json
+        gl-container-scanning-report.json
+        gl-dependency-scanning-report.json
+        gl-license-management-report.json gl-license-management-report.html
+        gl-sast-report.json
+        .public/ || true
+  - echo '<html><header><title>CI Reports</title></header><body>
+          <ul>' >index.html
+  - (cd .public; 
+      for file in *;
+      do echo '<li><a href="'$file'">'$file'</a></li>';
+      done ) >>index.html
+  - echo '</ul>
+          </body></html>' >>index.html
+  - mv index.html .public
+  - mv .public public
+  artifacts:
+    expose_as: "CI Reports"
+    paths:
+    - public
+#  only:
+#  - master
 
 # ---------------------------------------------------------------------------
 .auto_devops: &auto_devops |

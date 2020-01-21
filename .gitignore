@@ -9,4 +9,5 @@
 /deploy/
 /src/*.js.map
 /src/*.js
+/src/lib/jspdf.min.js
 /node_modules/

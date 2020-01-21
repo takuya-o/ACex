@@ -3,10 +3,10 @@
     "message":"-*- coding: utf-8-unix -*-"
   },
   "ACex_name":{
-    "message":"AirCampus for Web Extender"
+    "message":"AirCampus Portal Extender"
   },
   "ACex_description":{
-    "message":"Extend AirCampus for Web"
+    "message":"Adding utility tools for BBT's website 'AirCampus Portal'"
   },
   "chrome_extension_name":{
     "message":"AC extender"
@@ -226,6 +226,11 @@
   },
   "save_content_in_cache": {
     "message":"Save Content in Cache"
+  },
+  "api_key":{
+    "message":"API Key:"
+  },
+  "api_key_tooltip":{
+    "message":"Input Google Cloud Vision's API Key"
   }
 }
-

@@ -6,59 +6,61 @@
 
 class Options {
   constructor() {
+    console.log("--- Options start ---")
     window.addEventListener("load", (_evt:Event) => {
       //start
       MessageUtil.assignMessages();
       this.assignEventHandlers();
-      chrome.runtime.getBackgroundPage( (backgroundPage) => {
-        let bg:Background = backgroundPage["bg"];
-        //bg揃ってから起動
-        this.displayLicenseStatus(bg);
-        this.restoreConfigurations(bg);
-      })
+      this.displayLicenseStatus()
+      this.restoreConfigurations()
     })
   }
-  private displayLicenseStatus(bg:Background) {
-    let validDate = bg.getLicenseValidDate();
-    if ( validDate && validDate.getMilliseconds() > Date.now() ) {
-      console.log("ACex: License is Valid.");
-    }else{
-      console.log("ACex: License is not Valid.");
-      bg.setupAuth(true);
-    }
-    let status = bg.getLicenseStatus();
-    //let createDate = this.bg.getLicenseCreateDate();//Date
-    let expireDate = bg.getLicenseExpireDate();//Date
-    let licenseStatusElement = document.getElementById("license_status")
-    if (status) {
-      licenseStatusElement.textContent = MessageUtil.getMessage(["license_MSG_"+ status]);
-    }
-    if ( status == "FULL" ) {
-      licenseStatusElement.style["color"]="Black";
-      expireDate = null;
-    } else if ( status === "FREE_TRIAL" || status === "FREE_TRIAL_EXPIRED" ) {
-      licenseStatusElement.style["color"]="Black";
-    } else {
-      licenseStatusElement.style["color"]="Red";
-    }
-    let licenseExpireElement = document.getElementById("license_expire")
-    if (expireDate) {
-      licenseExpireElement.textContent = expireDate.toLocaleString();
-      if ( Date.now() > expireDate.getMilliseconds() ) {
-        licenseExpireElement.style["color"]="Red";
-      } else {
-        licenseExpireElement.style["color"]="Black";
-      }
-      document.getElementById("license_expire_row").style["display"]="table";
-    } else {
-      document.getElementById("license_expire_row").style["display"]="none";
-    }
-    chrome.identity.getProfileUserInfo( (userInfo)=>{
-      if (userInfo) {
-        let displayName = userInfo.id;
-        if (userInfo.email) { displayName +=  " <" +  userInfo.email + ">"; }
-          document.getElementById("license_user").textContent = displayName;
+  private displayLicenseStatus(reload = true) {
+    chrome.runtime.sendMessage({cmd: "getLicense"}, (license:License) => {
+      console.log("License", license)
+      if ( new Date(license.validDate).getMilliseconds() > Date.now() ) {
+        console.log("ACex: License is Valid.");
+      }else{
+        console.log("ACex: License is not Valid.");
+        if ( reload ) {
+          chrome.runtime.sendMessage({cmd: "setupAuth" }, () => {
+            this.displayLicenseStatus(false)
+          })
+          return
         }
+      }
+      let licenseStatusElement = document.getElementById("license_status")
+      if (license.status) {
+        licenseStatusElement.textContent = MessageUtil.getMessage(["license_MSG_"+ license.status]);
+      }
+      if ( license.status === "FULL" ) {
+        licenseStatusElement.style["color"]="Black";
+        license.expireDate = null;
+      } else if ( status === "FREE_TRIAL" || status === "FREE_TRIAL_EXPIRED" ) {
+        licenseStatusElement.style["color"]="Black";
+      } else {
+        licenseStatusElement.style["color"]="Red";
+      }
+      let licenseExpireElement = document.getElementById("license_expire")
+      if (license.expireDate) {
+        license.expireDate = new Date(license.expireDate)
+        licenseExpireElement.textContent = license.expireDate.toLocaleString();
+        if ( Date.now() > license.expireDate.getMilliseconds() ) {
+          licenseExpireElement.style["color"]="Red";
+        } else {
+          licenseExpireElement.style["color"]="Black";
+        }
+        document.getElementById("license_expire_row").style["display"]="table";
+      } else {
+        document.getElementById("license_expire_row").style["display"]="none";
+      }
+      chrome.identity.getProfileUserInfo( (userInfo)=>{
+        if (userInfo) {
+          let displayName = userInfo.id;
+          if (userInfo.email) { displayName +=  " <" +  userInfo.email + ">"; }
+            document.getElementById("license_user").textContent = displayName;
+          }
+      })
     })
   }
   private displayExperimentalOptionList() {
@@ -83,30 +85,32 @@ class Options {
     document.getElementById("trial_priod_days").onchange = this.onClickSave.bind(this)
     document.getElementById("forum_memory_cache_size").onchange = this.onClickSave.bind(this)
     document.getElementById("save_content_in_cache").onchange = this.onClickSave.bind(this)
+    document.getElementById("api_key").onchange = this.onClickSave.bind(this)
   }
   private getInputElement(id:string):HTMLInputElement { //<input type="いろいろ" 用get
     return <HTMLInputElement>document.getElementById(id)
   }
-  private restoreConfigurations(bg:Background) {
-    this.getInputElement("experimental_option").checked = bg.isExperimentalEnable();
-    this.getInputElement("count_button_option").checked = bg.isCountButton();
-    this.getInputElement("coursename_rectriction_option").checked = bg.isCRmode();
-    //this.getInputElement("display_popup_menu_option").checked = this.bg.isDisplayPopupMenu();
-    this.getInputElement("popup_wait_for_mac").value = ""+bg.getPopupWaitForMac();
-    this.getInputElement("downloadable_option").checked = bg.isDownloadable();
-    this.getInputElement("display_telop_option").checked = bg.isDisplayTelop();
-    this.getInputElement("check_license_by_chrome_web_store").checked
-      = bg.isUseLicenseInfo();
-    this.getInputElement("trial_priod_days").value = ""+bg.getTrialPriodDays();
-    this.getInputElement("forum_memory_cache_size").value = ""+bg.getForumMemoryCacheSize();
-    this.getInputElement("save_content_in_cache").checked = bg.isSaveContentInCache();
-    this.displayExperimentalOptionList();
+  private restoreConfigurations() {
+    chrome.runtime.sendMessage({cmd: "getConfigurations"}, (config:Configurations) => {
+      this.getInputElement("experimental_option").checked = config.experimentalEnable
+      this.getInputElement("count_button_option").checked = config.countButton
+      this.getInputElement("coursename_rectriction_option").checked = config.cRmode
+      this.getInputElement("popup_wait_for_mac").value = ""+config.popupWaitForMac
+      this.getInputElement("downloadable_option").checked = config.downloadable
+      this.getInputElement("display_telop_option").checked = config.displayTelop
+      this.getInputElement("check_license_by_chrome_web_store").checked
+        = config.useLicenseInfo
+      this.getInputElement("trial_priod_days").value = ""+config.trialPriodDays
+      this.getInputElement("forum_memory_cache_size").value = ""+config.forumMemoryCacheSize
+      this.getInputElement("save_content_in_cache").checked = config.saveContentInCache
+      this.getInputElement("api_key").value = config.apiKey
+      this.displayExperimentalOptionList();
+    })
   }
   private onClickSave(_evt:Event) {
       let experimental = this.getInputElement("experimental_option").checked;
       let countButton = this.getInputElement("count_button_option").checked;
       let coursenameRestriction = this.getInputElement("coursename_rectriction_option").checked;
-      let displayPopupMenu = false; //this.getInputElement("display_popup_menu_option").checked;
       let popupWaitForMac = parseInt(this.getInputElement("popup_wait_for_mac").value, 10);
       let downloadable = this.getInputElement("downloadable_option").checked;
       let displayTelop = this.getInputElement("display_telop_option").checked;
@@ -115,14 +119,21 @@ class Options {
       let forumMemoryCacheSize
        = parseInt(this.getInputElement("forum_memory_cache_size").value, 10);
       let saveContentInCache = this.getInputElement("save_content_in_cache").checked;
+      let apiKey = this.getInputElement("api_key").value
 
-      chrome.runtime.getBackgroundPage( (backgroundPage) => {
-        let bg:Background = backgroundPage["bg"];
-        bg.setSpecial(experimental, coursenameRestriction,
-                         displayPopupMenu, popupWaitForMac,
-                         displayTelop, useLicenseInfo, trial_priod_days,
-                         forumMemoryCacheSize, downloadable, countButton,
-                         saveContentInCache);
+      chrome.runtime.sendMessage({cmd: "setSpecial", config:{
+        experimentalEnable: experimental,
+        countButton: countButton,
+        cRmode: coursenameRestriction,
+        popupWaitForMac: popupWaitForMac,
+        downloadable: downloadable,
+        displayTelop: displayTelop,
+        useLicenseInfo: useLicenseInfo,
+        trialPriodDays: trial_priod_days,
+        forumMemoryCacheSize: forumMemoryCacheSize,
+        saveContentInCache: saveContentInCache,
+        apiKey: apiKey,
+      }}, () => {
         this.displayExperimentalOptionList();
         document.getElementById('message').innerText = MessageUtil.getMessage(["options_saved"])
         setTimeout( () => {

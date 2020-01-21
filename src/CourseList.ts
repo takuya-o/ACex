@@ -21,14 +21,13 @@ class CurseList {
   private crMode: boolean //ページ開いてからオプションの変更は効かない
   constructor() {
     window.addEventListener("load", (_evt:Event) => {
-      //start
       MessageUtil.assignMessages();
       TabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
-      chrome.runtime.getBackgroundPage( (backgroundPage) => {
-        let bg:Background = backgroundPage["bg"];
-        this.userID = bg.getUserID().replace(/^u=/,"")
-        this.sessionA = bg.getSessionA().replace(/^a=/,"")
-        this.crMode = bg.isCRmode()
+      chrome.runtime.sendMessage({cmd: "getSession"}, (session:BackgroundResponseSession) => {
+        //start
+        this.userID = session.userID.replace(/^u=/,"")
+        this.sessionA = session.sessionA.replace(/^a=/,"")
+        this.crMode = session.crMode
         this.createList() //bg揃ってから起動
       })
     })

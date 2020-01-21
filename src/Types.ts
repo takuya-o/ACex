@@ -25,15 +25,48 @@ type BackgroundMsg = {
   fid?:number,
   url?:string,
   message?:string,
-  forum?: Forum
+  forum?: Forum,
+  config?:Configurations,
 }
-type BackgroundResponse = {
-  isDownloadable?: boolean,
-  isDisplayTelop?: boolean,
-  isCountButton?: boolean,
-  name?: string,
-  forum?: Forum
+type License ={
+  status: string|Date,
+  validDate: Date,
+  expireDate: Date,
+  createDate?: Date,
 }
+type BackgroundResponseName = {
+  name: string
+}
+type BackgroundResponseForum = {
+  forum: Forum
+}
+type BackgroundResponseSession = {
+  userID: string,
+  sessionA: string,
+  crMode: boolean,  //TODO: 分けたい CourseList用
+  saveContentInCache: boolean, //TODO: 分けたいCoundResult用
+}
+type TextDetectionResult = {
+  result: string,
+  ans?: string|any,
+  errorMessage?: string,
+}
+type BackgroundResponse = BackgroundResponseName|BackgroundResponseForum|BackgroundResponseSession|TextDetectionResult|License|Configurations
+
+type Configurations = {
+  experimentalEnable: boolean,
+  countButton: boolean,
+  cRmode: boolean,
+  popupWaitForMac: number,
+  downloadable: boolean,
+  displayTelop: boolean,
+  useLicenseInfo: boolean,
+  trialPriodDays: number,
+  forumMemoryCacheSize: number,
+  saveContentInCache: boolean,
+  apiKey: string,
+}
+type PDFprops = { w:number, h:number, mx:number, my:number, iw:number, ih:number }
 
 //AirCampus Settings
 type Sources = {

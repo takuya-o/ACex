@@ -8,13 +8,14 @@ class Background{
   //クラス変数
   private static tabList = {}  //Tab管理用連想記憶配列 {}
   private static openedUrl= "" //HTML5コース画面で最後に開かれたURL
-
-  //インスタンス変数
-  private license:{[key:string]:string|Date} = {
+  private static defaultLicense:License = {
     status: "UNKNOWN", //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
     validDate: new Date(),
     //不明時はメモリも確保しないcreateDate: null//store.syncだと{}になる
+    expireDate: undefined,
   }
+  //インスタンス変数
+  private license:License = Object.create(Background.defaultLicense)
   private handlerTab:number|null =  null //TODO: Eventからの立ち上がりでnullのまま
   private userID = "u="
   private sessionA = "a="
@@ -28,6 +29,7 @@ class Background{
   private trialPriodDays = 30
   private forumMemoryCacheSize = 100
   private countButton = false
+  private apiKey = ""
   //キャッシュ
   private forums:Forums
   private authors:Authors  //Formキャッシュにはnameを保存せずこちらで一括キャッシュ(容量効率向上)
@@ -36,8 +38,7 @@ class Background{
     this.initializeClassValue();
     this.assignEventHandlers();
     //再起動したときに呼ばれる 再起動時のみライセンスチェック
-    if ( this.getLicenseValidDate() &&
-         this.getLicenseValidDate().getMilliseconds() > Date.now() ) {
+    if ( this.getLicenseValidDate()?.getMilliseconds() > Date.now() ) {
       //期限来ていない UNKNOWNでもNONEでも
       console.log("ACex: License is Valid.");
     }else{
@@ -51,7 +52,7 @@ class Background{
     chrome.runtime.onMessage.addListener(
       (msg:BackgroundMsg, sender:chrome.runtime.MessageSender, sendResponse:(ret?:BackgroundResponse)=>void) => {
         console.log("--- Backgroupd Recv ACex:" + msg.cmd);
-        if(msg.cmd == "setSession") {
+        if(msg.cmd === "setSession") {
           if ( !msg.userID || !msg.sessionA ) {
             console.error("setSession(userID, sessionA): Can not found argument userID or seesionA", msg)
           }
@@ -60,7 +61,7 @@ class Background{
           //pageActionのicon表示
           chrome.pageAction.show(sender.tab.id);
           sendResponse();
-        } else if (msg.cmd == "setIcon" ) {
+        } else if (msg.cmd === "setIcon" ) {
           //msg.textは空文字もありうる
           //pageActionのiconのイメージ変更
           chrome.pageAction.setIcon({
@@ -72,41 +73,81 @@ class Background{
           //   title: this.icon_title.filter(function(s){return s;}).join('\n')
           // });
           sendResponse();
-        // } else if (msg.cmd == "setBadgeText" ) {
+        // } else if (msg.cmd === "setBadgeText" ) {
         //   //pageActionのバッチテスキスの変更
         //   chrome.browserAction.setBadgeText({text: msg.text});
         //   sendResponse();
-        } else if (msg.cmd == "isDownloadable" ) {
-          sendResponse({isDownloadable: this.isDownloadable()});
-        } else if (msg.cmd == "enableDownloadable" ) {
-          this.enableDownloadable();
-          sendResponse();
-        } else if (msg.cmd == "isDisplayTelop" ) {
-          sendResponse({isDisplayTelop: this.isDisplayTelop()});
-        } else if (msg.cmd == "isCountButton" ) {
-          sendResponse({isCountButton: this.isCountButton()});
-        } else if (msg.cmd == "getAuthorCache" ) {
+        // } else if (msg.cmd === "isDownloadable" ) {
+        //   sendResponse({downloadable: this.isDownloadable()});
+        // } else if (msg.cmd === "enableDownloadable" ) {
+        //   this.enableDownloadable();
+        //   sendResponse();
+        // } else if (msg.cmd === "isDisplayTelop" ) {
+        //   sendResponse({displayTelop: this.isDisplayTelop()});
+        // } else if (msg.cmd === "isCountButton" ) {
+        //   sendResponse({countButton: this.isCountButton()});
+        } else if (msg.cmd === "getAuthorCache" ) {
           if (!msg.uuid) { console.error("getAuthorCache(uuid): Can not found argument uuid.", msg.uuid)}
           sendResponse({name: this.getAuthorCache(msg.uuid)});
-        } else if (msg.cmd == "setAuthorCache" ) {
+        } else if (msg.cmd === "setAuthorCache" ) {
           if (!msg.uuid || !msg.name ) { console.error("setAuthorCache(uuid, name): Can not found argument uuid or name.", msg)}
           this.setAuthorCache(msg.uuid, msg.name)
           sendResponse()
-        } else if (msg.cmd == "getForumCache" ) {
+        } else if (msg.cmd === "getForumCache" ) {
           if (!msg.fid) { console.error("getForumCache(fid): Can not found argument fid.",msg.fid)}
           sendResponse({forum: this.getForumCache(msg.fid)});
-        } else if (msg.cmd == "setForumCache" ) {
+        } else if (msg.cmd === "setForumCache" ) {
           if (!msg.forum) { console.error("setForumCache(forum): Can not found argument forum", msg.forum)}
           this.setForumCache(msg.forum)
           sendResponse();
-        } else if (msg.cmd == "open" ) {
+        } else if (msg.cmd === "open" ) {
           this.openTab(msg.url);
           sendResponse();
-        } else if (msg.cmd == "openedUrl" ) {
+        } else if (msg.cmd === "openedUrl" ) {
           Background.openedUrl = msg.url; //最後にcontent scriptで開かれたURL保存
           console.log("--- ACex: openedUrl=" + Background.openedUrl);
           sendResponse();
-        } else if (msg.cmd == "log" ) {
+        } else if (msg.cmd === "getOpenedUrl" ) {
+          sendResponse({name: this.getOpenedUrl()})  //TODO: url: にしたいね
+        } else if (msg.cmd === "getAPIkey" ) {
+          sendResponse({name: this.getAPIkey()})
+        } else if (msg.cmd === "getLicense" ) {
+          sendResponse({
+            validDate: this.getLicenseValidDate(),
+            status: this.getLicenseStatus(),
+            expireDate: this.getLicenseExpireDate()
+          })
+        } else if (msg.cmd === "getSession" ){
+          sendResponse({
+            userID: this.getUserID(),
+            sessionA: this.getSessionA(),
+            crMode: this.isCRmode(),
+            saveContentInCache: this.isSaveContentInCache(),
+          })
+        } else if (msg.cmd === "setSpecial" ){
+          this.setSpecial(msg.config)
+          sendResponse();
+        } else if (msg.cmd === "getConfigurations" ){
+          sendResponse({
+            experimentalEnable: this.isExperimentalEnable(),
+            countButton: this.isCountButton(),
+            cRmode: this.isCRmode(),
+            popupWaitForMac: this.getPopupWaitForMac(),
+            downloadable: this.isDownloadable(),
+            displayTelop: this.isDisplayTelop(),
+            useLicenseInfo: this.isUseLicenseInfo(),
+            trialPriodDays: this.getTrialPriodDays(),
+            forumMemoryCacheSize: this.getForumMemoryCacheSize(),
+            saveContentInCache: this.isSaveContentInCache(),
+            apiKey: this.getAPIkey(),
+          })
+        } else if (msg.cmd === "setupAuth" ){
+          this.setupAuth(true)
+          sendResponse()
+        } else if (msg.cmd === "textDetection") {
+          this.textDetection(msg.text, sendResponse)
+          return true //async
+        } else if (msg.cmd === "log" ) {
           console.log("--- Logging ACex:" + msg.message);
           sendResponse();
         } else {
@@ -148,6 +189,51 @@ class Background{
       }
     })
   }
+
+  //OCRテキスト検出
+  private textDetection(base64:string, sendResponse:(res:TextDetectionResult)=>void) {
+    if ( !this.apiKey ) {
+      //API keyが入っていなければ終わり
+      console.log("no API key")
+      sendResponse({result: "none"})
+      return
+    }
+    let requests = { requests: [ {
+      image: { content: base64 },
+      features: [ { type: "DOCUMENT_TEXT_DETECTION", maxResults: 30 } ],
+
+    } ]}
+    $.ajax( "https://vision.googleapis.com/v1/images:annotate?key=" + this.apiKey ,  //呼ばれるときにはOptionは取れているハズ
+    {
+      method: "POST",
+      data: JSON.stringify(requests),
+      crossDomain: true,
+      dataType: 'json',
+      contentType: "Content-Type: application/json"
+    }).done( (data, textStatus/*, jqXHR*/) => {
+      console.log("--- Ajax OK: ", textStatus, data);
+      let ans = ""
+      let result = "done"
+      if ( data.responses.length < 1 ) {
+        console.warn(base64); //imgがscript描画されていない疑い
+        result = "none"
+      } else {
+        if (!data.responses[0].fullTextAnnotation) { //textが無いときが有った
+          result = "none"
+        } else {
+          ans = data.responses[0].fullTextAnnotation
+        }
+      }
+      console.log("認識結果", result, ans);
+      sendResponse({result: result, ans: ans})
+    }).fail( (jqXHR, textStatus/*, errorThrown*/) => {
+      let errorMessage = "Ajax " + textStatus + "(" + jqXHR.status + ") " +
+                          !jqXHR.responseJSON.error?"":jqXHR.responseJSON.error.message
+      console.log("--- " + errorMessage, jqXHR );
+      sendResponse({result: "fail", errorMessage: errorMessage})
+    });
+  }
+
   // タブへonRemoveハンドラー設定指示メッセージ送信
   private sendMessageAssignTabHandler(tabId:number, retryCount:number) {
     if ( this.handlerTab === null ) { //eventHandler登録が必要
@@ -229,7 +315,7 @@ class Background{
       try {
         for(let element in Background.tabList) {
           //console.log("--- removeTabId:" + element);
-          if ( Background.tabList[element] == tabId ) {
+          if ( Background.tabList[element] === tabId ) {
             console.log("--- removeTabId:" + tabId);
             delete Background.tabList[element];
             doneFlg = true;
@@ -246,7 +332,7 @@ class Background{
       if ( !doneFlg ) {
         console.log("#-- removeTabId() not found:" + tabId);
       } else {
-        if ( this.handlerTab == null ) {
+        if ( this.handlerTab === null ) {
           //タブハンドラーが空席状態なので最初に見つかったタブに登録
           for(let element in Background.tabList) {
             this.sendMessageAssignTabHandler(Background.tabList[element],
@@ -260,7 +346,7 @@ class Background{
   private openTab(url:string) { //courselist.jsからcopy共通化が必要
     //該当のURLをタブで開く。既に開いていたらそれを使う
     let tabId = this.getTabId(url);
-    if ( tabId == null ) { //nullとの==比較でundefined見つけてる
+    if ( tabId == null ) { //nullとの==比較でundefinedも見つけてる
       //開いているタブが無かったので作る
       chrome.tabs.create( //タブを開く 引数省略すると「新しいタブ」
         { url: url },
@@ -318,6 +404,8 @@ class Background{
       if (forumMemoryCacheSize) { this.forumMemoryCacheSize = forumMemoryCacheSize; }
       let saveContentInCache = special["saveContentInCache"];
       if ( saveContentInCache ) { this.saveContentInCache = Boolean(saveContentInCache); }
+      let apiKey = special["apiKey"]
+      if ( apiKey ) { this.apiKey = apiKey } else { this.apiKey = "" }
     }
     value = localStorage["Forums"];
     if (value) {
@@ -344,7 +432,8 @@ class Background{
         this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
       }
       let cacheFormatVer = this.authors.cacheFormatVer;
-      if ( !cacheFormatVer ||  cacheFormatVer !== this.getCacheAuthorsFormatVer() ) { //Potential timing attack on the right side of expression
+      if ( !cacheFormatVer ||  cacheFormatVer !== this.getCacheAuthorsFormatVer() ) { // tslint:disable-line
+        //Potential timing attack on the right side of expression
         //キャッシュのフォーマットバージョンが違ったらクリア
         console.warn("Cache version mismatch:", cacheFormatVer)
         this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
@@ -395,34 +484,31 @@ class Background{
   public getSessionA() {
     return this.sessionA;
   }
-  public setSpecial(experimental:boolean, coursenameRestriction:boolean,
-                       displayPopupMenu:boolean, popupWaitForMac:number,
-                       displayTelop:boolean, useLicenseInfo:boolean, trialPriodDays:number,
-                       forumMemoryCacheSize:number, downloadable:boolean, countButton:boolean,
-                       saveContentInCache:boolean ) {
-    this.coursenameRestrictionEnable = Boolean(coursenameRestriction);
-    this.experimentalEnable = Boolean(experimental);
-    this.displayPopupMenu = displayPopupMenu;
-    this.popupWaitForMac = popupWaitForMac;
-    this.downloadable = downloadable;
-    this.displayTelop = displayTelop;
-    this.useLicenseInfo = useLicenseInfo;
-    this.trialPriodDays = trialPriodDays;
-    this.forumMemoryCacheSize = forumMemoryCacheSize;
-    this.countButton = countButton;
-    this.saveContentInCache = saveContentInCache;
+  public setSpecial(config:Configurations ) {
+    this.coursenameRestrictionEnable = Boolean(config.cRmode);
+    this.experimentalEnable = Boolean(config.experimentalEnable);
+    this.popupWaitForMac = config.popupWaitForMac;
+    this.downloadable = config.downloadable;
+    this.displayTelop = config.displayTelop;
+    this.useLicenseInfo = config.useLicenseInfo;
+    this.trialPriodDays = config.trialPriodDays;
+    this.forumMemoryCacheSize = config.forumMemoryCacheSize;
+    this.countButton = config.countButton;
+    this.saveContentInCache = config.saveContentInCache;
+    this.apiKey = config.apiKey
     localStorage["Special"]
-      = JSON.stringify({"couresenameRestriction": coursenameRestriction,
-                        "experimental": experimental,
-                        "displayPopupMenu": displayPopupMenu,
-                        "popupWaitForMac": popupWaitForMac,
-                        "downloadable": downloadable,
-                        "displayTelop": displayTelop,
-                        "useLicenseInfo": useLicenseInfo,
-                        "trialPriodDays": trialPriodDays,
-                        "forumMemoryCacheSize": forumMemoryCacheSize,
-                        "countButton": countButton,
-                        "saveContentInCache": saveContentInCache
+      = JSON.stringify({"couresenameRestriction": config.cRmode,
+                        "experimental": config.experimentalEnable,
+                        "displayPopupMenu": Boolean(false),  //互換のため
+                        "popupWaitForMac": config.popupWaitForMac,
+                        "downloadable": config.downloadable,
+                        "displayTelop": config.displayTelop,
+                        "useLicenseInfo": config.useLicenseInfo,
+                        "trialPriodDays": config.trialPriodDays,
+                        "forumMemoryCacheSize": config.forumMemoryCacheSize,
+                        "countButton": config.countButton,
+                        "saveContentInCache": config.saveContentInCache,
+                        "apiKey": config.apiKey,
                        });
   }
   private enableDownloadable() { //downloadableだけ変える
@@ -470,6 +556,12 @@ class Background{
     //TODO: ファイルキャッシュも欲しいね
     //TODO: Authorsキャッシュのサイズも欲しいね
     return this.forumMemoryCacheSize;
+  }
+  private setAPIkey(key:string) {
+    this.apiKey = key
+  }
+  private getAPIkey() {
+    return this.apiKey
   }
   private getCacheFormsFormatVer() {
     return 2;
@@ -547,7 +639,7 @@ class Background{
       if ( status === key ) break; //サニタイズ
     }
     if ( key != "UNKNOWN" ) {
-      this.license = {}; //chrome.storage.sync.remove("License");
+      this.license = Object.create(Background.defaultLicense) //chrome.storage.sync.remove("License");
       this.license.status = status;  //String
       this.license.validDate = validDate;  //Date
       let storeLicense = {};
@@ -628,8 +720,8 @@ class Background{
     }
     /**************************************************************************
      * Parse the license and determine if the user should get a free trial
-     *  - if license.accessLevel == "FULL", they've paid for the app
-     *  - if license.accessLevel == "FREE_TRIAL" they haven't paid
+     *  - if license.accessLevel ==="FULL", they've paid for the app
+     *  - if license.accessLevel ==="FREE_TRIAL" they haven't paid
      *    - If they've used the app for less than TRIAL_PERIOD_DAYS days, free trial
      *    - Otherwise, the free trial has expired
      *    @param {{result: boolean, accessLevel: string, createTinme: number,
@@ -639,11 +731,11 @@ class Background{
       console.log("ACex: Full License=" + license.result);
       //let licenseStatus:string
       let licenseStatusText:string
-      if (license.result && license.accessLevel == "FULL") {
+      if (license.result && license.accessLevel === "FULL") {
         console.log("Fully paid & properly licensed.");
         licenseStatusText = "FULL";
         //licenseStatus = "alert-success";
-      } else if (license.result && license.accessLevel == "FREE_TRIAL") {
+      } else if (license.result && license.accessLevel === "FREE_TRIAL") {
         let daysAgoLicenseIssued = Date.now()-parseInt(license.createdTime,10);
         daysAgoLicenseIssued = daysAgoLicenseIssued / 1000 / 60 / 60 / 24;
         if (daysAgoLicenseIssued <= bg.trialPriodDays) {

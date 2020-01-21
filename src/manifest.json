@@ -4,8 +4,8 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.6.2019.6132",
-  "minimum_chrome_version": "37",
+  "version": "0.7.2020.1200",
+  "minimum_chrome_version": "61",
 
   "permissions": [
     "identity",
@@ -19,17 +19,26 @@
     "scopes": [ "https://www.googleapis.com/auth/chromewebstore.readonly" ]
   },
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA62XQw3q23NQyFGYHZsEu2NF6sH4rZmm79MIzkslMT+70nWF4OyhX3vU+pRG9ncYPSsI/Yr/I8zsUYwLM1qX2QCeyVfjkbHuoJsYjSQ8ix9AP0Wg6jdCuzAtNPrEPknAdapxJFPuvGbzBbsSlTs7Lv7d9SVgAUFH6SHNTrcg2WPCua9XiOn3rkNOcpoiiu8lctarsFjokwUkKbXQD023EzpIzGjqmi20OfU/xaj2/UhzOuiOhhubILNb2HNUz36WZ9SY0zS+xmqdnVgvWzW1z7sgDPDTDP5KO/44eiwVTDDCaSmn1/Sl16mPBe6X1MQB98a00TzAexgsVFtYPcanmQwIDAQAB",
-  "content_scripts": [ {
-    "matches": [
-      "http://accontent.bbt757.com/content/*",
-      "*://www.bbt757.com/content/*",
-      "*://www.ohmae.ac.jp/content/*",
-      "https://www.bbt757.com/ac/web/*",
-      "*://*.aircamp.us/course/*",
-      "*://*.aircamp.us/" ],
-    "js": ["lib/jquery.min.js", "Types.js", "MessageUtil.js", "ACex.js"],
-    "run_at": "document_idle"
-  } ],
+  "content_scripts": [
+    { "matches": [
+        "http://accontent.bbt757.com/content/*",
+        "*://www.bbt757.com/content/*",
+        "*://www.ohmae.ac.jp/content/*",
+        "https://www.bbt757.com/ac/web/*",
+        "*://*.aircamp.us/course/*",
+        "*://*.aircamp.us/" ],
+      "js": ["lib/jquery.min.js", "Types.js", "MessageUtil.js", "ACex.js"],
+      "run_at": "document_idle"
+    },
+    { "matches": ["https://www.bbt757.com/svlBOS/user/airsearch*"] ,
+      "js": [ "lib/jspdf.min.js", "lib/umeplus-gothic-normal.js", "MakeSlide.js" ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    "lib/jquery.min.js",
+    "lib/jspdf.min.js"
+  ],
   "page_action": {
     "default_icon": "icon_19.png",
     "default_title": "AirCumpus for Web Extender",
@@ -40,7 +49,7 @@
     "chrome_style": true
   },
   "content_security_policy":
-          "script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.gstatic.com/charts/ https://www.google.com/uds/; object-src 'self'",
+          "script-src 'self' 'unsafe-eval' https://vision.googleapis.com/v1/images:annotate https://www.googletagmanager.com https://www.google-analytics.com https://www.gstatic.com/charts/ https://www.google.com/uds/; object-src 'self'",
   "icons": {
     "128": "icon_128.png",
     "48": "icon_48.png",
