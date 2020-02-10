@@ -51,7 +51,10 @@ type TextDetectionResult = {
   ans?: string|any,
   errorMessage?: string,
 }
-type BackgroundResponse = BackgroundResponseName|BackgroundResponseForum|BackgroundResponseSession|TextDetectionResult|License|Configurations
+type FontData = {
+  data: string,
+}
+type BackgroundResponse = BackgroundResponseName|BackgroundResponseForum|BackgroundResponseSession|TextDetectionResult|License|Configurations|FontData
 
 type Configurations = {
   experimentalEnable: boolean,

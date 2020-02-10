@@ -147,6 +147,9 @@ class Background{
         } else if (msg.cmd === "textDetection") {
           this.textDetection(msg.text, sendResponse)
           return true //async
+        } else if (msg.cmd === "getFontData") {
+          this.getFontData(sendResponse)
+          return true //async
         } else if (msg.cmd === "log" ) {
           console.log("--- Logging ACex:" + msg.message);
           sendResponse();
@@ -187,6 +190,32 @@ class Background{
           }
         }
       }
+    })
+  }
+
+  //フォントデータ読み込み
+  private getFontData( sendResponse:(res:FontData)=>void ) {
+    chrome.runtime.getPackageDirectoryEntry( (directoryEntry) => {
+      directoryEntry.getFile("lib/ipag00303/ipag.ttf", {create: false},  (fileEntry)=>{
+        fileEntry.file( (file)=>{
+          let reader = new FileReader()
+          reader.onloadend = (ev)=>{
+            let result = <string>ev.target.result
+            let font = result.substr(result.indexOf(',')+1)
+            console.info("FONT: " + font)
+            sendResponse({data: font})
+          }
+          reader.onerror = (ev)=>{
+            console.error("Font File Read Error",ev)
+            reader.abort()
+            sendResponse({data: ""})
+          }
+          reader.readAsDataURL(file)
+        })
+      }, (fileError) => {
+        console.error("Font File Open Error", fileError)
+        sendResponse({ data: ""})
+      })
     })
   }
 

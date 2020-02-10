@@ -4,8 +4,8 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.7.2020.1200",
-  "minimum_chrome_version": "61",
+  "version": "0.7.2020.2040",
+  "minimum_chrome_version": "76",
 
   "permissions": [
     "identity",
@@ -30,14 +30,15 @@
       "js": ["lib/jquery.min.js", "Types.js", "MessageUtil.js", "ACex.js"],
       "run_at": "document_idle"
     },
-    { "matches": ["https://www.bbt757.com/svlBOS/user/airsearch*"] ,
-      "js": [ "lib/jspdf.min.js", "lib/umeplus-gothic-normal.js", "MakeSlide.js" ],
+    { "matches": ["https://www.bbt757.com/svlBOS/user/airsearch*", "http://www.bbt757.com/svlBOS/user/airsearch*"] ,
+      "js": [ "lib/jspdf.min.js", "MakeSlide.js" ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     "lib/jquery.min.js",
-    "lib/jspdf.min.js"
+    "lib/jspdf.min.js",
+    "lib/ipag00303/*.ttf"
   ],
   "page_action": {
     "default_icon": "icon_19.png",
