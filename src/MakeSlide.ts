@@ -2,15 +2,13 @@
 //import { jsPDF } from 'lib/jspdf.min'
 
 class MakeSlide {
-  static MAX_RETRY = 10
-  static RETRY_WAIT = 1000 //ms
+  //定数
+  private static MAX_RETRY = 10
+  private static RETRY_WAIT = 1000 //ms
+  private static FONT_NAME="ipag"
+  private static FONT_TYPE="normal" //ファイル名としてはそのまま使うsetFont時は小文字に自動変換 "normal"の場合ファイル名として含めない
   //jsPDF 追加font
   static font:string
-  static callAddFont = function() {
-    // 'this' will be ref to internal API object.
-    this.addFileToVFS('ipag.ttf', MakeSlide.font);
-    this.addFont('ipag.ttf', 'IPAGothic', 'normal');
-  }
   constructor() {
     console.log("--- Start MakeSlide ---")
     //MessageUtil.assignMessages()
@@ -20,6 +18,10 @@ class MakeSlide {
     if (!MakeSlide.font) {
       chrome.runtime.sendMessage({cmd: "getFontData"}, (response:FontData) => {
         if ( response.data !== "") {
+          console.log("Font:", response.length, response.data)
+          if ( response.data.length !== response.length ) {
+            console.error("Font length missmatch. Error on message passing?")
+          }
           MakeSlide.font = response.data
           jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
         } else {
@@ -65,6 +67,20 @@ class MakeSlide {
       a.click()
     }
   }
+  static callAddFont = function() { //jsPDFからコールバックされる
+    // 'this' will be ref to internal API object.
+    // this.addFileToVFS('Koruri-Regular.ttf', MakeSlide.font);
+    // this.addFont('Koruri-Regular.ttf', 'Koruri', 'regular');
+    // this.addFileToVFS('umeplus-gothic.ttf', MakeSlide.font);
+    // this.addFont('umeplus-gothic.ttf', 'umeplus-gothic', 'normal');
+    let filename = MakeSlide.FONT_NAME
+    if (MakeSlide.FONT_TYPE !== "normal" ) { //FONT_TYPEがnormalのときにはFONT_NAMEのみ
+      filename += "-" + MakeSlide.FONT_TYPE
+    }
+    filename += ".ttf"
+    this.addFileToVFS(filename, MakeSlide.font);
+    this.addFont(filename, MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase());
+  }
   private static collectionImages(mvspec:Element, pid:string, retry = this.MAX_RETRY) {
     let flip2 = mvspec.querySelector("div.my-flip2") // もしくは #all_flips" + pid
     let imgs = <NodeListOf<HTMLImageElement>>flip2.querySelectorAll("img.my-thumb_sdoc")
@@ -94,19 +110,21 @@ class MakeSlide {
       //keywords: tagged:
       creator: manifest.short_name + " " + manifest.version
     })
-    pdf.setLanguage("ja-jp")
+    pdf.setFont(MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase())
     //pdf.setFont('NotoSansCJKjp-Regular', 'normal')
-    pdf.setFont('IPAGothic', 'normal')
+    //pdf.setFont('IPAGothic', 'normal')
     //pdf.setFont('umeplus-gothic', 'normal')
-    pdf.setFontSize(16)
+    //pdf.setFont('Koruri', 'regular')
+    //pdf.setFontSize(20)
     // let gsDefault = {"opacity": 1, "stroke-opacity": 1}
     // pdf.addGState("def", gsDefault)
     // let gsTrans = {"opacity": 0, "stroke-opacity": 0}
     // pdf.addGState("trans", gsTrans)
     //pdf.setTextColor("#FFFFFF") //white
+    pdf.setLanguage("ja-jp")
     //jsPDFのdefaultは300dpi https://github.com/MrRio/jsPDF/issues/132#issuecomment-28238493
     //let p = {w:210, h:297, mx:10, my:10} //{ w:2480, h:3507, mx:118, my:118} //マージン余白px
-    let p:PDFprops = { w:446, h:632, mx:18, my:18, iw:0, ih:0 } //54DPI
+    let p:PDFprops = { w:446, h:632, mx:18, my:18, iw:0, ih:0 } //54DPI(pxでほしいので実験算出値)
     let w = imgs[0].naturalWidth  //小さいがそうだけど縦横比取るには十分なはず
     let h = imgs[0].naturalHeight
     p.iw = p.w-(2*p.mx)
@@ -174,9 +192,9 @@ class MakeSlide {
         let base64:string = ctx.canvas.toDataURL("image/jpeg").replace(/^data:image\/jpeg;base64,/, "" );
         chrome.runtime.sendMessage( {cmd: "textDetection", text: base64}, (res:TextDetectionResult) => {
           console.log("認識結果", res.ans)
-          if ( res.result === "done" && res.ans.text ) {
+          if ( res.result === "done" && res.ans.fullTextAnnotation?.text ) {
             //pdf.setGState("trans")
-            pdf.text(res.ans.text, p.w, p.my ) //右欄外にOCR結果を出力 (i%2)*(p.h/2)+p.my TODO:重ね合わせ
+            pdf.text(res.ans.fullTextAnnotation.text, p.w, p.my ) //右欄外にOCR結果を出力 (i%2)*(p.h/2)+p.my TODO:重ね合わせ
           }
           if ( i<(imgs.length-1) ) {
             MakeSlide.onePage(title,subTitle, p, imgs, pdf, ctx, buf, ++i)

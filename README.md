@@ -96,7 +96,7 @@ It may become unusable due to changes in AirCampus specifications.
 
 It is using Google Tag Manager and Google Analytics to investigate usage.
 
-= What is new!
+### What is new!
 Version 0.7
 Supporting the creating PDF documents on AirSearch.
 
@@ -110,7 +110,7 @@ All data acquiring data from the AirCumpus server use JSON format.
 Version 0.3
 Refactoring some features.
 
-* Permissions
+### Permissions
 tabs - Used for switching and managing browser tabs.
 storage, unlimitedStorage - Used to save option setting values ​​and data cache.
 identity - used for license management
@@ -130,7 +130,7 @@ AirCampusの仕様変更により使えなくなってしまうことがある�
 
 Google Tag ManagerとGoogle Analyticsを使用して使用状況を調査しています。
 
-■What is new!
+### What is new!
 Version 0.7
 AirSearchの画像からPDF資料を作成する機能をサポートしました。
 
@@ -144,7 +144,7 @@ ACサーバからのデータを全てJSONで取得するようにしました�
 Version 0.3
 機能の整理を行いました。
 
-■Permission
+### Permission
 tabs - ブラウザタブの切替・管理のために利用します。
 storage,unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
 identity - ライセンス管理のために利用します

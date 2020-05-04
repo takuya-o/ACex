@@ -5,6 +5,7 @@ class Background{
   //定数
   private static ASSIGN_TAB_HANDLER_MAX_RETRY =   10 //回
   private static ASSIGN_TAB_HANDLER_RETRY_WAIT = 200 //msまつ
+  private static FONT_FILENAME="lib/ipag00303/ipag.ttf"
   //クラス変数
   private static tabList = {}  //Tab管理用連想記憶配列 {}
   private static openedUrl= "" //HTML5コース画面で最後に開かれたURL
@@ -196,25 +197,26 @@ class Background{
   //フォントデータ読み込み
   private getFontData( sendResponse:(res:FontData)=>void ) {
     chrome.runtime.getPackageDirectoryEntry( (directoryEntry) => {
-      directoryEntry.getFile("lib/ipag00303/ipag.ttf", {create: false},  (fileEntry)=>{
+      directoryEntry.getFile(Background.FONT_FILENAME, {create: false},  (fileEntry)=>{
         fileEntry.file( (file)=>{
           let reader = new FileReader()
           reader.onloadend = (ev)=>{
             let result = <string>ev.target.result
             let font = result.substr(result.indexOf(',')+1)
-            console.info("FONT: " + font)
-            sendResponse({data: font})
+            console.info(font)
+            console.info("Font length:", font.length )
+            sendResponse({data: font, length: font.length})
           }
           reader.onerror = (ev)=>{
             console.error("Font File Read Error",ev)
             reader.abort()
-            sendResponse({data: ""})
+            sendResponse({data: "",length: -1})
           }
           reader.readAsDataURL(file)
         })
       }, (fileError) => {
         console.error("Font File Open Error", fileError)
-        sendResponse({ data: ""})
+        sendResponse({ data: "", length: -1})
       })
     })
   }
@@ -247,10 +249,10 @@ class Background{
         console.warn(base64); //imgがscript描画されていない疑い
         result = "none"
       } else {
-        if (!data.responses[0].fullTextAnnotation) { //textが無いときが有った
+        if (!data.responses[0]) { //.fullTextAnnotation.textが無いときが有ったので戻り先で注意
           result = "none"
         } else {
-          ans = data.responses[0].fullTextAnnotation
+          ans = data.responses[0]
         }
       }
       console.log("認識結果", result, ans);

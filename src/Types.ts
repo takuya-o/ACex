@@ -53,6 +53,7 @@ type TextDetectionResult = {
 }
 type FontData = {
   data: string,
+  length: number,
 }
 type BackgroundResponse = BackgroundResponseName|BackgroundResponseForum|BackgroundResponseSession|TextDetectionResult|License|Configurations|FontData
 
