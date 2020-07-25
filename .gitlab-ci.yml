@@ -6,12 +6,12 @@ variables:
 
   #Dependency Scan remote is  ULTIMATE GOLD only Gemnasiumでのライブラリ脆弱性
   DEP_SCAN_DISABLE_REMOTE_CHECKS: local
-  GITLAB_FEATURES: "$GITLAB_FEATURES container_scanning dependency_scanning license_management sast "
+  GITLAB_FEATURES: "$GITLAB_FEATURES container_scanning dependency_scanning license_scanning sast "
 
 stages:
   - build
   - test
-  - deploy #for Pages # dummy stage to follow the template guidelines
+  - deploy # for Pages # dummy stage to follow the template guidelines
 #  - review
   - dast
 #  - staging
@@ -34,62 +34,51 @@ include:
 #  - template: Security/DAST.gitlab-ci.yml
   - template: Security/Container-Scanning.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/License-Management.gitlab-ci.yml
+  - template: Security/License-Scanning.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
 
 build: #上書きと追加項目
-  image: "ruby:alpine" #2.5=2.5.3 2.3  / apline=2.5.3-alpine3.8
+  image: "node:alpine" #11.10.1-alpine <- alpine:2.9
   tags:
   - Docker
   services:
   script:
   - |
     function install_crxmake() {
+      apk add --no-cache ruby
       export PATH=`gem environment gempath|sed 's/:.*$//'`/bin:$PATH
-      gem install --user-install crxmake
+      gem install --user-install --no-document crxmake  #ruby-rdocパッケージいれず-no-..
+    }
+    function build() {
+      #npm WARN tar ENOENT: no such file or directory,でACexでは動かない
+      #npm install
+      #cp -p node_modules/jquery/dist/jquery.min.js src/lib/
+      #./node_modules/.bin/tsc
+      install_crxmake
+      if [ -z "$PRIVATE_KEY" ];then
+        unofficial_build
+      else
+        cp "$PRIVATE_KEY" src.pem
+        offical_build
+      fi
     }
     function unofficial_build() {
       crxmake --pack-extension="src" --zip-output="${CI_PROJECT_NAME}.zip" \
       --key-output=src-tmp.pem  \
       --ignore-file="/(\.swp|.*~)/" --ignore-dir="/\.(?:svn|git|cvs)/" --verbose
+      #DEBUG用に .tsと.map 含めておく
     }
     function offical_build() {
       ./build.rb
     }
-    install_crxmake
-    if [ -z "$PRIVATE_KEY" ];then
-      unofficial_build
-    else
-      cp "$PRIVATE_KEY" src.pem
-      offical_build
-    fi
+    build
   artifacts:
     paths:
     - ${CI_PROJECT_NAME}.zip
 
-code_quality:  #STARTER BRONZE
+code_quality:  #STARTER BRONZE->CORE FREE
   tags: #追加項目
   - DinD
-  script:
-  - |
-    if ! docker info &>/dev/null; then
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
-    fi
-  - docker pull --quiet "$CODE_QUALITY_IMAGE"
-  - docker run
-      --env SOURCE_CODE="$PWD"
-      --volume "$PWD":/code
-      --volume /var/run/docker.sock:/var/run/docker.sock
-      "$CODE_QUALITY_IMAGE" /code
-  - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
-  artifacts:
-#    reports:
-#      codequality: gl-code-quality-report.json
-    expose_as: 'Codeclimate JSON'
-    paths:
-      - gl-code-quality-report.json
 
 container_scanning: #Docker image形式を検査する
   tags: #追加項目
@@ -99,7 +88,7 @@ container_scanning: #Docker image形式を検査する
 #      container_scanning: gl-container-scanning-report.json
     expose_as: 'Container Scanning Report JSON'
     paths:
-      - gl-container-scanning-report.json  
+      - gl-container-scanning-report.json
 
 dependency_scanning:  #ULTIMATE GOLD
   tags: #追加項目
@@ -110,31 +99,19 @@ dependency_scanning:  #ULTIMATE GOLD
     expose_as: "Dependency JSON"
     paths: [ "gl-dependency-scanning-report.json" ]
 
-license_management: #ULTIMATE GOLD
+license_scanning: #ULTIMATE GOLD
   tags: #追加項目
   - DinD
 #  script: #置換え catでwrite errorがでる
 #    - /run.sh analyze .
-#    - cat gl-license-management-report.json #for CE defaultで出ない?
+#    - cat $LM_REPORT_FILE #for CE defaultで出ない?
   artifacts:
-#    reports:
-#      license_management: gl-license-management-report.json
-    expose_as: "License Management Report"
-    paths: #追加される?
-    - gl-license-management-report.html
-    - gl-license-management-report.json
+    expose_as: "License Scanning Report"
+    paths: [ "gl-license-scanning-report.html", $LM_REPORT_FILE ]
 
-sast: #ULTIMATE GOLD
+sast: #ULTIMATE GOLD->CORE FREE(ESLint)
   tags: #追加項目
   - DinD
-#  script:
-#    - sast  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
-#    - cat gl-sast-report.json #Default出力済み
-  artifacts:
-#    reports:
-#      sast: gl-sast-report.json
-    expose_as: "SAST Report JSON"
-    paths: [ "gl-sast-report.json"]
 
 
 #のこりのテストはreviewが必要
@@ -149,12 +126,12 @@ pages:
         gl-code-quality-report.json
         gl-container-scanning-report.json
         gl-dependency-scanning-report.json
-        gl-license-management-report.json gl-license-management-report.html
+        gl-license-scanning-report.html $LM_REPORT_FILE
         gl-sast-report.json
         .public/ || true
-  - echo '<html><header><title>CI Reports</title></header><body>
-          <ul>' >index.html
-  - (cd .public; 
+  - echo "<html><header><title>CI Reports ${CI_JOB_ID}</title></header><body>
+          <ul>" >index.html
+  - (cd .public;
       for file in *;
       do echo '<li><a href="'$file'">'$file'</a></li>';
       done ) >>index.html
@@ -166,8 +143,23 @@ pages:
     expose_as: "CI Reports"
     paths:
     - public
-#  only:
-#  - master
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+
+#コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
+code_navigation:
+  allow_failure: true
+  script:
+  - |
+    apk add --no-cache go git
+    export GOPATH="$HOME/go"
+    export PATH="$GOPATH/bin:$PATH"
+    go get github.com/sourcegraph/lsif-go/cmd/lsif-go
+    lsif-go
+  artifacts:
+    reports:
+      lsif: dump.lsif
 
 # ---------------------------------------------------------------------------
 .auto_devops: &auto_devops |
