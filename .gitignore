@@ -11,3 +11,5 @@
 /src/*.js
 /src/lib/jspdf.min.js
 /node_modules/
+/for*/
+
