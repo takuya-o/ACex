@@ -14,27 +14,25 @@ class ACex {
     MessageUtil.assignMessages();
     let url = window.document.URL;
     //Backgroundに最新url通知
-    chrome.runtime.sendMessage( {cmd: "openedUrl", url: url}, (_response) => {
-      MessageUtil.checkRuntimeError("openUrl")
-    } );
+    this.setOpenedUrl(url)
     if ( url.match(/^https?:\/\/(accontent|www)\.(bbt757\.com|ohmae\.ac\.jp)\/content\//) ) {
       //視聴画面の時
       let settings = this.getSettings();
       if ( settings ) { //セッティング情報が見つかったら
         //Videoダウンロード表示
         chrome.runtime.sendMessage(
-          {cmd: "getConfigurations"}, (response:Configurations) => {
+          {cmd: BackgroundMsgCmd.GET_CONFIGURATIONS}, (response:Configurations) => {
             //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
-            MessageUtil.checkRuntimeError("isDownloadable")
+            MessageUtil.checkRuntimeError(BackgroundMsgCmd.GET_CONFIGURATIONS)
             console.log("ACex: isDownloadable() = " + response.downloadable);
             if ( response.downloadable ) {
-              this.getVideoSources(settings);
+              this.getVideoSources(settings!) //undefinedではない
             }
             //認証情報表示
             //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
             console.log("ACex: isDisplayTelop() = " + response.displayTelop);
             if ( response.displayTelop ) {
-              this.getACtelop(settings);
+              this.getACtelop(settings!) //undefinedではない
           }
         });
       } else {
@@ -46,9 +44,9 @@ class ACex {
       //RexExp準備 ツリーからの更新は#以下のURLしか変えない
       //おしらせ一覧などを経由すると/informationなどが入る
       let regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/; //この正規表現使いまわされるから()の追加には注意
-      chrome.runtime.sendMessage({cmd: "getConfigurations"}, (response:Configurations) => {
+      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_CONFIGURATIONS}, (response:Configurations) => {
         //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
-        MessageUtil.checkRuntimeError("isCountButton")
+        MessageUtil.checkRuntimeError(BackgroundMsgCmd.GET_CONFIGURATIONS)
         console.log("ACex: isCountButton() = " + response.countButton);
         if ( response.countButton ) {
           this.injectCountButton(regexp); //カウントボタン追加
@@ -59,9 +57,17 @@ class ACex {
       window.addEventListener( "hashchange", (event:HashChangeEvent) => {
         let url = event.newURL;
         this.updateIcon(url, regexp); //アイコンと有ればボタン更新
-        //Backgroundに最新url通知
-        chrome.runtime.sendMessage( {cmd: "openedUrl", url: url}, (_response:BackgroundResponse) => {
-          MessageUtil.checkRuntimeError("openedUrl")
+        this.setOpenedUrl(url) //Backgroundに最新url通知
+      })
+      //戻ってきたときにOPEND_URLを更新 複数コース画面を開いていた時の対策
+      chrome.tabs.getCurrent((tab)=>{
+        chrome.tabs.onActivated.addListener((activeInfo)=>{
+          //アクティブになったときのリスナー追加
+          if (tab?.id===activeInfo.tabId && tab?.windowId===activeInfo.windowId) {
+            this.setOpenedUrl(url) //Backgroundに最新url通知
+          } else {
+            //TODO:知らないtabIdのときにOPEND_URL消したいけど、あちこちでACexが動いていると喧嘩になるので消せないし
+          }
         })
       })
     } else {
@@ -70,6 +76,12 @@ class ACex {
       this.getACconfig();
     }
   }
+  private setOpenedUrl(url: string) {
+    chrome.runtime.sendMessage({ cmd: BackgroundMsgCmd.SET_OPENED_URL, url: url }, (_response: BackgroundResponse) => {
+      MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_OPENED_URL);
+    });
+  }
+
   private updateIcon(url:string, regexp:RegExp) { //private
     let input =<HTMLButtonElement>document.getElementById('ACexCountButton'); //ボタンが無い場合がある
     let iconText = "";
@@ -87,8 +99,8 @@ class ACex {
       //badgeText="";
     }
     //Backgroundに最新icon通知
-    chrome.runtime.sendMessage( {cmd: "setIcon", text: iconText}, (_response:BackgroundResponse) => {
-      MessageUtil.checkRuntimeError("setIcon")
+    chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: iconText}, (_response:BackgroundResponse) => {
+      MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
     } );
     // //Backgroundに最新iconバッチテキスト通知
     // chrome.runtime.sendMessage( {cmd: "setBadgeText", text: badgeText}, function(response) {
@@ -102,7 +114,7 @@ class ACex {
     //navにボタンをinjection
     let navs =document.getElementsByTagName('nav');
     if ( navs.length > 0 ) { //入れるの早すぎると消されるがリロードで出てくる
-      let uls = navs[0].getElementsByTagName('ul');
+      let uls = navs[0]!.getElementsByTagName('ul') //必ずある
       if ( uls.length > 0 ) {
         let input = document.createElement('input');
         input.disabled = true;
@@ -116,29 +128,33 @@ class ACex {
             alert("Faital Error: Can't get forum ID.");
           } else {
             let fid = match[2];
-            let href= chrome.runtime.getURL("countresult.html"
-                                            + "?fid=" + encodeURI(fid));
-            chrome.runtime.sendMessage({cmd: "open", url: href}, (_response) => {
-              //レスポンスでもらう値なしだかコネクション閉じるために受信
-              MessageUtil.checkRuntimeError("open")
-            });
+            if (!fid) {
+              alert("Faital Error: Can't get forum ID.")
+            } else {
+              let href= chrome.runtime.getURL("countresult.html"
+                                              + "?fid=" + encodeURI(fid));
+              chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.OPEN, url: href}, (_response) => {
+                //レスポンスでもらう値なしだかコネクション閉じるために受信
+                MessageUtil.checkRuntimeError(BackgroundMsgCmd.OPEN)
+              });
+            }
           }
         });
         let li = document.createElement('li');
-        uls[0].appendChild( li.appendChild(input) );
+        uls[0]!.appendChild( li.appendChild(input) )  //必ずある
       }
     }
   }
-  private getSettings():Settings { //ACのsetting情報を取得する
-    let settings:Settings
+  private getSettings() { //ACのsetting情報を取得する
+    let settings:Settings|undefined
     let elements = window.document.getElementsByTagName("script");
     console.log("ACex: getSettings " + elements.length );
     for (let i = 0; i < elements.length; i++) {
-      let text = elements[i].innerText;
+      let text = elements[i]?.innerText;
       if (text) {
         let match = text.match(/(var|let) settings = ({.*});/);
         if (match) {
-          settings = JSON.parse(match[2]);
+          settings = JSON.parse(match[2]!);  //正規表現が間違っていなければ必ずある
           console.log("ACex: getSettings found setting.");
           break;
         }
@@ -152,22 +168,25 @@ class ACex {
     if ( sources ) {
       let tab=document.getElementById('content-tab1'); //概要タブ
       if (tab) { //入れるの早すぎると消されるがリロードで出てくる
-        for(let i=0; i<sources.length; i++ ) {
-          console.log("ACex: Video source " + sources[i].label );
-          let title = sources[i].file.match(".+/(.+?)([\?#;].*)?$")[1];
+        //for(let i=0; i<sources.length; i++ ) {
+        sources.forEach( (source)=> {
+          console.log("ACex: Video source " + source.label );
+          let title = source.file.match(".+/(.+?)([\?#;].*)?$")?.[1];
+          if (!title) { title = "" }
           let titles = window.document.getElementsByTagName("title");
           if (titles) {
             //<title>大前研一アワー 367 の配信は 08月09日 22時30分から</title>
             //<title>大前研一アワー 368 の配信は 08月15日 22時30分から【向研会】イタリアの研究 ～国破れて地方都市あり～</title>
-            title = titles[0].innerText.replace(/ の配信は.*から/,"")
+            title = titles[0]!.innerText.replace(/ の配信は.*から/,"") //getElement 必ずある
               .replace(/ /g,"") + "_" + title;
           }
           let aElement = document.createElement("a");
-          aElement.setAttribute("href", sources[i].file);
+          aElement.setAttribute("href", source.file);
           aElement.setAttribute("download", title);
-          aElement.innerText = sources[i].label;
-          tab.prepend(aElement)
-        }
+          aElement.innerText = source.label;
+          tab!.prepend(aElement) //必ずある
+        })
+        //}
       } else {
           console.log("ACex: Can not find the tab.");
       }
@@ -176,7 +195,7 @@ class ACex {
     }
   }
   private getACtelop(settings:Settings) {
-    let datas:(string|number)[][]
+    let datas:(string)[][] = new Array()
     console.log("ACex: getACtelop" );
     //テロップ情報取得
     let telops = settings.telop;
@@ -186,12 +205,16 @@ class ACex {
         //"data": "C,S,0,2015/08/10 07:32:01;I,6,537;"
         data = (<string>settings.data).split(";");
       } else {
-        data = new Array(); //failsafe
+        data = new Array(); //failsafe 認証済み情報が無いときもある
       }
       //「,」区切りの文字列も配列に展開しておく
       for(let j=0; j<data.length; j++) {
-        let dataCmd = data[j].split(",");
-        datas[j] = dataCmd;
+        let dataCmd = data[j]?.split(",");
+        if ( !dataCmd ) {
+          datas[j] = []
+        } else {
+          datas[j] = dataCmd;
+        }
       }
       //console.log("ACex: telops=" + telops );
       let tab=document.getElementById('content-tab1'); //概要タブ
@@ -199,18 +222,16 @@ class ACex {
         for(let i=0; i<telops.length; i++) {
           //テロップ時間を文字列として取り出し行く
           //"telop": [{"choices": "6FAES", "id": "31614", "value": "6", "time": 537},..]
-          let telop = this.getHourString( new Date( +telops[i].time * 1000 ));
+          let telop = this.getHourString( new Date( +telops[i]!.time * 1000 )) //必ずあるはず
           //該当のtelopの認証済み情報を検索
           for(let j=0; j<datas.length; j++) {
-            let dataCmd = datas[j];
-            if ( dataCmd.length >= 3 ) {
-              if ( dataCmd[0]=="I" && dataCmd[1]==telops[i].value ) {
-                //該当のテロップの認証済み情報取得して文字列に追加
-                telop = telop + "  " + dataCmd[1] + ";"
-                  + this.getHourString( new Date( <number>dataCmd[2] * 1000 ));
-                dataCmd[1]="";  //また見つけないように消しておく
-                break; //一つみつけたらOK
-              }
+            let dataCmd = <string[]>datas[j];
+            if ( dataCmd!.length >= 3 && dataCmd[0]==="I" && dataCmd[1]===telops[i]?.value ) {
+              //該当のテロップの認証済み情報取得して文字列に追加
+              telop = telop + "  " + dataCmd[1] + ";"
+                + this.getHourString( new Date( +dataCmd[2]! * 1000 )) //必ずある
+              dataCmd[1]="";  //また見つけないように消しておく
+              break; //一つみつけたらOK
             }
           }
           console.log("ACex: time=" + telop);
@@ -234,20 +255,20 @@ class ACex {
     let elements = window.document.getElementsByTagName("script");
     //alert(elements.length + "個の要素を取得しました");
     for (let i = 0; i < elements.length; i++) {
-      let text = elements[i].innerText;
+      let text = elements[i]?.innerText;
       if (text) {
         //alert(i + ":" + elements[i].innerText);
         let match = text.match(/a=\w+/);
-        if (match) { sessionA = match[0]; };
+        if (match) { sessionA = match[0]!; } //正規表現間違えなければ必ずある
         match = text.match(/u=\w+/);
-        if (match) { userID = match[0]; };
+        if (match) { userID = match[0]!; } //正規表現間違えなければ必ずある
         if (sessionA && userID) { break; } //見つかったら終わり
       }
     }
     chrome.runtime.sendMessage(
-      {cmd: "setSession", userID: userID, sessionA: sessionA}, () => {
+      {cmd: BackgroundMsgCmd.SET_SESSION, userID: userID, sessionA: sessionA}, () => {
         //レスポンスでもらう値なしだかコネクション閉じるために受信
-        MessageUtil.checkRuntimeError("setSession")
+        MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_SESSION)
       });
     console.log("ACex: " + userID + " : " + sessionA);
   }

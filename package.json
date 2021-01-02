@@ -6,8 +6,11 @@
     "test": "test"
   },
   "scripts": {
+    "upgrade": "sh -xe upgrade.sh",
     "build": "sh -xe build.sh",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "node_modules/.bin/tsc",
+    "test": "node_modules/.bin/npx nyc mocha",
+    "coverage": "node_modules/.bin/npx nyc --reporter cobertura mocha"
   },
   "repository": {
     "type": "git",
@@ -20,18 +23,23 @@
   "author": "Takuya Ono",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/chrome": "0.0.86",
-    "@types/google.visualization": "0.0.48",
-    "@types/jquery": "^3.5.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@types/chrome": "^0.0.127",
+    "@types/google.visualization": "^0.0.58",
+    "@types/jquery": "^3.5.5",
     "@types/jspdf": "^1.3.3",
-    "@types/requirejs": "^2.1.32",
     "crx": "^5.0.1",
-    "npm": "^6.14.8",
-    "tslint": "^5.20.1",
-    "typescript": "^3.9.7"
+    "mocha": "^8.2.1",
+    "npm": "^6.14.10",
+    "npm-check-updates": "^10.2.5",
+    "nyc": "^15.1.0",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^9.1.1",
+    "tslint": "^6.1.3",
+    "typescript": "^4.1.3"
   },
   "dependencies": {
     "jquery": "^3.5.1",
-    "jspdf": "^1.5.3"
+    "jspdf": "^2.2.0"
   }
 }

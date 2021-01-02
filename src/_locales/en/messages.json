@@ -232,5 +232,23 @@
   },
   "api_key_tooltip":{
     "message":"Input Google Cloud Vision's API Key"
+  },
+  "support_airsearch_beta":{
+    "message":"Enable PDF documents by images on AirSearch Beta"
+  },
+  "support_airsearch_beta_tooltip":{
+    "message":"You will need additional access permissions for all sites."
+  },
+  "cannot_get_image_data":{
+    "message":"Could not get the data of the slide image."
+  },
+  "image_PDF_document":{
+    "message":"PDF by images"
+  },
+  "too_small_window":{
+    "message":"Warning: The window may be too small to get the slides"
+  },
+  "image_data_could_not_be_acquired":{
+    "message":"The slide image data could not be acquired."
   }
 }

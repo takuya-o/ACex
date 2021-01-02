@@ -16,14 +16,14 @@
 declare var dataLayer:DataLayer
 
 class CurseList {
-  private userID:string
-  private sessionA:string
-  private crMode: boolean //ページ開いてからオプションの変更は効かない
+  private userID:string = ""
+  private sessionA:string = ""
+  private crMode: boolean = false //「大学院」削除表示 //ページ開いてからオプションの変更は効かない
   constructor() {
     window.addEventListener("load", (_evt:Event) => {
       MessageUtil.assignMessages();
-      TabHandler.assignMessageHandlers(this); //backgroundからの通信受信設定
-      chrome.runtime.sendMessage({cmd: "getSession"}, (session:BackgroundResponseSession) => {
+      TabHandler.assignMessageHandlers(); //backgroundからの通信受信設定
+      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_SESSION}, (session:BackgroundResponseSession) => {
         //start
         this.userID = session.userID.replace(/^u=/,"")
         this.sessionA = session.sessionA.replace(/^a=/,"")
@@ -32,12 +32,20 @@ class CurseList {
       })
     })
   }
+  private message(msg:string) {
+   let message=document.getElementById('message')
+   if (!message) {
+     console.warn("Cannot display message:" + msg)
+   } else {
+     message.innerText = msg
+   }
+  }
   private createList() {
     let query = new URL(window.location.href).searchParams
-    let cmd = query.get("cmd")
+    let cmd = <string>query.get("cmd")
     if ( cmd !== "count" ) { cmd = "count"; } //サニタイズ
-    document.getElementById('cmd_name').innerText = MessageUtil.getMessage([cmd, "selectCourse"])
-    document.getElementById('message').innerText = MessageUtil.getMessage(["loding"])
+    document.getElementById('cmd_name')!.innerText = MessageUtil.getMessage([cmd, "selectCourse"])
+    this.message( MessageUtil.getMessage(["loding"]) )
 
     $.ajax(
       "https://aircamp.us/svlAC/GetCourseList",
@@ -54,40 +62,43 @@ class CurseList {
         this.programItemList(data, cmd)
       }
     ).fail( (_jqXHR, textStatus) => {
-        document.getElementById('message').innerText =
-          MessageUtil.getMessage(["program_list", "loding_fail"] ) + textStatus
+        this.message( MessageUtil.getMessage(["program_list", "loding_fail"] ) + textStatus )
         dataLayer.push({'event': 'Failure-GetCourseList3'
                           + textStatus })
       }
     )
   }
   private programItemList(programList:ProgramList, cmd:string) {
-    document.getElementById('message').innerText = MessageUtil.getMessage(["course_list", "loding_success"])
+    this.message( MessageUtil.getMessage(["course_list", "loding_success"]) )
     let now = new Date();
     let programs = programList.program
-    for(let i=0; i<programs.length; i++) { //プログラム
-      let programID = programs[i].id
-      document.getElementById('ProgramList').insertAdjacentHTML("beforeend",
+    //for(let i=0; i<programs.length; i++) {
+    programs.forEach( (program) => {
+      //プログラム
+      let programID = program.id
+      document.getElementById('ProgramList')!.insertAdjacentHTML("beforeend",
       '<li class="ProgramItem" id="programItem'+ programID + '">'
       + '<button type="button" id="' + programID
       + '" value="' + programID + '">'
       + ( this.crMode ?
-          programs[i].name.replace(/・*大学院*/g,""):
-          programs[i].name)
+          program.name.replace(/・*大学院*/g,""):
+          program.name)
       + '</button>'
       + '<ul id="program' + programID + '" style="display: none;"></ul>'
       +'</li>')
       //残らない (<HTMLButtonElement>document.getElementById(programID)).onclick = this.onClickProgram.bind(this)
-      let courses = programs[i].course
+      let courses = program.course
       let endFlg = (<HTMLInputElement>document.getElementById("termonoffswitch")).checked
-      let items = {} //コースを覚えておく
-      for(let j=0; j<courses.length; j++) { //コース
-        let courseID = courses[j].id
-        let endStr = courses[j].end
+      let items:{[key:string]: string} = {} //コースを覚えておく
+      //for(let j=0; j<courses.length; j++) {
+      courses.forEach( (course) => {
+        //コース
+        let courseID = course.id
+        let endStr = course.end
         //"2012-09-08T23:59:59+09:00"
         let date = endStr.match(/(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/);
-        let end = new Date(+date[1], +date[2]-1, +date[3]
-                            , +date[4], +date[5], +date[6], 999);
+        let end = new Date(+date![1]!, +date![2]!-1, +date![3]!
+                            , +date![4]!, +date![5]!, +date![6]!, 999);
         //順番付はorderよりcousrIDの方が直感的
         items[courseID] =
           '<li class="CourseItem" id="course' + courseID
@@ -101,37 +112,44 @@ class CurseList {
           +  '" cmd="' + cmd
           +  '" value="' + courseID + '">'
           +  ( this.crMode ?
-               courses[j].name.replace(/・*大学院*/g,""):
-               courses[j].name)
+               course.name.replace(/・*大学院*/g,""):
+               course.name)
           + '</button>'
           +'</li>'
-      }
+      })
+      //}
       for(let key in items) { //courseID順に並べる
-        document.getElementById( "program" + programID ).insertAdjacentHTML("beforeend", items[key])
-        document.getElementById( key ).onclick = this.onClickCourseItem.bind(this);
+        document.getElementById( "program" + programID )!.insertAdjacentHTML("beforeend", items[key]!) //必ずある
+        document.getElementById( key )!.onclick = this.onClickCourseItem.bind(this);
       }
-    }
-    for(let i=0; i<programs.length; i++) { //最後だけしか残らない問題 insesrtAdjacentHTMLで解決だけど
-      let programID = programs[i].id;
+    })
+    //}
+    //for(let i=0; i<programs.length; i++) {
+    programs.forEach( (program) => {
+      //最後だけしか残らない問題 insesrtAdjacentHTMLで解決だけど
+      let programID = program.id;
       (<HTMLButtonElement>document.getElementById(""+programID)).onclick = this.onClickProgram.bind(this)
-    }
-    document.getElementById("termonoffswitch").onclick = this.onClickSwitch.bind(this);
+    })
+    //}
+    document.getElementById("termonoffswitch")!.onclick = this.onClickSwitch.bind(this);
   }
   private  onClickSwitch(_evt:Event) {
     let items = document.getElementsByName("courseItem");
-    for(let i=0; i<items.length; i++) {
+    //for(let i=0; i<items.length; i++) {
+    items.forEach( (item) => {
       if ( (<HTMLInputElement>document.getElementById("termonoffswitch")).checked ) {
-        let endFlg = items[i].getAttribute('end');
-        if ( endFlg === "true" ) { items[i].style.display = "none" }
+        let endFlg = item.getAttribute('end');
+        if ( endFlg === "true" ) { item.style.display = "none" }
       }else{
-        items[i].style.display = "" //show "block"
+        item.style.display = "" //show "block"
       }
-    }
+    })
+    //}
   }
   private onClickProgram(evt:Event) {
     console.log("--- onClickProgram:" + (<HTMLElement>evt.target).id);
     let programID = (<HTMLElement>evt.target).id;
-    let list = document.getElementById( "program" + programID );
+    let list = <HTMLElement>document.getElementById( "program" + programID );
     if ( list.clientHeight == 0 ) {
       list.style.display = "" //"block"
       dataLayer.push({'event': 'program-' + programID });
@@ -154,7 +172,7 @@ class CurseList {
     // },
   private openCourseItem(courseID:string) {
     try {
-      let list = document.getElementById( "courseItemList" + courseID );
+      let list = <HTMLElement>document.getElementById( "courseItemList" + courseID );
       if ( list.clientHeight == 0 ) {
         list.style.display = "" //"block"
       } else {
@@ -179,9 +197,8 @@ class CurseList {
             this.courseItemList(data, courseID);
           }
       ).fail((_data, textStatus ) => {
-            document.getElementById('message').innerText =
-              MessageUtil.getMessage(["course_list", "logind_fail", "id",
-                                courseID, textStatus])
+            this.message( MessageUtil.getMessage(["course_list", "logind_fail", "id",
+                                courseID, textStatus]) )
             dataLayer.push({'event': 'Failure-GetCourseItemList'
                             + courseID + textStatus });
           }
@@ -189,15 +206,16 @@ class CurseList {
     }
   }
   private courseItemList(courseItemList:CourseItemList, courseID:string) {
-    document.getElementById('message').innerText =
-      MessageUtil.getMessage(["forum_list", "loding_success", "id"]) + courseID
+    this.message( MessageUtil.getMessage(["forum_list", "loding_success", "id"]) + courseID )
     let outlines = courseItemList.outline
-    document.getElementById( 'course' + courseID ).insertAdjacentHTML("beforeend",
+    document.getElementById( 'course' + courseID )!.insertAdjacentHTML("beforeend",
       '<ul id="courseItemList' + courseID + '"></ul>')
-    for(let i=0; i<outlines.length; i++) {
-      console.log("--- outlines["+i+"]"+outlines[i].type)
-      this.expandOutline(outlines[i], courseID)
-    }
+    //for(let i=0; i<outlines.length; i++) {
+    outlines.forEach( (outline, i) => {
+      console.log("--- outlines["+i+"]"+outline.type)
+      this.expandOutline(outline, courseID)
+    })
+    //}
     // for(let i=0; i<outlines.length; i++) { //消える対策 うまくいかない
     //   if ( outlines[i].type === "BBS" ) {
     //     let fid = outlines[i].fid
@@ -218,13 +236,15 @@ class CurseList {
           groupID = ""+outline.tid
         }
         console.log("---- find Group:" + groupID);
-        document.getElementById( 'courseItemList' + courseID ).insertAdjacentHTML("beforeend",
+        document.getElementById( 'courseItemList' + courseID )!.insertAdjacentHTML("beforeend",
           '<li>' + title + '</li>'
           +'<ul id="courseItemList' + courseID + "-" + groupID + '"></ul>')
-        for(let i=0;i<outline.outline.length;i++) {
-            console.log("--- outline.outline["+i+"]"+outline.outline[i].type)
-            this.expandOutline(outline.outline[i], courseID + "-" + groupID)
-        }
+        //for(let i=0;i<outline.outline.length;i++) {
+        outline.outline.forEach( (out, i) => {
+          console.log("--- outline.outline["+i+"]"+out.type)
+          this.expandOutline(out, courseID + "-" + groupID)
+        })
+        //}
       }
     } else if ( outline.type === "BBS") {
       let fid = outline.fid
@@ -238,8 +258,8 @@ class CurseList {
         + '<button type="button" id="' + fid
         + '" value="' + fid + '">'
         + title + '</button></li>'
-      document.getElementById( "courseItemList" + courseID ).insertAdjacentHTML("beforeend", item)
-      document.getElementById( ""+fid ).onclick = this.onClickBBS.bind(this);
+      document.getElementById( "courseItemList" + courseID )!.insertAdjacentHTML("beforeend", item)
+      document.getElementById( ""+fid )!.onclick = this.onClickBBS.bind(this);
     }
   }
   private onClickBBS(evt:Event) {
@@ -250,8 +270,8 @@ class CurseList {
   }
   private openTab(url:string) {
     chrome.runtime.sendMessage(
-      {cmd: "open", url: url}, (_response)=>{
-        MessageUtil.checkRuntimeError("open") //bgへのメッセージ送信失敗でtab開けず
+      {cmd: BackgroundMsgCmd.OPEN, url: url}, (_response)=>{
+        MessageUtil.checkRuntimeError(BackgroundMsgCmd.OPEN) //bgへのメッセージ送信失敗でtab開けず
     });
   }
 }

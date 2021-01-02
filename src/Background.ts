@@ -7,17 +7,17 @@ class Background{
   private static ASSIGN_TAB_HANDLER_RETRY_WAIT = 200 //msまつ
   private static FONT_FILENAME="lib/ipag00303/ipag.ttf"
   //クラス変数
-  private static tabList = {}  //Tab管理用連想記憶配列 {}
+  private static tabList:{[key:string]:number} = {}  //Tab管理用連想記憶配列 {}
   private static openedUrl= "" //HTML5コース画面で最後に開かれたURL
   private static defaultLicense:License = {
-    status: "UNKNOWN", //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
+    status: LicenseStatus.UNKNOWN, //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
     validDate: new Date(),
     //不明時はメモリも確保しないcreateDate: null//store.syncだと{}になる
     expireDate: undefined,
   }
   //インスタンス変数
   private license:License = Object.create(Background.defaultLicense)
-  private handlerTab:number|null =  null //TODO: Eventからの立ち上がりでnullのまま
+  private handlerTab:number|null =  null //Eventからの立ち上がりでnullのままだけど、複数登録しても害は無いのでそのまま
   private userID = "u="
   private sessionA = "a="
   private coursenameRestrictionEnable = false
@@ -31,9 +31,10 @@ class Background{
   private forumMemoryCacheSize = 100
   private countButton = false
   private apiKey = ""
+  private supportAirSearchBeta = false
   //キャッシュ
-  private forums:Forums
-  private authors:Authors  //Formキャッシュにはnameを保存せずこちらで一括キャッシュ(容量効率向上)
+  private forums:Forums = {cacheFormatVer: -1, forum:{}} //とりあえずダミー
+  private authors:Authors = {cacheFormatVer: -1, author:{}} //Formキャッシュにはnameを保存せずこちらで一括キャッシュ(容量効率向上)  とりあえずダミー
   private saveContentInCache = false
   constructor() {
     this.initializeClassValue();
@@ -53,21 +54,24 @@ class Background{
     chrome.runtime.onMessage.addListener(
       (msg:BackgroundMsg, sender:chrome.runtime.MessageSender, sendResponse:(ret?:BackgroundResponse)=>void) => {
         console.log("--- Backgroupd Recv ACex:" + msg.cmd);
-        if(msg.cmd === "setSession") {
+        if(msg.cmd === BackgroundMsgCmd.SET_SESSION) {
           if ( !msg.userID || !msg.sessionA ) {
+            //セッション情報が取れなかった
             console.error("setSession(userID, sessionA): Can not found argument userID or seesionA", msg)
+          } else {
+            //セッションデータを保存
+            this.setACsession(msg.userID, msg.sessionA);
           }
-          //セッションデータを保存
-          this.setACsession(msg.userID, msg.sessionA);
           //pageActionのicon表示
-          chrome.pageAction.show(sender.tab.id);
+          chrome.pageAction.show(sender.tab!.id!) //送り主のTabは必ずある
           sendResponse();
-        } else if (msg.cmd === "setIcon" ) {
+        } else if (msg.cmd === BackgroundMsgCmd.SET_ICON ) {
           //msg.textは空文字もありうる
+          if ( msg.text === null || msg.text === undefined ) { msg.text="" }
           //pageActionのiconのイメージ変更
           chrome.pageAction.setIcon({
-            tabId: sender.tab.id,
-            imageData: this.getImageData(null/*this.service.icon*/, msg.text)
+            tabId: sender.tab!.id!, //送り主のTabは必ずある
+            imageData: this.getIconImageData(null/*this.service.icon*/, msg.text)
           });
           // chrome.pageAction.setTitle({
           //   tabId: sender.tab.id,
@@ -87,48 +91,80 @@ class Background{
         //   sendResponse({displayTelop: this.isDisplayTelop()});
         // } else if (msg.cmd === "isCountButton" ) {
         //   sendResponse({countButton: this.isCountButton()});
-        } else if (msg.cmd === "getAuthorCache" ) {
-          if (!msg.uuid) { console.error("getAuthorCache(uuid): Can not found argument uuid.", msg.uuid)}
+        } else if (msg.cmd === BackgroundMsgCmd.GET_CAPTURE_DATA ) {
+          this.getCaptureData(sendResponse, sender.tab!) //tabはundefinedにはならない
+          return true //async
+        } else if (msg.cmd === BackgroundMsgCmd.GET_AUTHOR_CACHE ) {
+          if (!msg.uuid) {
+            console.error("getAuthorCache(uuid): Can not found argument uuid.", msg.uuid)
+            msg.uuid="" //不明の場合はも何か返す
+          }
           sendResponse({name: this.getAuthorCache(msg.uuid)});
-        } else if (msg.cmd === "setAuthorCache" ) {
-          if (!msg.uuid || !msg.name ) { console.error("setAuthorCache(uuid, name): Can not found argument uuid or name.", msg)}
-          this.setAuthorCache(msg.uuid, msg.name)
+        } else if (msg.cmd === BackgroundMsgCmd. SET_AUTHOR_CACHE ) {
+          if (!msg.uuid || !msg.name ) {
+             console.error("setAuthorCache(uuid, name): Can not found argument uuid or name.", msg)
+          } else {
+            this.setAuthorCache(msg.uuid, msg.name)
+          }
           sendResponse()
-        } else if (msg.cmd === "getForumCache" ) {
-          if (!msg.fid) { console.error("getForumCache(fid): Can not found argument fid.",msg.fid)}
-          sendResponse({forum: this.getForumCache(msg.fid)});
-        } else if (msg.cmd === "setForumCache" ) {
-          if (!msg.forum) { console.error("setForumCache(forum): Can not found argument forum", msg.forum)}
-          this.setForumCache(msg.forum)
+        } else if (msg.cmd === BackgroundMsgCmd.GET_FORUM_CACHE ) {
+          if (!msg.fid) {
+           console.error("getForumCache(fid): Can not found argument fid.",msg.fid)
+           sendResponse({forum: undefined })
+          } else {
+            sendResponse({forum: this.getForumCache(msg.fid)});
+          }
+        } else if (msg.cmd === BackgroundMsgCmd.SET_FORUM_CACHE ) {
+          if (!msg.forum) {
+            console.error("setForumCache(forum): Can not found argument forum", msg.forum)
+          } else {
+            this.setForumCache(msg.forum)
+          }
           sendResponse();
-        } else if (msg.cmd === "open" ) {
-          this.openTab(msg.url);
+        } else if (msg.cmd === BackgroundMsgCmd.OPEN ) {
+          if (!msg.url) {
+            console.error("open: Can not found argument url", msg.url)
+          } else {
+            this.openTab(msg.url);
+          }
           sendResponse();
-        } else if (msg.cmd === "openedUrl" ) {
-          Background.openedUrl = msg.url; //最後にcontent scriptで開かれたURL保存
-          console.log("--- ACex: openedUrl=" + Background.openedUrl);
-          sendResponse();
-        } else if (msg.cmd === "getOpenedUrl" ) {
-          sendResponse({name: this.getOpenedUrl()})  //TODO: url: にしたいね
-        } else if (msg.cmd === "getAPIkey" ) {
-          sendResponse({name: this.getAPIkey()})
-        } else if (msg.cmd === "getLicense" ) {
+        } else if (msg.cmd === BackgroundMsgCmd.SET_OPENED_URL ) {
+          if (!msg.url) {
+            console.error("openedUrl: Can not found argument url", msg.url)
+          } else {
+            Background.openedUrl = msg.url; //最後にcontent scriptで開かれたURL保存
+            chrome.storage.local.set({"openedUrl":Background.openedUrl}, () => {
+              console.log("--- ACex: openedUrl=" + Background.openedUrl);
+            })
+          }
+          sendResponse(); //chrome.stroge.local.set()は待たずに返す
+        } else if (msg.cmd === BackgroundMsgCmd.GET_OPENED_URL ) {
+          let openedUrl = this.getOpenedUrl()
+          console.log("GET_OPENED_URL", openedUrl)
+          sendResponse({url:openedUrl })
+        // } else if (msg.cmd === BackgroundMsgCmd.getAPIkey ) {
+        //   sendResponse({name: this.getAPIkey()})
+        } else if (msg.cmd === BackgroundMsgCmd.GET_LICENSE ) {
           sendResponse({
             validDate: this.getLicenseValidDate(),
             status: this.getLicenseStatus(),
             expireDate: this.getLicenseExpireDate()
           })
-        } else if (msg.cmd === "getSession" ){
+        } else if (msg.cmd === BackgroundMsgCmd.GET_SESSION ){
           sendResponse({
             userID: this.getUserID(),
             sessionA: this.getSessionA(),
             crMode: this.isCRmode(),
             saveContentInCache: this.isSaveContentInCache(),
           })
-        } else if (msg.cmd === "setSpecial" ){
-          this.setSpecial(msg.config)
+        } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIGURATIONS ){
+          if (!msg.config) {
+            console.error("setSpecial: Can not found argument config", msg.config)
+          } else {
+            this.setSpecial(msg.config)
+          }
           sendResponse();
-        } else if (msg.cmd === "getConfigurations" ){
+        } else if (msg.cmd === BackgroundMsgCmd.GET_CONFIGURATIONS ){
           sendResponse({
             experimentalEnable: this.isExperimentalEnable(),
             countButton: this.isCountButton(),
@@ -141,23 +177,44 @@ class Background{
             forumMemoryCacheSize: this.getForumMemoryCacheSize(),
             saveContentInCache: this.isSaveContentInCache(),
             apiKey: this.getAPIkey(),
+            supportAirSearchBeta: this.isSupportAirSearchBeta(),
           })
-        } else if (msg.cmd === "setupAuth" ){
+        } else if (msg.cmd === BackgroundMsgCmd.SETUP_AUTH ){
           this.setupAuth(true)
           sendResponse()
-        } else if (msg.cmd === "textDetection") {
-          this.textDetection(msg.text, sendResponse)
-          return true //async
-        } else if (msg.cmd === "getFontData") {
+        } else if (msg.cmd === BackgroundMsgCmd.TEXT_DETECTION) {
+          if ( !msg.text ) {
+            console.error("textDetection: Not find argument text", msg.text)
+            sendResponse() //Error
+          } else {
+            this.textDetection(msg.text, sendResponse)
+            return true //async
+          }
+        } else if (msg.cmd === BackgroundMsgCmd.GET_FONTDATA) {
           this.getFontData(sendResponse)
           return true //async
-        } else if (msg.cmd === "log" ) {
+        } else if (msg.cmd === BackgroundMsgCmd.LOG ) { //Debug用
           console.log("--- Logging ACex:" + msg.message);
           sendResponse();
+        } else if (msg.cmd === BackgroundMsgCmd.REMOVE_TAB_ID) {
+          if (!msg.tabId) {
+            console.error("remoteTabid: Not find argument tabId")
+            sendResponse()
+          } else {
+            this.removeTabId(msg.tabId)
+            sendResponse()
+          }
+        } else if (msg.cmd === BackgroundMsgCmd.GET_TAB_ID) {
+           if (!msg.url) {
+             msg.url="" //ダミー = みつからない
+           }
+           this.getTabId(msg.url, sendResponse)
+           return true //async
         } else {
           console.log("------ Backgroupd Recv ACex: Unknown message.");
           sendResponse();
         }
+        return false //同期
       }
     )
     //storage.syncの変更検知
@@ -171,7 +228,7 @@ class Background{
             if (license.status) {
               this.license.status = license.status;
             } else {
-              this.license.status = "UNKOWN";
+              this.license.status = LicenseStatus.UNKNOWN
             }
             if (license.validDate) {
               this.license.validDate = new Date(license.validDate);
@@ -194,6 +251,18 @@ class Background{
     })
   }
 
+  private getCaptureData(sendResponse:(dataUrl:string)=>void, senderTab:chrome.tabs.Tab) {
+    //アクティブタブのスクリーンショットのデータ取得
+    setTimeout( ()=>{
+      //待っている間にフォーカスが別のタブに行っているかもしれないので戻す
+      if (senderTab.id) { //nullのことは無いと思うけど
+        chrome.tabs.update(senderTab.id,{highlighted:true})
+      }
+      chrome.tabs.captureVisibleTab(senderTab.windowId, (dataUrl)=> { //WindowIdを指定してキャプチャ
+        sendResponse(dataUrl)
+      })
+    }, 1000) //少し(1000ms)待ってから TODO タイミングで良いのか
+  }
   //フォントデータ読み込み
   private getFontData( sendResponse:(res:FontData)=>void ) {
     chrome.runtime.getPackageDirectoryEntry( (directoryEntry) => {
@@ -201,7 +270,7 @@ class Background{
         fileEntry.file( (file)=>{
           let reader = new FileReader()
           reader.onloadend = (ev)=>{
-            let result = <string>ev.target.result
+            let result = <string>ev?.target?.result //"undefined"かも
             let font = result.substr(result.indexOf(',')+1)
             console.info(font)
             console.info("Font length:", font.length )
@@ -267,6 +336,20 @@ class Background{
 
   // タブへonRemoveハンドラー設定指示メッセージ送信
   private sendMessageAssignTabHandler(tabId:number, retryCount:number) {
+    if ( this.handlerTab ) { //既に登録済み
+      chrome.tabs.get(this.handlerTab, (tab:chrome.tabs.Tab)=>{
+        //まだハンドラーに登録したタブがあるか確認
+        if ( chrome.runtime.lastError || tab === null ) {
+          console.log("#-- tab was closed." + tabId);
+          this.handlerTab = null //無かったら消す
+        }
+        this.assignTabHandler(tabId, retryCount) //非同期なので間に合わないかも
+      })
+    } else {
+      this.assignTabHandler(tabId, retryCount)
+    }
+  }
+  private assignTabHandler(tabId:number, retryCount:number) {
     if ( this.handlerTab === null ) { //eventHandler登録が必要
       console.log("--- assignTabHandlers(" + tabId + ", " + retryCount-- + ")");
       chrome.tabs.sendMessage(tabId, "assignTabHandler", (_response) => {
@@ -276,12 +359,12 @@ class Background{
             if (retryCount>0) {//送信が早すぎるとタブが受信準備出来ていないのでリトライ
               console.log("----: sendMessage: Retry.");
               setTimeout(
-                function() {
+                function(this:Background) {
                   this.sendMessageAssignTabHandler(tabId, retryCount);
                 }.bind(this),
                 Background.ASSIGN_TAB_HANDLER_RETRY_WAIT); //何ms待ってリトライするか
             } else {
-              console.log("####: sendMessage: Retry Fail.");
+              console.error("####: sendMessage: Retry Fail.");
             }
           }else{ //送信成功
             this.handlerTab = tabId;
@@ -304,37 +387,52 @@ class Background{
     console.log("--- addTabId:" + fid + " = " + tabId);
     try {
       Background.tabList[fid] = tabId;
-      if ( this.handlerTab === null ) { //eventHandler登録が必要
-        this.sendMessageAssignTabHandler(tabId, Background.ASSIGN_TAB_HANDLER_MAX_RETRY);
-      }
+      this.storeTabList()
+      this.sendMessageAssignTabHandler(tabId, Background.ASSIGN_TAB_HANDLER_MAX_RETRY) //とりあえずTabHadlerの登録を試みる
     } catch (e) {
-      console.log("#-- addTabId()" + e.name + " " + e.message);
+      console.error("#-- addTabId()" + e.name + " " + e.message);
     }
   }
+  // storage.lcoalにTabList保存
+  private storeTabList() {
+    chrome.storage.local.set({ "tabList": Background.tabList }, () => {
+      //死んだ時用にtabList[]データを残す
+      console.info("Update tabList[] on storage.local")
+    })
+  }
+
   /* フォーラムを開いているタブIDを取得
      fid: forum ID
+     sendResponse(tabId): 非同期返し先
+     将来的には全部非同期にしたいけど現状は同期呼び出しもされる
   */
-  private getTabId(fid:string) {
-    let tabId:number
+  private getTabId(fid:string, sendResponse?:(tabId:TabId)=>void) {
+    let tabId:number|undefined
     fid = this.cleanupUrl(fid);
     console.log("--- getTabId(" + fid + ")");
     try {
       tabId =Background.tabList[fid];
-      if ( tabId != null ) {
+      if ( tabId != null ) {  //undefined以外 0があるので!tabiDは使えない
         //普段はEventListenerで消されるので問題ないが
         //念の為に存在確認して既に無ければ削除
         //その場合、非同期なので一回目はゴミが返る
         chrome.tabs.get(tabId, (tab:chrome.tabs.Tab) => {
           if ( chrome.runtime.lastError || tab === null ) {
             console.log("#-- tab was closed." + tabId);
-            this.removeTabId(tabId); //遅いがとりあえず次のために削除
+            this.removeTabId(tabId!); //遅いがとりあえず次のために削除
+            tabId = undefined //既に消されていた
           }
+          if (sendResponse) { sendResponse(tabId) }
         })
+      } else {
+        //無かったのでundefined返す
+        if (sendResponse) { sendResponse(tabId) }
       }
     } catch (e) {
-      console.log("#-- getTabId()" + e.name + " " + e.message);
+      console.warn("#-- getTabId()" + e.name + " " + e.message);
+      if (sendResponse) { sendResponse(tabId) } //分かっている値で返す
     }
-    return tabId;
+    return tabId  //同期の時 既にタブが消されていたら一回目はゴミ
   }
   /* タブが閉じられたのでリストから削除 */
   private removeTabId(tabId:number) {
@@ -348,7 +446,8 @@ class Background{
           //console.log("--- removeTabId:" + element);
           if ( Background.tabList[element] === tabId ) {
             console.log("--- removeTabId:" + tabId);
-            delete Background.tabList[element];
+            delete Background.tabList[element]
+            this.storeTabList()
             doneFlg = true;
             if ( this.handlerTab === tabId ) {
               //ハンドラー登録していたタブが閉じられた
@@ -358,7 +457,7 @@ class Background{
           }
         }
       } catch (e) {
-        console.log("#-- removeTabId():" + e.name + " " + e.message);
+        console.warn("#-- removeTabId():" + e.name + " " + e.message);
       }
       if ( !doneFlg ) {
         console.log("#-- removeTabId() not found:" + tabId);
@@ -366,7 +465,7 @@ class Background{
         if ( this.handlerTab === null ) {
           //タブハンドラーが空席状態なので最初に見つかったタブに登録
           for(let element in Background.tabList) {
-            this.sendMessageAssignTabHandler(Background.tabList[element],
+            this.sendMessageAssignTabHandler(Background.tabList[element]!,
                                              Background.ASSIGN_TAB_HANDLER_MAX_RETRY);
             break;
           }
@@ -377,20 +476,33 @@ class Background{
   private openTab(url:string) { //courselist.jsからcopy共通化が必要
     //該当のURLをタブで開く。既に開いていたらそれを使う
     let tabId = this.getTabId(url);
-    if ( tabId == null ) { //nullとの==比較でundefinedも見つけてる
+    if ( tabId == null ) { //nullとの==比較でundefinedも見つけてる 0があるかもしれないから!tabIdは使えない
       //開いているタブが無かったので作る
-      chrome.tabs.create( //タブを開く 引数省略すると「新しいタブ」
-        { url: url },
-        (tab) => {
-          //tabが閉じられるまでキャッシュとして利用する
-          console.log("--- opened tab:" + tab.id);
-          this.addTabId(url, tab.id);
-      });
+      this.openNewTab(url)
     } else {
       //forumを開いているタブを開く
-      chrome.tabs.update(tabId,{highlighted:true});
+      console.log("--- reuse tab:",tabId, url)
+      chrome.tabs.update(tabId,{highlighted:true}, (_tab)=>{
+        if( chrome.runtime.lastError ) {
+          //タブが消されていて無かったので新規にタブを作る
+          //最近 タブが閉じられた時にonRemoveが発生せず、良く起こる
+          console.log("--- The tab was already closed", tabId)
+          this.openNewTab(url)
+        }
+      })
     }
   }
+  private openNewTab(url: string) {
+    console.log("--- create new tab", url)
+    chrome.tabs.create(
+      { url: url },
+      (tab) => {
+        //tabが閉じられるまでキャッシュとして利用する
+        console.log("--- opened tab:" + tab.id)
+        this.addTabId(url, tab.id!)
+      })
+  }
+
   public getOpenedUrl(){
     return Background.openedUrl;
   }
@@ -405,6 +517,11 @@ class Background{
   }
   //インスタンス変数管理
   private initializeClassValue() {
+    chrome.storage.local.get(["openedUrl", "tabList"], (items)=>{
+      //有ったら使う
+      if (items.openedUrl) { Background.openedUrl = items.openedUrl }
+      if (items.tabList) { Background.tabList = items.tabList }
+    }) //順序性は無い
     this.localStorageMigration();
     let value = localStorage["ACsession"];
     if (value) {
@@ -437,6 +554,8 @@ class Background{
       if ( saveContentInCache ) { this.saveContentInCache = Boolean(saveContentInCache); }
       let apiKey = special["apiKey"]
       if ( apiKey ) { this.apiKey = apiKey } else { this.apiKey = "" }
+      let supportAirSearchBeta = special["supportAirSearchBeta"]
+      if (supportAirSearchBeta!=null) { this.supportAirSearchBeta = Boolean(supportAirSearchBeta) } //Default false
     }
     value = localStorage["Forums"];
     if (value) {
@@ -473,36 +592,36 @@ class Background{
       this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
     }
     //ライセンス情報
-    initializeLicenseValue()
-
-    function initializeLicenseValue() {
-      chrome.storage.sync.get("License", (items)=>{
-        if (chrome.runtime.lastError) {
-          console.log("####: storage.sync.get() ERR:",chrome.runtime.lastError);
-          return;
-        }
-        if (items) {
-          let license = items.License;
-          if (license ){
-            let licenseStatus = license.status;
-            if ( licenseStatus ) {
-              this.license.status = licenseStatus;
-            }
-            let licenseValidDate = license.validDate;
-            if ( licenseValidDate ) {
-              this.license.validDate = new Date(licenseValidDate);
-            }
-            let licenseCreateDate = license.createDate;
-            if ( licenseCreateDate ) {
-              this.license.createDate = new Date(licenseCreateDate);
-            }else{
-              if (this.license.createDate) delete this.license.createDate;
-            }
+    this.initializeLicenseValue()
+  }
+  private initializeLicenseValue() {
+    chrome.storage.sync.get("License", (items)=>{
+      if (chrome.runtime.lastError) {
+        console.log("####: storage.sync.get() ERR:",chrome.runtime.lastError);
+        return;
+      }
+      if (items) {
+        let license = items.License;
+        if (license ){
+          let licenseStatus = license.status;
+          if ( licenseStatus ) {
+            this.license.status = licenseStatus;
+          }
+          let licenseValidDate = license.validDate;
+          if ( licenseValidDate ) {
+            this.license.validDate = new Date(licenseValidDate);
+          }
+          let licenseCreateDate = license.createDate;
+          if ( licenseCreateDate ) {
+            this.license.createDate = new Date(licenseCreateDate);
+          }else{
+            if (this.license.createDate) delete this.license.createDate;
           }
         }
-      })
-    }
+      }
+    })
   }
+
   private setACsession(userID:string, sessionA:string) {
     this.userID = userID;
     this.sessionA = sessionA;
@@ -527,6 +646,7 @@ class Background{
     this.countButton = config.countButton;
     this.saveContentInCache = config.saveContentInCache;
     this.apiKey = config.apiKey
+    this.supportAirSearchBeta = config.supportAirSearchBeta
     localStorage["Special"]
       = JSON.stringify({"couresenameRestriction": config.cRmode,
                         "experimental": config.experimentalEnable,
@@ -540,18 +660,19 @@ class Background{
                         "countButton": config.countButton,
                         "saveContentInCache": config.saveContentInCache,
                         "apiKey": config.apiKey,
+                        "supportAirSearchBeta": config.supportAirSearchBeta,
                        });
   }
-  private enableDownloadable() { //downloadableだけ変える
-    this.downloadable = true;
-    let special = {};
-    let value = localStorage["Special"];
-    if (value) {
-      special = JSON.parse(value);
-    }
-    special["downloadable"] = true; //ここらへんは将来的には共通化
-    localStorage["Special"] = JSON.stringify(special);
-  }
+  // private enableDownloadable() { //downloadableだけ変える
+  //   this.downloadable = true;
+  //   let special:{[key:string]:boolean} = {} //boolean以外もあるけど…
+  //   let value = localStorage["Special"];
+  //   if (value) {
+  //     special = JSON.parse(value);
+  //   }
+  //   special["downloadable"] = true; //ここらへんは将来的には共通化
+  //   localStorage["Special"] = JSON.stringify(special);
+  // }
   public isCRmode() {
     return this.coursenameRestrictionEnable;
   }
@@ -588,11 +709,14 @@ class Background{
     //TODO: Authorsキャッシュのサイズも欲しいね
     return this.forumMemoryCacheSize;
   }
-  private setAPIkey(key:string) {
-    this.apiKey = key
-  }
+  // private setAPIkey(key:string) {
+  //   this.apiKey = key
+  // }
   private getAPIkey() {
     return this.apiKey
+  }
+  private isSupportAirSearchBeta() {
+    return this.supportAirSearchBeta
   }
   private getCacheFormsFormatVer() {
     return 2;
@@ -610,7 +734,7 @@ class Background{
       //日付別でソート
       let sorting = <FidDate[]>new Array();
       for(let fid in this.forums.forum) {
-        sorting.push({ "fid": fid, "date": new Date(this.forums.forum[""+fid].cacheDate) });
+        sorting.push({ "fid": fid, "date": new Date(this.forums.forum[""+fid]!.cacheDate!) }); //必ずある
       }
       sorting.sort(function(a:FidDate,b:FidDate) { return( a.date.getTime() - b.date.getTime() ) } )
       //古いキャッシュから削除
@@ -619,10 +743,10 @@ class Background{
           console.warn("ACex: Unexpected over retantion.");
           break;
         }
-        let fid:string = sorting.shift().fid;
+        let fid:string = sorting.shift()!.fid //無いと上でbreakしているので必ずある
         if (fid != forum.fid) { //今登録したのは削除対象外にする
           let f = this.forums.forum[fid];
-          console.log("ACex: cache retention "+fid+" "+f["cacheDate"]+" "+f["title"]);
+          console.log("ACex: cache retention "+fid+" "+f?.cacheDate+" "+f?.title);
           delete this.forums.forum[fid];
         } else {
           diff++;
@@ -658,20 +782,41 @@ class Background{
   }
   public getAuthorCache(uuid:string):string {  //stringで名前を返すので関数名良くないかも
     let author = this.authors.author[uuid];
-    let name:string; //undefined
+    let name:string = "" //undefined
     if ( author ) {
       name = author.name;
     }
     return name;
   }
-  private setLicense(status:string, validDate:Date, createDate:Date) {
-    let key = "UNKNOWN";
-    for (key in ["FREE_TRIAL","FREE_TRIAL_EXPIRED","FULL","NONE","UNKNOWN"]){
-      if ( status === key ) break; //サニタイズ
-    }
-    if ( key != "UNKNOWN" ) {
+  // private toEnum(status:string):LicenseStatus {
+  //   let lStatus:LicenseStatus = LicenseStatus.UNKNOWN
+  //   switch (status) {
+  //     case "FREE_TRIAL":
+  //       lStatus = LicenseStatus.FREE_TRIAL
+  //       break
+  //     case "FREE_TRIAL_EXPIRED":
+  //       lStatus = LicenseStatus.FREE_TRIAL_EXPIRED
+  //       break
+  //     case "FULL":
+  //       lStatus = LicenseStatus.FULL
+  //       break
+  //     case "NONE":
+  //       lStatus = LicenseStatus.NONE
+  //       break
+  //     default:
+  //       lStatus = LicenseStatus.UNKNOWN
+  //   }
+  //   return lStatus
+  // }
+  private setLicense(status:LicenseStatus, validDate:Date, createDate:Date|undefined) {
+    // let key = "UNKNOWN";
+    // for (key in ["FREE_TRIAL","FREE_TRIAL_EXPIRED","FULL","NONE","UNKNOWN"]){
+    //   if ( status === key ) break; //サニタイズ
+    // }
+    let key = status
+    if ( key != LicenseStatus.UNKNOWN ) {
       this.license = Object.create(Background.defaultLicense) //chrome.storage.sync.remove("License");
-      this.license.status = status;  //String
+      this.license.status = status;
       this.license.validDate = validDate;  //Date
       let storeLicense = {};
       if ( createDate ) {//Date or null
@@ -686,7 +831,7 @@ class Background{
       }
       console.log("ACex: storage.sync.set(",this.license, ")");
       chrome.storage.sync.set( //Date型は保存できないみたいなので数値で保管
-        {License: storeLicense }, ()=>{
+        {"License": storeLicense }, ()=>{
           if (chrome.runtime.lastError) {
             console.log("####: storage.sync.set() ERR:",
                         chrome.runtime.lastError);
@@ -700,14 +845,14 @@ class Background{
   public getLicenseValidDate():Date {
     return <Date>this.license.validDate;
   }
-  public getLicenseCreateDate():Date {
+  public getLicenseCreateDate():Date|undefined {
     if (this.license.createDate ) {
       return <Date>this.license.createDate;
     } else {
       return undefined;
     }
   }
-  public getLicenseExpireDate():Date {
+  public getLicenseExpireDate():Date|undefined {
     if ( this.license.createDate &&
          Object.prototype.toString.call(this.license.createDate).slice(8, -1)==="Date" ) { //Date型だったら
            return new Date((<Date>this.license.createDate).getTime() +
@@ -732,11 +877,11 @@ class Background{
       xhrWithAuth('GET', CWS_LICENSE_API_URL + chrome.runtime.id, true,
                   onLicenseFetched);
     }
-    function onLicenseFetched(error:chrome.runtime.LastError, status:string, response:string) {
+    function onLicenseFetched(error:chrome.runtime.LastError|undefined, status?:number, response?:string) {
       console.log(error, status, response);
       //ユーザが承認しないとerror.message="The user did not approve access."
       //statusDiv.text("Parsing license...");
-      if (status === "200") {
+      if (status === 200 && response !== undefined ) {
         let responseObj = <ChromeWebStoreLicense>JSON.parse(response);
         //$("#license_info").text(JSON.stringify(response, null, 2));
         //console.log("ACex: Parsing license " + JSON.stringify(response, null, 2));
@@ -761,26 +906,26 @@ class Background{
     function parseLicense(license:ChromeWebStoreLicense) {
       console.log("ACex: Full License=" + license.result);
       //let licenseStatus:string
-      let licenseStatusText:string
+      let licenseStatus:LicenseStatus
       if (license.result && license.accessLevel === "FULL") {
         console.log("Fully paid & properly licensed.");
-        licenseStatusText = "FULL";
+        licenseStatus = LicenseStatus.FULL //"FULL";
         //licenseStatus = "alert-success";
       } else if (license.result && license.accessLevel === "FREE_TRIAL") {
         let daysAgoLicenseIssued = Date.now()-parseInt(license.createdTime,10);
         daysAgoLicenseIssued = daysAgoLicenseIssued / 1000 / 60 / 60 / 24;
         if (daysAgoLicenseIssued <= bg.trialPriodDays) {
           console.log("Free trial, still within trial period");
-          licenseStatusText = "FREE_TRIAL";
+          licenseStatus = LicenseStatus.FREE_TRIAL //"FREE_TRIAL";
           //licenseStatus = "alert-info";
         } else {
           console.log("Free trial, trial period expired.");
-          licenseStatusText = "FREE_TRIAL_EXPIRED";
+          licenseStatus = LicenseStatus.FREE_TRIAL_EXPIRED //"FREE_TRIAL_EXPIRED";
           //licenseStatus = "alert-warning";
         }
       } else {
         console.log("No license ever issued.");
-        licenseStatusText = "NONE";
+        licenseStatus = LicenseStatus.NONE ///"NONE";
         //licenseStatus = "alert-danger";
       }
       //$("#dateCreated").text(moment(parseInt(license.createdTime, 10)).format("llll"));
@@ -795,9 +940,9 @@ class Background{
         console.log("ACex: Create=" +
                     new Date(parseInt(license.createdTime, 10)));
         let createDate = new Date(parseInt(license.createdTime, 10) );
-        bg.setLicense(licenseStatusText, validDate, createDate);
+        bg.setLicense(licenseStatus, validDate, createDate);
       } else {
-        bg.setLicense("NONE", validDate, null);
+        bg.setLicense("NONE", validDate, undefined);
       }
     }
     /**************************************************************************
@@ -809,7 +954,7 @@ class Background{
      **************************************************************************/
     // Helper Util for making authenticated XHRs
     function xhrWithAuth(method:string, url:string, interactive:boolean,
-      callback:(l:chrome.runtime.LastError, status?:string, response?:string)=>void) {
+      callback:(l:chrome.runtime.LastError|undefined, status?:number, response?:string)=>void) {
       let retry = true;
       let access_token:string
       getToken();
@@ -835,32 +980,33 @@ class Background{
         xhr.onload = requestComplete;
         xhr.send();
       }
-      function requestComplete() {
+      function requestComplete(this:XMLHttpRequest) {
         //statusDiv.text("Authenticated XHR completed.");
         if (this.status === 401 && retry) {
           retry = false;
           chrome.identity.removeCachedAuthToken({ token: access_token },
                                                 getToken);
         } else {
-          callback(null, this.status, this.response);
+          callback(undefined, this.status, this.response);
         }
       }
     }
   }
   //アイコンbadgeテキスト
-  private getImageData(img:HTMLImageElement,  text:string) {
+  private getIconImageData(img:HTMLImageElement|null,  text:string) {
+    console.log("getIconImageData()", null, text )
     let canvas = <HTMLCanvasElement>document.getElementById('canvas');
     let ctx = canvas.getContext('2d');
     let width = canvas.width;
     let height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
+    ctx!.clearRect(0, 0, width, height) //必ずある
     if (!img) {//iconが取れなそうなのでhtmlにicon置いておいて使う
       img = <HTMLImageElement>document.getElementById('icon');
     }
-    if (img) {
-      ctx.drawImage(img, 0, 0, img.width, img.height);
+    if ( img ) { //まずアイコンデータを描画
+      ctx!.drawImage(img, 0, 0, img.width, img.height) //必ずある
     }
-    if (text) {
+    if (text && ctx ) { //ついで文字を描画
       //ctx.fillStyle = '#000000';
       //ctx.fillRect(0, height - 9, width, 9);
       ctx.font = 'bold 8px "arial" sans-serif';
@@ -868,7 +1014,7 @@ class Background{
       ctx.textAlign = "center";
       ctx.fillText(text, width/2, height-1, height);
     }
-    return ctx.getImageData(0, 0, width, height);
+    return ctx!.getImageData(0, 0, width, height);
   }
 }
 let bg = new Background();

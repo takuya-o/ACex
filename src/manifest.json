@@ -4,15 +4,19 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.7.2020.2104",
+  "version": "0.8.2021.120",
   "minimum_chrome_version": "76",
 
   "permissions": [
     "identity",
-    "tabs",
+    "identity.email",
     "storage", "unlimitedStorage",
     "https://aircamp.us/svlAC/",
-    "https://www.googleapis.com/"
+    "https://www.googleapis.com/",
+    "activeTab"
+  ],
+  "optional_permissions": [
+    "<all_urls>"
   ],
   "oauth2": {
     "client_id": "942009117399-avs1lkpaf4t09cshpgrbamv4rnsm67vh.apps.googleusercontent.com",
@@ -31,13 +35,17 @@
       "run_at": "document_idle"
     },
     { "matches": ["https://www.bbt757.com/svlBOS/user/airsearch*", "http://www.bbt757.com/svlBOS/user/airsearch*"] ,
-      "js": [ "lib/jspdf.min.js", "MakeSlide.js" ],
+      "js": [ "lib/jspdf.umd.min.js", "Types.js", "MessageUtil.js", "MakeSlide.js", "AirSearchExtender.js" ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://player.aircamp.us/content/*"],
+      "js": [ "lib/jspdf.umd.min.js", "Types.js", "MessageUtil.js", "MakeSlide.js", "PlayerExtender.js" ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     "lib/jquery.min.js",
-    "lib/jspdf.min.js",
     "lib/ipag00303/*.ttf"
   ],
   "page_action": {

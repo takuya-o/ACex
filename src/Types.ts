@@ -17,28 +17,65 @@ interface DataLayer {
 }
 
 //Backgroundへのメッセージ
-type BackgroundMsg = {
-  cmd:string,
-  userID?:string, sessionA?:string,
-  text?:string,
-  uuid?:string, name?:string,
-  fid?:number,
-  url?:string,
-  message?:string,
-  forum?: Forum,
-  config?:Configurations,
+const BackgroundMsgCmd = {
+  SET_ICON:"setIcon",
+  GET_CAPTURE_DATA:"getCaptureData",
+  GET_AUTHOR_CACHE:"getAuthorCache",
+  SET_AUTHOR_CACHE:"setAuthorCache",
+  GET_FORUM_CACHE:"getForumCache",
+  SET_FORUM_CACHE:"setForumCache",
+  OPEN:"open",
+  GET_OPENED_URL:"getOpenedUrl",
+  SET_OPENED_URL:"setOpenedUrl",
+  // getAPIkey:"getAPIkey",
+  GET_LICENSE:"getLicense",
+  GET_SESSION:"getSession",
+  SET_SESSION:"setSession",
+  GET_CONFIGURATIONS:"getConfigurations",
+  SET_CONFIGURATIONS:"setConfigurations",
+  SETUP_AUTH:"setupAuth",
+  TEXT_DETECTION:"textDetection",
+  GET_FONTDATA:"getFontData",
+  REMOVE_TAB_ID: "removeTabId",
+  GET_TAB_ID: "getTabId",
+  LOG:"log"
 }
+type BackgroundMsgCmd = typeof BackgroundMsgCmd[keyof typeof BackgroundMsgCmd]
+type BackgroundMsg = {
+  cmd:BackgroundMsgCmd,
+  userID?:string, sessionA?:string, //SET_SESSION
+  text?:string, //SET_ICON, TEXT_DETECTION
+  uuid?:string, name?:string,  //GET_AUTHOR_CACHE, SET_AUTHOR_CACHE,
+  fid?:number,  //GET_FORUM_CACHE
+  url?:string,  //OPEN_TAB, SET_OPENED_URL, GET_TAB
+  message?:string, //LOG
+  forum?: Forum, //SET_FORUM_CACHE
+  config?:Configurations, //SET_CONFIGURATIONS
+  tabId?: number, //REMOVE_TAB
+}
+//Backgroundからのレスポンス
+const LicenseStatus = {
+  FREE_TRIAL: "FREE_TRIAL",
+  FREE_TRIAL_EXPIRED: "FREE_TRIAL_EXPIRED",
+  FULL: "FULL",
+  NONE: "NONE",
+  UNKNOWN: "UNKNOWN",
+} as const;
+type LicenseStatus = typeof LicenseStatus[keyof typeof LicenseStatus];
 type License ={
-  status: string|Date,
+  status: LicenseStatus, //string, //|Date,
   validDate: Date,
-  expireDate: Date,
+  expireDate: Date|undefined,
   createDate?: Date,
 }
 type BackgroundResponseName = {
   name: string
 }
+type BackgroundResponseUrl = {
+  url: string
+}
 type BackgroundResponseForum = {
-  forum: Forum
+  forum: Forum|undefined
 }
 type BackgroundResponseSession = {
   userID: string,
@@ -55,8 +92,11 @@ type FontData = {
   data: string,
   length: number,
 }
-type BackgroundResponse = BackgroundResponseName|BackgroundResponseForum|BackgroundResponseSession|TextDetectionResult|License|Configurations|FontData
+type UrlString = string
+type TabId = number|undefined
+type BackgroundResponse = BackgroundResponseName|BackgroundResponseUrl|BackgroundResponseForum|BackgroundResponseSession|TextDetectionResult|License|Configurations|FontData|UrlString|TabId
 
+//オプション設定
 type Configurations = {
   experimentalEnable: boolean,
   countButton: boolean,
@@ -69,7 +109,17 @@ type Configurations = {
   forumMemoryCacheSize: number,
   saveContentInCache: boolean,
   apiKey: string,
+  supportAirSearchBeta: boolean,
 }
+// {[items:StorageTag]: any}って無理?
+// //chrome.storage用
+// const StorageTag = {
+//   OPENED_URL: "openedUrl",
+//   LICENSE: "License"
+// }
+// type StorageTag = typeof StorageTag[keyof typeof StorageTag]
+
+//jsPDF用
 type PDFprops = { w:number, h:number, mx:number, my:number, iw:number, ih:number }
 
 //AirCampus Settings

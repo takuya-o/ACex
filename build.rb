@@ -19,6 +19,6 @@ CrxMake.zip(
   :pkey   => "./src.pem",
   :zip_output => "./acex.zip",
   :verbose => true,
-  :ignorefile => /(\.swp|.*~|.ts|.map)/,
-  :ignoredir => /\.(?:svn|git|cvs)/
+  :ignorefile => /(\.swp|.*~|\.ts|\.map)/,
+  :ignoredir => /\.(?:svn|git|cvs|AppleDouble)/
 )

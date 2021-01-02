@@ -77,6 +77,7 @@ dockerコンテナで、パッケージングをして、CIとしています。
 * テスト中 Chromeウェブストアでのライセンス管理
 * 対応済み ~~キャッシュによる高速化~~ from V0.0.8.0
 * キャッシュを利用した更新部分のみの取得による高速化
+* AirSearch beta(2020/12)対応
 
 
 # chromeウェブストアの概要文
@@ -97,6 +98,11 @@ It may become unusable due to changes in AirCampus specifications.
 It is using Google Tag Manager and Google Analytics to investigate usage.
 
 ### What is new!
+Version 0.8
+Supporting AirSearch beta(Dec.2020), partially.
+* Focused slide image, and video download.
+* The creating PDF documents from slide images on the video screen.
+
 Version 0.7
 Supporting the creating PDF documents on AirSearch.
 
@@ -111,13 +117,15 @@ Version 0.3
 Refactoring some features.
 
 ### Permissions
-tabs - Used for switching and managing browser tabs.
+activeTab - Used for switching and managing browser tabs.
 storage, unlimitedStorage - Used to save option setting values ​​and data cache.
-identity - used for license management
+identity, identity.email - Used for license management.
+<all_urls> - For taking slide images by screenshot. (Optional)
 
 ## 日本語版
 
 ※BBTのウェブサイト「AirCampus for Web」は2020/1/15にサービスが終了し、代わりに「AirCampusポータル」になりました。
+※AirSearch Bata(2020年12月現在)として公開されている新しいAirSearchと、そこから起動される新しい視聴画面に対応中です。いまのところ視聴画面での視聴情報表示に対応する見通しはありません。
 
 以下の機能が ビジネス・ブレークスルー(BBT)の「AirCampusポータル」に追加されます。
 - 各フォローラムの発言数カウント・グラフ化する
@@ -131,6 +139,11 @@ AirCampusの仕様変更により使えなくなってしまうことがある�
 Google Tag ManagerとGoogle Analyticsを使用して使用状況を調査しています。
 
 ### What is new!
+Version 0.8
+部分的にAirSearch beta(2020/12)をサポート。
+* スライドの曇り止めとビデオダウンロード。
+* 視聴画面で「画像PDF化資料」作成をサポート。(実験的オプション)
+
 Version 0.7
 AirSearchの画像からPDF資料を作成する機能をサポートしました。
 
@@ -145,6 +158,8 @@ Version 0.3
 機能の整理を行いました。
 
 ### Permission
-tabs - ブラウザタブの切替・管理のために利用します。
-storage,unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
-identity - ライセンス管理のために利用します
+activeTab - ブラウザタブの切替・管理のために利用します。
+storage, unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
+identity, identity.email - ライセンス管理のために利用します
+<all_urls> - スライド画像をスクリーンチャプタで取得するために利用します。 (オプション)
+

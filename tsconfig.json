@@ -1,13 +1,30 @@
 {
   "compilerOptions": {
-      "module": "ESNext",
-      "noImplicitAny": false,
+      "module": "ES6",
+
+      "strict": true,
+      "noImplicitAny": true,
+      "noImplicitThis":true,
+      "alwaysStrict":true,
+      "strictBindCallApply":true,
+      "strictNullChecks":true,
+      "strictFunctionTypes":true,
+      "strictPropertyInitialization":true,
+
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "noUncheckedIndexedAccess": true,
+
       "removeComments": false,
       "preserveConstEnums": true,
       "sourceMap": true,
       "outDir": "./src",
-      "allowJs": true,
-      "checkJs": true,
+      "allowJs": false, //.jsもコンパイル
+      "checkJs": false,
+      "incremental": true,
+      "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
       "target": "ES6"
   },
   "exclude": [

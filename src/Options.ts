@@ -5,6 +5,9 @@
 // import MessageUtil = require("./MessageUtil")
 
 class Options {
+  // 定数
+  private static OPTIONAL_PERMISSIONS = ["<all_urls>"] //"https://player.aircamp.us/"
+  private lastSupportAirSearchBeta:boolean = false
   constructor() {
     console.log("--- Options start ---")
     window.addEventListener("load", (_evt:Event) => {
@@ -16,49 +19,51 @@ class Options {
     })
   }
   private displayLicenseStatus(reload = true) {
-    chrome.runtime.sendMessage({cmd: "getLicense"}, (license:License) => {
+    chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_LICENSE}, (license:License) => {
       console.log("License", license)
       if ( new Date(license.validDate).getMilliseconds() > Date.now() ) {
         console.log("ACex: License is Valid.");
       }else{
         console.log("ACex: License is not Valid.");
         if ( reload ) {
-          chrome.runtime.sendMessage({cmd: "setupAuth" }, () => {
+          chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.SETUP_AUTH }, () => {
             this.displayLicenseStatus(false)
           })
           return
         }
       }
-      let licenseStatusElement = document.getElementById("license_status")
+      let licenseStatusElement = <HTMLElement>document.getElementById("license_status")
       if (license.status) {
-        licenseStatusElement.textContent = MessageUtil.getMessage(["license_MSG_"+ license.status]);
+        licenseStatusElement.textContent = MessageUtil.getMessage(["license_MSG_"+ license.status]); //LicenseStatusだけどstringとして利用
       }
-      if ( license.status === "FULL" ) {
-        licenseStatusElement.style["color"]="Black";
-        license.expireDate = null;
-      } else if ( status === "FREE_TRIAL" || status === "FREE_TRIAL_EXPIRED" ) {
-        licenseStatusElement.style["color"]="Black";
+      if ( license.status === LicenseStatus.FULL ) {
+        licenseStatusElement.style.color="Black";
+        license.expireDate = undefined;
+      } else if ( license.status === LicenseStatus.FREE_TRIAL || license.status === LicenseStatus.FREE_TRIAL_EXPIRED ) {
+        licenseStatusElement.style.color="Black";
       } else {
-        licenseStatusElement.style["color"]="Red";
+        licenseStatusElement.style.color="Red"; // NONE, UNKNOWN
       }
-      let licenseExpireElement = document.getElementById("license_expire")
+      let licenseExpireElement = <HTMLElement>document.getElementById("license_expire")
       if (license.expireDate) {
         license.expireDate = new Date(license.expireDate)
         licenseExpireElement.textContent = license.expireDate.toLocaleString();
         if ( Date.now() > license.expireDate.getMilliseconds() ) {
-          licenseExpireElement.style["color"]="Red";
+          licenseExpireElement.style.color="Red";
         } else {
-          licenseExpireElement.style["color"]="Black";
+          licenseExpireElement.style.color="Black";
         }
-        document.getElementById("license_expire_row").style["display"]="table";
+        document.getElementById("license_expire_row")!.style.display="";
       } else {
-        document.getElementById("license_expire_row").style["display"]="none";
+        document.getElementById("license_expire_row")!.style.display="none";
       }
       chrome.identity.getProfileUserInfo( (userInfo)=>{
+        //https://developer.chrome.com/docs/extensions/reference/identity/#method-getProfileUserInfo
+        //Requires the identity.email manifest permission.
         if (userInfo) {
           let displayName = userInfo.id;
           if (userInfo.email) { displayName +=  " <" +  userInfo.email + ">"; }
-            document.getElementById("license_user").textContent = displayName;
+            document.getElementById("license_user")!.textContent = displayName;
           }
       })
     })
@@ -66,35 +71,37 @@ class Options {
   private displayExperimentalOptionList() {
     let experimentalOptionListElement = document.getElementById("experimental_option_list")
     if(this.getInputElement("experimental_option").checked) {
-      experimentalOptionListElement.style["display"]="inline";
+      experimentalOptionListElement!.style.display="inline";
     } else {
-      experimentalOptionListElement.style["display"]="none";
+      experimentalOptionListElement!.style.display="none";
     }
   }
   private assignEventHandlers() {
-    document.getElementById("options_save").onclick = this.onClickSave.bind(this)
-    document.getElementById("experimental_option").onclick = this.onClickSave.bind(this)
-    document.getElementById("count_button_option").onclick = this.onClickSave.bind(this)
-    document.getElementById("coursename_rectriction_option").onclick = this.onClickSave.bind(this)
+    document.getElementById("options_save")!.onclick = this.onClickSave.bind(this)
+    document.getElementById("experimental_option")!.onclick = this.onClickSave.bind(this)
+    document.getElementById("count_button_option")!.onclick = this.onClickSave.bind(this)
+    document.getElementById("coursename_rectriction_option")!.onclick = this.onClickSave.bind(this)
+    document.getElementById("support_airsearch_beta")!.onclick = this.onClickSave.bind(this)
     //document.getElementById("display_popup_menu_option").onclick = this.onClickSave.bind(this)
-    document.getElementById("popup_wait_for_mac").onchange = this.onClickSave.bind(this)
-    document.getElementById("downloadable_option").onclick = this.onClickSave.bind(this)
-    document.getElementById("display_telop_option").onclick = this.onClickSave.bind(this)
-    document.getElementById("check_license_by_chrome_web_store").onclick
+    document.getElementById("popup_wait_for_mac")!.onchange = this.onClickSave.bind(this)
+    document.getElementById("downloadable_option")!.onclick = this.onClickSave.bind(this)
+    document.getElementById("display_telop_option")!.onclick = this.onClickSave.bind(this)
+    document.getElementById("check_license_by_chrome_web_store")!.onclick
      = this.onClickSave.bind(this)
-    document.getElementById("trial_priod_days").onchange = this.onClickSave.bind(this)
-    document.getElementById("forum_memory_cache_size").onchange = this.onClickSave.bind(this)
-    document.getElementById("save_content_in_cache").onchange = this.onClickSave.bind(this)
-    document.getElementById("api_key").onchange = this.onClickSave.bind(this)
+    document.getElementById("trial_priod_days")!.onchange = this.onClickSave.bind(this)
+    document.getElementById("forum_memory_cache_size")!.onchange = this.onClickSave.bind(this)
+    document.getElementById("save_content_in_cache")!.onchange = this.onClickSave.bind(this)
+    document.getElementById("api_key")!.onchange = this.onClickSave.bind(this)
   }
   private getInputElement(id:string):HTMLInputElement { //<input type="いろいろ" 用get
     return <HTMLInputElement>document.getElementById(id)
   }
   private restoreConfigurations() {
-    chrome.runtime.sendMessage({cmd: "getConfigurations"}, (config:Configurations) => {
+    chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_CONFIGURATIONS}, (config:Configurations) => {
       this.getInputElement("experimental_option").checked = config.experimentalEnable
       this.getInputElement("count_button_option").checked = config.countButton
       this.getInputElement("coursename_rectriction_option").checked = config.cRmode
+      this.getInputElement("support_airsearch_beta").checked = config.supportAirSearchBeta
       this.getInputElement("popup_wait_for_mac").value = ""+config.popupWaitForMac
       this.getInputElement("downloadable_option").checked = config.downloadable
       this.getInputElement("display_telop_option").checked = config.displayTelop
@@ -105,41 +112,89 @@ class Options {
       this.getInputElement("save_content_in_cache").checked = config.saveContentInCache
       this.getInputElement("api_key").value = config.apiKey
       this.displayExperimentalOptionList();
+
+      this.lastSupportAirSearchBeta = config.supportAirSearchBeta
+      this.syncPermissions() //Permissionsとstoreされたconfigを同期して正しい表示にする
     })
   }
-  private onClickSave(_evt:Event) {
-      let experimental = this.getInputElement("experimental_option").checked;
-      let countButton = this.getInputElement("count_button_option").checked;
-      let coursenameRestriction = this.getInputElement("coursename_rectriction_option").checked;
-      let popupWaitForMac = parseInt(this.getInputElement("popup_wait_for_mac").value, 10);
-      let downloadable = this.getInputElement("downloadable_option").checked;
-      let displayTelop = this.getInputElement("display_telop_option").checked;
-      let useLicenseInfo= this.getInputElement("check_license_by_chrome_web_store").checked;
-      let trial_priod_days = parseInt(this.getInputElement("trial_priod_days").value, 10);
-      let forumMemoryCacheSize
-       = parseInt(this.getInputElement("forum_memory_cache_size").value, 10);
-      let saveContentInCache = this.getInputElement("save_content_in_cache").checked;
-      let apiKey = this.getInputElement("api_key").value
-
-      chrome.runtime.sendMessage({cmd: "setSpecial", config:{
-        experimentalEnable: experimental,
-        countButton: countButton,
-        cRmode: coursenameRestriction,
-        popupWaitForMac: popupWaitForMac,
-        downloadable: downloadable,
-        displayTelop: displayTelop,
-        useLicenseInfo: useLicenseInfo,
-        trialPriodDays: trial_priod_days,
-        forumMemoryCacheSize: forumMemoryCacheSize,
-        saveContentInCache: saveContentInCache,
-        apiKey: apiKey,
-      }}, () => {
-        this.displayExperimentalOptionList();
-        document.getElementById('message').innerText = MessageUtil.getMessage(["options_saved"])
-        setTimeout( () => {
-          document.getElementById('message').innerText=""; //一秒後にメッセージを消す
-        }, 1000);
-      })
-    }
+  private syncPermissions() { //Permissionsとstoreされたconfigを同期して正しい表示にする
+    chrome.permissions.contains({ origins: Options.OPTIONAL_PERMISSIONS }, (result) => {
+      if (chrome.runtime.lastError) {
+        console.error("Runtime.lastError: " + chrome.runtime.lastError.message, chrome.runtime.lastError);
+      } else if (result !== this.lastSupportAirSearchBeta) {
+        console.warn("permission diffrent with config");
+        this.lastSupportAirSearchBeta = result;
+        this.getInputElement("support_airsearch_beta").checked = result;
+        this.onClickSave(new Event("dummy"));
+      }
+    });
   }
+
+  private onClickSave(_evt:Event) {
+    let experimental = this.getInputElement("experimental_option").checked;
+    let countButton = this.getInputElement("count_button_option").checked;
+    let coursenameRestriction = this.getInputElement("coursename_rectriction_option").checked;
+    let supportAirSearchBeta = this.getInputElement("support_airsearch_beta").checked;
+    let popupWaitForMac = parseInt(this.getInputElement("popup_wait_for_mac").value, 10);
+    let downloadable = this.getInputElement("downloadable_option").checked;
+    let displayTelop = this.getInputElement("display_telop_option").checked;
+    let useLicenseInfo= this.getInputElement("check_license_by_chrome_web_store").checked;
+    let trial_priod_days = parseInt(this.getInputElement("trial_priod_days").value, 10);
+    let forumMemoryCacheSize
+      = parseInt(this.getInputElement("forum_memory_cache_size").value, 10);
+    let saveContentInCache = this.getInputElement("save_content_in_cache").checked;
+    let apiKey = this.getInputElement("api_key").value
+
+    //スイッチによりPermission設定
+    if ( this.lastSupportAirSearchBeta !== supportAirSearchBeta ) {
+      this.lastSupportAirSearchBeta = supportAirSearchBeta
+      if ( supportAirSearchBeta ) {
+        chrome.permissions.request({origins: Options.OPTIONAL_PERMISSIONS}, (granted)=>{ //"<all_urls>",
+          if ( chrome.runtime.lastError ) {
+            console.error("Runtime.lastError: " + chrome.runtime.lastError.message, chrome.runtime.lastError)
+            granted=false
+          }
+          if (!granted) { //不許可
+            supportAirSearchBeta = false //元に戻す
+            this.lastSupportAirSearchBeta = supportAirSearchBeta
+            this.getInputElement("support_airsearch_beta").checked = supportAirSearchBeta
+          }
+        })
+      } else {
+        chrome.permissions.remove({origins: Options.OPTIONAL_PERMISSIONS}, (remove)=>{
+          if ( chrome.runtime.lastError ) {
+            console.error("Runtime.lastError: " + chrome.runtime.lastError.message, chrome.runtime.lastError)
+            remove=false
+          }
+          if (!remove) { //消せず
+            supportAirSearchBeta = true //元に戻す
+            this.lastSupportAirSearchBeta = supportAirSearchBeta
+            this.getInputElement("support_airsearch_beta").checked = supportAirSearchBeta
+          }
+        })
+      }
+    }
+
+    chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.SET_CONFIGURATIONS, config:{
+      experimentalEnable: experimental,
+      countButton: countButton,
+      cRmode: coursenameRestriction,
+      popupWaitForMac: popupWaitForMac,
+      downloadable: downloadable,
+      displayTelop: displayTelop,
+      useLicenseInfo: useLicenseInfo,
+      trialPriodDays: trial_priod_days,
+      forumMemoryCacheSize: forumMemoryCacheSize,
+      saveContentInCache: saveContentInCache,
+      apiKey: apiKey,
+      supportAirSearchBeta: supportAirSearchBeta,
+    }}, () => {
+      this.displayExperimentalOptionList();
+      document.getElementById('message')!.innerText = MessageUtil.getMessage(["options_saved"])
+      setTimeout( () => {
+        document.getElementById('message')!.innerText=""; //一秒後にメッセージを消す
+      }, 1000);
+    })
+  }
+}
 let options = new Options();

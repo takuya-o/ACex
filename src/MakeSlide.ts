@@ -1,73 +1,52 @@
 // -*- coding: utf-8-unix -*-
-//import { jsPDF } from 'lib/jspdf.min'
+/// <reference types="jspdf" />
+
+//VScode生成 import * as jspdf from "jspdf"
+
+//const module = await import('./lib/jspdf.es.min.js');
+//const jsPDF = new module.jsPDF();
+
+// const script = document.createElement('script');
+// script.setAttribute('src', chrome.extension.getURL('lib/jspdf.es.min.js'));
+// script.setAttribute('type', 'module');
+// const head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+// head.insertBefore(script, head.lastChild);
+
+// import "lib/jspdf.es.min.js"
 
 class MakeSlide {
   //定数
-  private static MAX_RETRY = 10
-  private static RETRY_WAIT = 1000 //ms
   private static FONT_NAME="ipag"
   private static FONT_TYPE="normal" //ファイル名としてはそのまま使うsetFont時は小文字に自動変換 "normal"の場合ファイル名として含めない
   //jsPDF 追加font
   static font:string
-  constructor() {
+  constructor(cb:()=>void) {
     console.log("--- Start MakeSlide ---")
     //MessageUtil.assignMessages()
-    MakeSlide.setupFonts( MakeSlide.injectMakeButton )
+    MakeSlide.setupFonts( cb )
   }
-  private static setupFonts(cb:()=>void = null) {
+  private static setupFonts(cb:()=>void) {
     if (!MakeSlide.font) {
-      chrome.runtime.sendMessage({cmd: "getFontData"}, (response:FontData) => {
+      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
         if ( response.data !== "") {
           console.log("Font:", response.length, response.data)
           if ( response.data.length !== response.length ) {
             console.error("Font length missmatch. Error on message passing?")
           }
           MakeSlide.font = response.data
-          jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
+          jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
         } else {
           console.error("Can not get Font Data.")
         }
-        cb()
+        if (cb) { cb() }
       })
     } else {
       //font set 済み
       console.info("Alread setup font.") //ここに来るパターンみつけていないけど
-      cb()
+      if (cb) { cb() }
     }
   }
-  // <input type="button" onclick="go(pid=000)">
-  private static injectMakeButton() {
-    let mvspecs = document.querySelectorAll("div.my-mvspec") //番組はいくつかある
-    for (let i=0;i<mvspecs.length;i++) {
-      let mvspec = mvspecs[i]
-      let playButton = mvspec.querySelector("div.my-mvtools span.button>input") //1しかないはず
-      let onmouseup=playButton.getAttribute("onmouseup")
-      let pid = (onmouseup.match(/pid=(\d+)/)??[null, ""])[1] // Optional Chaining それとも??のNullish Coalescing
-      let makeSlideButton = <HTMLInputElement>document.createElement("input")
-      makeSlideButton.type = "button"
-      makeSlideButton.value = "資料" //TODO: I18N
-      makeSlideButton.onclick = (_e:MouseEvent) => {
-        MakeSlide.collectionImages(mvspec, pid)
-      }
-      let span =  <HTMLSpanElement>document.createElement("span")
-      span.setAttribute("class", "button") //「ポタン」スタイル
-      span.appendChild(makeSlideButton)
-      playButton.parentElement.after(span)
-    }
-  }
-  private static pushDisplaySlide(mvspec:Element, pid:string) {
-    let a = <HTMLAnchorElement>mvspec.querySelector("div#showLink" + pid + ">a") //この動画スライドを表示
-    //pid有るからdocumentでも良いけど
-    if (!a) {
-      a = <HTMLAnchorElement>mvspec.querySelector("span#showLink" + pid + ">a") //他のスライドも表示
-    }
-    if (!a){
-      console.warn("Can not find expand slide button.")
-    } else {
-      a.click()
-    }
-  }
-  static callAddFont = function() { //jsPDFからコールバックされる
+  static callAddFont = function(this:jspdf.jsPDF) { //jsPDFからコールバックされる
     // 'this' will be ref to internal API object.
     // this.addFileToVFS('Koruri-Regular.ttf', MakeSlide.font);
     // this.addFont('Koruri-Regular.ttf', 'Koruri', 'regular');
@@ -81,23 +60,11 @@ class MakeSlide {
     this.addFileToVFS(filename, MakeSlide.font);
     this.addFont(filename, MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase());
   }
-  private static collectionImages(mvspec:Element, pid:string, retry = this.MAX_RETRY) {
-    let flip2 = mvspec.querySelector("div.my-flip2") // もしくは #all_flips" + pid
-    let imgs = <NodeListOf<HTMLImageElement>>flip2.querySelectorAll("img.my-thumb_sdoc")
-    if ( imgs?.length <= 0 ) {
-      MakeSlide.pushDisplaySlide(mvspec, pid)
-      console.log("RETRY:", retry)
-      if ( retry > 0 ) {
-        setTimeout( MakeSlide.collectionImages, this.RETRY_WAIT, mvspec, pid, --retry)
-      }
-      return
-    }
-    let title = mvspec.querySelector("div.movie_name").textContent
-    let subTitle = mvspec.querySelector("div.movie_theme").textContent.replace(/(\t|^$\n)/mg,"").replace(/(^\n|\n$)/g,"")
-    console.log(title, subTitle)
-    let pdf = new jsPDF( {
+
+  public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>) {
+    let pdf = new jspdf.jsPDF({
       orientation: 'p',
-      unit: 'px', //210x297  'px',  //2480px x 3507px 300DPI 1654x2339 200DPI 413x585 50DPI
+      unit: 'px',
       format: 'a4',
       putOnlyUsedFonts: true,
       compress: true
@@ -124,31 +91,50 @@ class MakeSlide {
     pdf.setLanguage("ja-jp")
     //jsPDFのdefaultは300dpi https://github.com/MrRio/jsPDF/issues/132#issuecomment-28238493
     //let p = {w:210, h:297, mx:10, my:10} //{ w:2480, h:3507, mx:118, my:118} //マージン余白px
-    let p:PDFprops = { w:446, h:632, mx:18, my:18, iw:0, ih:0 } //54DPI(pxでほしいので実験算出値)
-    let w = imgs[0].naturalWidth  //小さいがそうだけど縦横比取るには十分なはず
-    let h = imgs[0].naturalHeight
-    p.iw = p.w-(2*p.mx)
-    p.ih = p.iw*h/w
-    if ( p.ih > (p.h/2) ) {
-      console.info("縦にちぎれた", p.ih ,">", (p.h/2) )
-      p.ih = (p.h/2)-p.my
-      p.iw = p.ih*w/h
+    let p: PDFprops = { w: 446, h: 632, mx: 18, my: 18, iw: 0, ih: 0 } //54DPI(pxでほしいので実験算出値)
+    let w = imgs[0]!.naturalWidth //小さいがそうだけど縦横比取るには十分なはず
+    let h = imgs[0]!.naturalHeight
+    p.iw = p.w - (2 * p.mx)
+    p.ih = p.iw * h / w
+    if (p.ih > (p.h / 2)) {
+      console.info("縦にちぎれた", p.ih, ">", (p.h / 2))
+      p.ih = (p.h / 2) - p.my
+      p.iw = p.ih * w / h
     }
-    console.log( w + " x " + h, p.iw, p.ih)
-    MakeSlide.onePage(title, subTitle, p, imgs, pdf, null, null)
+    console.log(w + " x " + h, p.iw, p.ih)
+    MakeSlide.onePage(title, subTitle, p, imgs, pdf)
   }
-  private static onePage(title:string, subTitle:string, p:PDFprops, imgs:NodeListOf<HTMLImageElement>, pdf:jsPDF, ctx:CanvasRenderingContext2D, buf:CanvasRenderingContext2D, i = 0) {
+
+  private static onePage(title:string, subTitle:string, p:PDFprops, imgs:NodeListOf<HTMLImageElement>, pdf:jspdf.jsPDF, ctx:CanvasRenderingContext2D|null = null, buf:CanvasRenderingContext2D|null = null, i = 0) {
+    //PDF処理中アイコン点滅
+    chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: "PDF"}, (_response:BackgroundResponse) => {
+      MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
+      setTimeout( ()=>{
+        //0.5秒後に消す  次のページに追いつかれても最後消すから問題なし
+        chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: ""}, (_response:BackgroundResponse) => {
+          MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
+        })
+      }, 500) //500ms
+    })
     let img = new Image()
-    //大きな画像でセット 640x360 や 640x480
-    img.src = imgs[i].src.replace("/mdoc/", "/doc/").replace("http://","https://").replace("aaa.","www.")
-    console.log(img.src)
+    let src =""
+    if ( imgs[i] && /^https?:\/\//.test(imgs[i]!.src) ) {
+      //大きな画像でセット 640x360 や 640x480 //AirSearch Bataの視聴画面では拡大の必要ない
+      //CORS対応のため親のURLと同じサーバーから画像を取ってくるためのURL変換
+      src = imgs[i]!.src.replace("/mdoc/", "/doc/").replace("http://","https://").replace("aaa.","www.")
+    } else {
+      src = imgs[i]!.src  //この場合再ロードはいらないけれどonloadを触るのでnewしたImageを使う
+    }
+    console.log(imgs[i]!.src.substr(0,200)) //頭だけ 元のsrc
     img.onload = () => { //<img src= を変えてロードが終わってから
+      console.log(img.src.substr(0,200))  //頭だけ 変換後src
       const w = img.naturalWidth
       const h = img.naturalHeight
       const nUp = 2 //PDF 1ページにいくつの画像をいれるか
       //OCR準備
       const ocrPages = nUp*1 // OCRの1ページの画像数 nUpの倍数が良い
-      if ( i === 0 || ctx === null ) { //最初のページのときにCanvas作る
+      if ( i === 0 || !ctx ) { //最初のページのときにCanvas作る
+        console.log("Create Canvas")
         let canvas = document.createElement('canvas')
         canvas.width = w //サイズ設定をしておかないとdrawできない
         canvas.height = h*ocrPages  //縦 2枚分
@@ -163,9 +149,9 @@ class MakeSlide {
       }
       //2ページをまとめる
       if ( i%ocrPages === 0 ) { //最初のページでクリア
-        ctx.clearRect(0,0, w, h*ocrPages)
+        ctx!.clearRect(0,0, w, h*ocrPages)
       }
-      ctx.drawImage(img, 0, h * (i%ocrPages) ) //画像をまとめる
+      ctx!.drawImage(img, 0, h * (i%ocrPages) ) //画像をまとめる
 
       if ( i%ocrPages !== (ocrPages-1) && i < (imgs.length-1) ) {
         //最後の画像ではない奇数画像
@@ -180,21 +166,42 @@ class MakeSlide {
           if ( b + j >= imgs.length ) {
             break; //全画像終了
           }
-          let imgData = ctx.getImageData(0, h*j, w, h) //まとめた画像を1つづ取り出す
+          let imgData:ImageData|undefined
+          try {
+            imgData = ctx?.getImageData(0, h*j, w, h) //まとめた画像を1つづ取り出す
+          } catch (e) {   //getImageData()がCORSで引っかかる
+            console.error("Exception in getImageData()", e)
+            alert(MessageUtil.getMessage(["cannot_get_image_data"]))
+            return
+          }
           //いらない buf.clearRect(0,0,w,h)
-          buf.putImageData(imgData,0,0)
+          if ( !imgData ) {
+            console.error("Canot getImageData(0,"+(h*j)+","+w+","+h+")",ctx)
+            throw new Error("Cannot getImagaData")
+          } else {
+            buf!.putImageData(imgData,0,0)
+          }
           // pdf.setGState("def")
           if ( j%nUp === 0 && j !== 0 ) { pdf.addPage() }
-          pdf.addImage(buf.canvas, "JPEG", p.mx, (j%nUp)*(p.h/nUp) + p.my, p.iw, p.ih, "Page " + (b+j+1) ) //資料は640x360や640x480
+          if (!buf) {
+            console.error("Buf no init.")
+            throw new Error("Buf no init.")
+          } else {
+            pdf.addImage(buf.canvas, "JPEG", p.mx, (j%nUp)*(p.h/nUp) + p.my, p.iw, p.ih, "Page " + (b+j+1) ) //資料は640x360や640x480
+          }
         }
         console.log("Google Cloud Vition API call.",i )
         //Base64取り出し
-        let base64:string = ctx.canvas.toDataURL("image/jpeg").replace(/^data:image\/jpeg;base64,/, "" );
-        chrome.runtime.sendMessage( {cmd: "textDetection", text: base64}, (res:TextDetectionResult) => {
+        let base64 = ctx?.canvas.toDataURL("image/jpeg").replace(/^data:image\/jpeg;base64,/, "" );
+        if (!base64 ) {
+          console.error("Cannot toDataURL")
+          throw new Error("Cannot toDataURL")
+        }
+        chrome.runtime.sendMessage( {cmd:BackgroundMsgCmd.TEXT_DETECTION, text: base64}, (res:TextDetectionResult) => {
           console.log("認識結果", res.ans)
           if ( res.result === "done" && res.ans.fullTextAnnotation?.text ) {
             //pdf.setGState("trans")
-            pdf.text(res.ans.fullTextAnnotation.text, p.w, p.my ) //右欄外にOCR結果を出力 (i%2)*(p.h/2)+p.my TODO:重ね合わせ
+            pdf.text(res.ans.fullTextAnnotation.text, p.w, p.my ) //TODO:画像と文字の重ね合わせ 今は右欄外にOCR結果を出力 (i%2)*(p.h/2)+p.my
           }
           if ( i<(imgs.length-1) ) {
             MakeSlide.onePage(title,subTitle, p, imgs, pdf, ctx, buf, ++i)
@@ -202,14 +209,18 @@ class MakeSlide {
             //全ページ完了
             subTitle = subTitle.replace(/\n^ゲスト：.+$/m,"") //ゲスト:の行はのぞく
             let lf = subTitle.match(/\n/gm)?.length  //マッチしないとnull つまり 0
-            if ( lf > 1  ) { // 3行以上 「大前ライブ」とか
+            if ( lf && lf > 1  ) { // 3行以上 「大前ライブ」とか
               subTitle = ""
             }else if ( lf === 1 ) { //2行なら1行にする
               subTitle = subTitle.replace(/\n/m, "")
             } //1行 もしくは 0行 はなにもしない
-            if ( title.match(/\d$/) && subTitle.match(/^\d/) ) {
-              subTitle = " " + subTitle //数字が重なるならスペース入れる
-            }
+            //タイトルなどの全角英数字を半角へ
+            title=MakeSlide.zenkaku2Hankaku(title)
+            subTitle=MakeSlide.zenkaku2Hankaku(subTitle)
+            //間のスペースを除く
+            title=MakeSlide.squeezeSpace(title)
+            subTitle=MakeSlide.squeezeSpace(subTitle)
+
             //8ページくらいまでしかダメ
             // let preview = document.createElement("iframe")
             // preview.setAttribute("frameborder", "0")
@@ -217,11 +228,31 @@ class MakeSlide {
             // preview.setAttribute("height", "360")
             // preview.setAttribute("src", pdf.output("datauristring"))
             // mvspec.after(preview)
+
+            //タイトルとサブタイトルをつなげてファイル名にして保存
+            if ( title.match(/\d$/) && subTitle.match(/^\d/) ) {
+              subTitle = " " + subTitle //数字が重なるならスペース入れる
+            }
             pdf.save(title + subTitle + ".pdf")
           }
         })
       }
     }
+    //
+    img.src = src //画像ロードの実行
+  }
+  private static squeezeSpace(str:string) {  //英字以外の前のスペースを削除する
+    //英字以外の前のスペースを除いている
+    return str.replace(/ +(?![A-Za-z])/gm,  "")
+  }
+  private static zenkaku2Hankaku(str:string) { //全角英数半角変換
+    return str.replace(/[！-｝]/g, function(s) {   //全角英数  〜を除く  cf. 半角英数[ -~]
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    })
   }
 }
-new MakeSlide()
+//new MakeSlide(MakeSlide.injectMakeButton)
+
+//import { jsPDF } from 'jspdf'
+//import jspdf from 'jspdf' //"allowSyntheticDefaultImports": true,
+//import * as jspdf from 'jspdf'

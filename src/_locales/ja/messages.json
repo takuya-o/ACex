@@ -180,7 +180,7 @@
     "message":"映像ダウンロードを可能にする"
   },
   "display_telop":{
-    "message":"認証情報表示"
+    "message":"視聴認証情報表示"
   },
   "auth_time":{
     "message":"認証時刻"
@@ -232,5 +232,23 @@
   },
   "api_key_tooltip":{
     "message":"Google Cloud Vision APIのAPI Keyを入力してください。"
+  },
+  "support_airsearch_beta":{
+    "message":"AirSearch Betaの視聴画面で「画像PDF化資料」作成をサポート"
+  },
+  "support_airsearch_beta_tooltip":{
+    "message":"追加で全てのサイトのアクセス権限が必要になります。"
+  },
+  "cannot_get_image_data":{
+    "message":"スライドイメージのデータを取得できませんでした。"
+  },
+  "image_PDF_document":{
+    "message":"画像PDF化資料"
+  },
+  "too_small_window":{
+    "message":"警告:スライドを取得にはウィンドウが小さすぎるかもしれません"
+  },
+  "image_data_could_not_be_acquired":{
+    "message":"スライド画像データが取得できませんでした。"
   }
 }

@@ -11,9 +11,9 @@ class MessageUtil {
     let elems = document.querySelectorAll('*[class^="MSG_"]');
     Array.prototype.forEach.call(elems, function (node:HTMLElement) {
       let keys = node.className.match(/MSG_(\w+)/);
-      let key:string;
+      let key:string
       if ( keys !== null && keys.length > 1 ) {
-        key = keys[1];
+        key = <string>keys[1] //必ずあるのでキャスト undefined
       } else {
         console.error("Unexpected condition that not fund Key MSG_");
         return;
@@ -32,7 +32,8 @@ class MessageUtil {
         if (attr.name === "title") {
           let keys = attr.value.match(/MSG_(\w+)/);
           if ( keys !== null && keys.length > 1  ) {
-            let message = chrome.i18n.getMessage(keys[1]);
+            key = <string>keys[1] //必ずあるのでキャスト undefined
+            let message = chrome.i18n.getMessage(key);
             if (message) { attr.value = message; }
           } else {
             //console.log("Attribute is title but not MSG_ key.")
@@ -44,18 +45,22 @@ class MessageUtil {
 
   public static getMessage(args:Array<string>) {//arg:配列
     let ret = "";
-    for(let i=0; i<args.length; i++ ) {
+    //for(let i=0; i<args.length; i++ ) {
+    args.forEach( (arg, i) => {
       if ( i !== 0 ) { ret = ret + " "; };
-      let message = chrome.i18n.getMessage(args[i]);
-      if (!message) { message = args[i]; };
+      let message = chrome.i18n.getMessage(arg);
+      if (!message) { message = arg; };
       ret = ret + message;
-    }
+    })
+    //}
     return ret;
   };
 
   public static checkRuntimeError(msg:string) {
     if (chrome.runtime.lastError) {
-      console.log("####: sendMessage " + msg + ":" ,chrome.runtime.lastError.message);
+      let errorMsg = "####: sendMessage " + msg + ":"
+      console.log(errorMsg ,chrome.runtime.lastError.message);
+      console.error(new Error(errorMsg + chrome.runtime.lastError.message).stack) //スタックトレーズ出力
     }
   }
 }
