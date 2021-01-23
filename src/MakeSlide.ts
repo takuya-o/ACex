@@ -20,11 +20,7 @@ class MakeSlide {
   private static FONT_TYPE="normal" //ファイル名としてはそのまま使うsetFont時は小文字に自動変換 "normal"の場合ファイル名として含めない
   //jsPDF 追加font
   static font:string
-  constructor(cb:()=>void) {
-    console.log("--- Start MakeSlide ---")
-    //MessageUtil.assignMessages()
-    MakeSlide.setupFonts( cb )
-  }
+
   private static setupFonts(cb:()=>void) {
     if (!MakeSlide.font) {
       chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
@@ -62,16 +58,16 @@ class MakeSlide {
   }
 
   public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>) {
-    let pdf = new jspdf.jsPDF({
+    const pdf = new jspdf.jsPDF({
       orientation: 'p',
       unit: 'px',
       format: 'a4',
       putOnlyUsedFonts: true,
       compress: true
     })
-    let manifest = chrome.runtime.getManifest() //Chrome拡張機能のマニュフェストファイル取得
+    const manifest = chrome.runtime.getManifest() //Chrome拡張機能のマニュフェストファイル取得
     pdf.setProperties({
-      title: title,
+      title,
       subject: subTitle,
       author: "BBT",
       //keywords: tagged:
@@ -91,9 +87,9 @@ class MakeSlide {
     pdf.setLanguage("ja-jp")
     //jsPDFのdefaultは300dpi https://github.com/MrRio/jsPDF/issues/132#issuecomment-28238493
     //let p = {w:210, h:297, mx:10, my:10} //{ w:2480, h:3507, mx:118, my:118} //マージン余白px
-    let p: PDFprops = { w: 446, h: 632, mx: 18, my: 18, iw: 0, ih: 0 } //54DPI(pxでほしいので実験算出値)
-    let w = imgs[0]!.naturalWidth //小さいがそうだけど縦横比取るには十分なはず
-    let h = imgs[0]!.naturalHeight
+    const p: PDFprops = { w: 446, h: 632, mx: 18, my: 18, iw: 0, ih: 0 } //54DPI(pxでほしいので実験算出値)
+    const w = imgs[0]!.naturalWidth //小さいがそうだけど縦横比取るには十分なはず
+    const h = imgs[0]!.naturalHeight
     p.iw = p.w - (2 * p.mx)
     p.ih = p.iw * h / w
     if (p.ih > (p.h / 2)) {
@@ -116,7 +112,7 @@ class MakeSlide {
         })
       }, 500) //500ms
     })
-    let img = new Image()
+    const img = new Image()
     let src =""
     if ( imgs[i] && /^https?:\/\//.test(imgs[i]!.src) ) {
       //大きな画像でセット 640x360 や 640x480 //AirSearch Bataの視聴画面では拡大の必要ない
@@ -135,7 +131,7 @@ class MakeSlide {
       const ocrPages = nUp*1 // OCRの1ページの画像数 nUpの倍数が良い
       if ( i === 0 || !ctx ) { //最初のページのときにCanvas作る
         console.log("Create Canvas")
-        let canvas = document.createElement('canvas')
+        const canvas = document.createElement('canvas')
         canvas.width = w //サイズ設定をしておかないとdrawできない
         canvas.height = h*ocrPages  //縦 2枚分
         console.info("img ", w, "x", h )
@@ -192,7 +188,7 @@ class MakeSlide {
         }
         console.log("Google Cloud Vition API call.",i )
         //Base64取り出し
-        let base64 = ctx?.canvas.toDataURL("image/jpeg").replace(/^data:image\/jpeg;base64,/, "" );
+        const base64 = ctx?.canvas.toDataURL("image/jpeg").replace(/^data:image\/jpeg;base64,/, "" );
         if (!base64 ) {
           console.error("Cannot toDataURL")
           throw new Error("Cannot toDataURL")
@@ -208,7 +204,7 @@ class MakeSlide {
           } else {
             //全ページ完了
             subTitle = subTitle.replace(/\n^ゲスト：.+$/m,"") //ゲスト:の行はのぞく
-            let lf = subTitle.match(/\n/gm)?.length  //マッチしないとnull つまり 0
+            const lf = subTitle.match(/\n/gm)?.length  //マッチしないとnull つまり 0
             if ( lf && lf > 1  ) { // 3行以上 「大前ライブ」とか
               subTitle = ""
             }else if ( lf === 1 ) { //2行なら1行にする
@@ -249,6 +245,12 @@ class MakeSlide {
     return str.replace(/[！-｝]/g, function(s) {   //全角英数  〜を除く  cf. 半角英数[ -~]
         return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
     })
+  }
+
+  constructor(cb:()=>void) {
+    console.log("--- Start MakeSlide ---")
+    //MessageUtil.assignMessages()
+    MakeSlide.setupFonts( cb )
   }
 }
 //new MakeSlide(MakeSlide.injectMakeButton)

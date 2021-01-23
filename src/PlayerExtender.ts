@@ -6,14 +6,34 @@ class PlayerExstender {
   private static RETRY_MAX = 10
   private static RETRY_WAIT = 1000 //ms
   //
-  constructor() {
-    console.log("--- Start PlayerExtender ---")
-    new MakeSlide(PlayerExstender.injectMakeButton)
-    PlayerExstender.sharpner()
-    PlayerExstender.setDownloadable()
+  public static injectMakeButton() {
+    // MakeSlideのコンストラクターの延長で呼ばれる
+    console.log("injectMakeButton - PlayerExtender")
+    chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_CONFIGURATIONS}, (config:Configurations) => {
+      if  (!config.supportAirSearchBeta) {
+        console.log("Not support AirSearch Beta") //Optionでenableになっていない。Permissionも出ていないのでボタンを表示しない
+      }  else {
+        // MakeSlideでフォントが読み込まれるまでボタンは出ない
+        const slideCarousel = document.querySelector("div.carousel.slide") as HTMLDivElement //1しかないはず 無い時nullだけど下でreturnするのでキャストでその先を助ける
+        if ( !slideCarousel ) {
+          console.error("Cannot find slide carousel.")
+          return
+        }
+        const makeSlideButton = document.createElement("input") as HTMLInputElement //作成
+        makeSlideButton.type = "button"
+        makeSlideButton.value = MessageUtil.getMessage(["image_PDF_document"])
+        makeSlideButton.onclick = (_e:MouseEvent) => {
+          const imgs = slideCarousel.querySelectorAll("img") as NodeListOf<HTMLImageElement>
+          PlayerExstender.collectionImages(imgs)
+        }
+        makeSlideButton.setAttribute("class", "rounded-pill")
+        slideCarousel.parentElement!.after(makeSlideButton) //親は必ずある
+      }
+    })
   }
+
   private static sharpner(retry = PlayerExstender.RETRY_MAX) {
-    let imgs = document.querySelectorAll('div.carousel-item img.d-block.w-100.filterBlur2') //divの子がimgだけど、フェールセーフで子孫
+    const imgs = document.querySelectorAll('div.carousel-item img.d-block.w-100.filterBlur2') //divの子がimgだけど、フェールセーフで子孫
     if (imgs.length === 0) {
       if (retry > 0 ) {
         console.log("Retry get image", retry)
@@ -25,7 +45,7 @@ class PlayerExstender {
     }
     console.log("Find img.filterBlur2", imgs.length, imgs)
     Array.prototype.forEach.call(imgs, function (img:HTMLImageElement) {
-      let orgClass = img.getAttribute("class")
+      const orgClass = img.getAttribute("class")
       if (orgClass) {
         img.setAttribute("class", orgClass.replace(/filterBlur2/,"")) //曇り止め
       }
@@ -33,7 +53,7 @@ class PlayerExstender {
     console.log("OK: Shapner",)
   }
   private static setDownloadable(retry = PlayerExstender.RETRY_MAX ) {
-    let videos = document.querySelectorAll('video[controlslist~="nodownload"]') //2020-12-14フォーマット 2020-12-26には変わったかも
+    const videos = document.querySelectorAll('video[controlslist~="nodownload"]') //2020-12-14フォーマット 2020-12-26には変わったかも
     if (videos.length === 0) {
       if ( retry !== PlayerExstender.RETRY_MAX && document.querySelectorAll("span.wapper-img").length !==0 ) {
         //ビデオの替わりの画像が有った
@@ -47,7 +67,7 @@ class PlayerExstender {
       return
     }
     Array.prototype.forEach.call(videos, function(video:HTMLVideoElement) {
-      let orgControl = video.getAttribute('controlslist')
+      const orgControl = video.getAttribute('controlslist')
       if (orgControl) {
         if ( orgControl === "nodownload" ) { //controlslistはnodownloadだけ
           video.removeAttribute("controlsllist") //全部けしちゃう
@@ -58,48 +78,21 @@ class PlayerExstender {
       console.log("OK: Video downloader") //videoは一つしか無いので。沢山有る場合は考える
     })
   }
-  public static injectMakeButton() {
-    // MakeSlideのコンストラクターの延長で呼ばれる
-    console.log("injectMakeButton - PlayerExtender")
-    chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_CONFIGURATIONS}, (config:Configurations) => {
-      if  (!config.supportAirSearchBeta) {
-        console.log("Not support AirSearch Beta") //Optionでenableになっていない。Permissionも出ていないのでボタンを表示しない
-      }  else {
-        // MakeSlideでフォントが読み込まれるまでボタンは出ない
-        let slideCarousel = <HTMLDivElement>document.querySelector("div.carousel.slide") //1しかないはず 無い時nullだけど下でreturnするのでキャストでその先を助ける
-        if ( !slideCarousel ) {
-          console.error("Cannot find slide carousel.")
-          return
-        }
-        let makeSlideButton = <HTMLInputElement>document.createElement("input") //作成
-        makeSlideButton.type = "button"
-        makeSlideButton.value = MessageUtil.getMessage(["image_PDF_document"])
-        makeSlideButton.onclick = (_e:MouseEvent) => {
-          let imgs = <NodeListOf<HTMLImageElement>>slideCarousel.querySelectorAll("img")
-          PlayerExstender.collectionImages(imgs)
-        }
-        makeSlideButton.setAttribute("class", "rounded-pill")
-        slideCarousel.parentElement!.after(makeSlideButton) //親は必ずある
-      }
-    })
-
-  }
   private static collectionImages(imgs:NodeListOf<HTMLImageElement>) {
     //let video = document.querySelector("div.course-video")
     const w = imgs[0]!.naturalWidth    //最初のスライドのサイスが最後まで続くと仮定
     const h = imgs[0]!.naturalHeight
     //chrome.tabs.getCurrent()もquery()も使えないので
-    window.innerWidth
     if ( window.innerWidth < w || window.innerHeight < h) {
       console.warn("Too small Window, need ( "+ w + " x " + h + ") actual ( " + window.innerWidth + " x " + window.innerHeight + " )" )
       alert(MessageUtil.getMessage(["too_small_window"]))
     }
-    let canvas = document.createElement("canvas")
+    const canvas = document.createElement("canvas")
     canvas.width = w
     canvas.height = h
-    let ctx = canvas.getContext("2d")
-    let tmpImg = new Image()
-    let outRoot = document.createElement("div")
+    const ctx = canvas.getContext("2d")
+    const tmpImg = new Image()
+    const outRoot = document.createElement("div")
     PlayerExstender.getCapture(imgs, w, h, tmpImg, ctx, canvas, outRoot)
   }
 
@@ -108,7 +101,7 @@ class PlayerExstender {
       console.error("Unexpected Error range orver:", imgs)
       throw new Error("Unexpected Error imgs[] range over. " + i)
     }
-    let img=<HTMLImageElement>imgs[i] //必ず有るのでnull避けキャスト
+    const img=imgs[i] as HTMLImageElement //必ず有るのでnull避けキャスト
     //style="position:fixed; top:0; left:0; width:640px!important; width:360px; z-index:1021"  9999999
     img.setAttribute("style", "position:fixed; top:0; left:0; width:" + w + "px!important; width:" + h + "px; z-index:10000000") //左上隅で一番前
     img.parentElement!.style.display = "block" //表示
@@ -124,14 +117,14 @@ class PlayerExstender {
       //確認 (<HTMLImageElement>(document.querySelector("img#videoMainThumb"))).src = imageData
       tmpImg.onload = () => {
         ctx?.drawImage(tmpImg, 0, 0) //タブ全体からキャンパスの大きさ w x h で切り出す
-        let outImg = new Image()
+        const outImg = new Image()
         outImg.src = canvas.toDataURL()
         outRoot.appendChild(outImg)
         if (i >= imgs.length - 1) {
           //最後のスライド
-          let title = (<HTMLDivElement>(document.querySelector("div.course-video, span.wapper-img")!.nextElementSibling)).innerText
+          const title = ((document.querySelector("div.course-video, span.wapper-img")!.nextElementSibling) as HTMLDivElement).innerText
           // "h1:not(.header__logo)" という手もあるけどね
-          let subTitle = (<HTMLParagraphElement>document.querySelector("ol#TimeTable>li:first-child p:nth-of-type(2)")).innerText
+          let subTitle = (document.querySelector("ol#TimeTable>li:first-child p:nth-of-type(2)") as HTMLParagraphElement).innerText
           subTitle = subTitle.replace(/^[^#]+#\d+\s*/, "") // 頭にタイトル#番号 とタイトルが有ったら消す
           MakeSlide.setupPDF(title, subTitle, outRoot.querySelectorAll("img"))
         } else {
@@ -141,7 +134,13 @@ class PlayerExstender {
       }
       tmpImg.src = dataUrl
     })
+  }
 
+  constructor() {
+    console.log("--- Start PlayerExtender ---")
+    new MakeSlide(PlayerExstender.injectMakeButton)
+    PlayerExstender.sharpner()
+    PlayerExstender.setDownloadable()
   }
 }
 new PlayerExstender()

@@ -25,14 +25,14 @@ const BackgroundMsgCmd = {
   GET_FORUM_CACHE:"getForumCache",
   SET_FORUM_CACHE:"setForumCache",
   OPEN:"open",
-  GET_OPENED_URL:"getOpenedUrl",
-  SET_OPENED_URL:"setOpenedUrl",
   // getAPIkey:"getAPIkey",
   GET_LICENSE:"getLicense",
   GET_SESSION:"getSession",
   SET_SESSION:"setSession",
   GET_CONFIGURATIONS:"getConfigurations",
   SET_CONFIGURATIONS:"setConfigurations",
+  // SET_CONFIG_LICENSE:"setConfgiLicense",
+  // SET_CONFIG_AIRSEARCH_BETA:"setConfigAirSearchBeta",
   SETUP_AUTH:"setupAuth",
   TEXT_DETECTION:"textDetection",
   GET_FONTDATA:"getFontData",
@@ -51,6 +51,8 @@ type BackgroundMsg = {
   message?:string, //LOG
   forum?: Forum, //SET_FORUM_CACHE
   config?:Configurations, //SET_CONFIGURATIONS
+  // configLicense?:boolean, //SET_CONFIG_LICENSE
+  // configAirSearchBeta?:boolean, //SET_CONFIG_AIRSEARCH_BETA
   tabId?: number, //REMOVE_TAB
 }
 //Backgroundからのレスポンス

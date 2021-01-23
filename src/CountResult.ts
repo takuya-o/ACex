@@ -23,7 +23,7 @@ class CountResult {
   private isSaveContentInCache:boolean = false //ページを開いた後にオプション変更は効かない
   private chartData:ChartData|null = null
   private setChartData(data:CountingDatum[], minWeek:number, maxWeek:number){
-    this.chartData = <ChartData>{};
+    this.chartData = ({} as ChartData);
     this.chartData.data = data;
     this.chartData.minWeek = minWeek;
     this.chartData.maxWeek = maxWeek;
@@ -50,21 +50,21 @@ class CountResult {
       MessageUtil.assignMessages();
       TabHandler.assignMessageHandlers(); //backgroundからの通信受信設定
       document.getElementById("force_reload_button")!.onclick = this.onClickForceReload.bind(this);
-      (<HTMLAnchorElement>document.getElementById("download")).href = ""
+      (document.getElementById("download") as HTMLAnchorElement).href = ""
       document.getElementById("download")!.style.pointerEvents = "none"  //キーでは行けちゃうけどね
       chrome.runtime.sendMessage({cmd:BackgroundMsgCmd. GET_SESSION}, (session:BackgroundResponseSession) => {
         //start
         this.userID = session.userID.replace(/^u=/,"")
         this.sessionA = session.sessionA.replace(/^a=/,"")
         this.isSaveContentInCache = session.saveContentInCache
-        let query = new URL(window.location.href).searchParams   //chrome.tabs でurlを読まないからtab permissionいらない
-        let fid = query.get("fid")
-        let forceLoad = new Boolean(query.get("force")).valueOf() //何か入れていないと有効にならない
+        const query = new URL(window.location.href).searchParams   //chrome.tabs でurlを読まないからtab permissionいらない
+        const fid = query.get("fid")
+        const forceLoad = new Boolean(query.get("force")).valueOf() //何か入れていないと有効にならない
         if (!fid) {
           console.error("Cannot get fid")
         } else {
           chrome.runtime.sendMessage({cmd: BackgroundMsgCmd.GET_FORUM_CACHE, fid: +fid}, (res:BackgroundResponseForum) => {
-            let forum = res.forum //undefinedのこともある
+            const forum = res.forum //undefinedのこともある
             this.createContents(fid!, forceLoad, forum); //bg揃ってから起動  //fidは必ずある
           })
         }
@@ -72,15 +72,15 @@ class CountResult {
     })
   }
   private onClickForceReload() {
-    let orgUrl = location.href;
+    const orgUrl = location.href;
     location.replace( orgUrl + "&force=true");
   }
   private downloadEnable(forum:Forum) {
-    let content = JSON.stringify( forum );
-    let blob = new Blob([ content ], { "type" : "text/json" });
-    (<HTMLAnchorElement>document.getElementById("download")).href = window.URL.createObjectURL(blob);
-    (<HTMLAnchorElement>document.getElementById("download")).download = forum.title + forum.fid + '.json';
-    let download = document.getElementById("download")
+    const content = JSON.stringify( forum );
+    const blob = new Blob([ content ], { "type" : "text/json" });
+    (document.getElementById("download") as HTMLAnchorElement).href = window.URL.createObjectURL(blob);
+    (document.getElementById("download") as HTMLAnchorElement).download = forum.title + forum.fid + '.json';
+    const download = document.getElementById("download")
     if (!download) {
       console.warn("Cannot find #download")
     } else {
@@ -89,15 +89,15 @@ class CountResult {
   }
   private createContents(fid:string, forceLoad:boolean, forum:Forum|undefined) {
     this.messsage(MessageUtil.getMessage(["loding"]))
-    let isSaveContentInCache = this.isSaveContentInCache;
+    const isSaveContentInCache = this.isSaveContentInCache;
     let doing = true; //開講中の場合は強制更新にするための開講中フラグ
     if ( forum ) {
-      let reload = document.getElementById( "force_reload_button" )
+      const reload = document.getElementById( "force_reload_button" )
       if (!reload ) {
         console.error("Cannot find #force_reload_button")
       } else {
-        let cacheDate = new Date(forum.cacheDate)
-        let endDay = new Date(forum.end)
+        const cacheDate = new Date(forum.cacheDate)
+        const endDay = new Date(forum.end)
         if ( endDay < cacheDate ) {
           doing = false;
           reload.style.display = "";
@@ -155,11 +155,11 @@ class CountResult {
   }
   private getDate(dateStr:string) {
     //"2012-09-08T23:59:59+09:00"
-    let date = dateStr.match(/(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/);
+    const date = dateStr.match(/(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/);
     return new Date(+date![1]!, +date![2]!-1, +date![3]!, +date![4]!, +date![5]!, +date![6]!, 0); //本当にあるかは引数次第
   }
   private messsage(msg:string) {
-    let message = document.getElementById('message')
+    const message = document.getElementById('message')
     if ( !message ) {
       console.warn("Cannot display message: " + msg)
     } else{
@@ -172,7 +172,7 @@ class CountResult {
 
     //キャッシュ生成
     //let authors = <Authors>{};
-    let forum = <Forum>{};
+    const forum = {} as Forum;
     forum.fid = fid;
     forum.title = json.title.value; //フォーラムタイトル コース名は入っていない
     forum.updated = this.getDate(json.updated).toISOString();
@@ -182,14 +182,14 @@ class CountResult {
     forum.cacheDate = new Date().toISOString();
     forum.saveContentInCache = this.isSaveContentInCache //Entryにcontent入っているか?
 
-    let entries = json.entry; //author, ac:deleted
+    const entries = json.entry; //author, ac:deleted
     console.log("--- Post:" + entries.length);
     //for(let i=0; i<entries.length; i++) {
     entries.forEach( (entry) => {
       //キャッシュ生成 エントリー
-      let author = entry.author; //name, uuid
-      let number = entry.identifier; //記事番号
-      forum.entry[number] = <ACEntry>{};
+      const author = entry.author; //name, uuid
+      const number = entry.identifier; //記事番号
+      forum.entry[number] = ({} as ACEntry);
       forum.entry[number]!.uuid = author!.uuid;
       if ( !CountResult.authorNameCache[author.uuid]) {//キャッシュに無かったら
         CountResult.authorNameCache[author.uuid] = author.name
@@ -198,9 +198,9 @@ class CountResult {
       }
       forum.entry[number]!.deleted = entry.deleted;
       forum.entry[number]!.relation = entry.relation;  //参照先
-      forum.entry[number]!.updated = this.getDate(<string>entry.updated).toISOString();
+      forum.entry[number]!.updated = this.getDate(entry.updated as string).toISOString();
       //クライアントタイプは無いときがある
-      let clientTypeTag  = entry.clienttype;
+      const clientTypeTag  = entry.clienttype;
       if ( clientTypeTag ) {
         forum.entry[number]!.clienttype = clientTypeTag;
       } else {
@@ -212,38 +212,38 @@ class CountResult {
       //さらにオプションでコンテンツも保存 数百KB → 1.3MBとかに膨れるので注意
       if (forum.saveContentInCache) {
         forum.entry[number]!.title = entry.title;           //発言のタイトル
-        forum.entry[number]!.content = (<{value:string}>entry.content).value; //発言の内容
+        forum.entry[number]!.content = (entry.content as {value:string}).value; //発言の内容
       }
     })
     //}
     //キャッシュ記録
-    ACexMessageSender.send({cmd:BackgroundMsgCmd.SET_FORUM_CACHE, forum:forum}, ()=>{}) //非同期で登録
+    ACexMessageSender.send({cmd:BackgroundMsgCmd.SET_FORUM_CACHE, forum}, ()=>{}) //非同期で登録
     this.downloadEnable(forum)
     return forum;
   }
   private updateTableHeader(forum:Forum, msg:string) {
-    let fid = forum.fid;
+    const fid = forum.fid;
     this.messsage( MessageUtil.getMessage(["discussion_data", msg, "id"]) + fid )
 
     //データ更新時刻表示
-    let cacheDate = new Date(forum.cacheDate);
+    const cacheDate = new Date(forum.cacheDate);
     document.getElementById('update_time')!.innerText = cacheDate.toLocaleString()
 
     //開始日時表示
-    let startDay = new Date(forum.start);
+    const startDay = new Date(forum.start);
     document.getElementById('start_day')!.innerText = startDay.toLocaleString()
 
     //終了日時表示
-    let endDay = new Date(forum.end);
+    const endDay = new Date(forum.end);
     document.getElementById('end_day')!.innerText = endDay.toLocaleString()
 
     //終了後にキャッシュしてある場合は強制更新ボタンを有効にする
     if ( endDay > cacheDate ) {
-      (<HTMLInputElement>document.getElementById( "force_reload_button" )).disabled = false
+      (document.getElementById( "force_reload_button" ) as HTMLInputElement).disabled = false
     }
 
     //タイトル表示
-    let title = forum.title;
+    const title = forum.title;
     document.getElementById('title')!.innerText = title
     document.title = title + " " + document.title;
   }
@@ -251,9 +251,9 @@ class CountResult {
     function getStartTime(title:string, startDate:Date) {
       //人別 週別 データ作成
       let start = startDate.getTime();
-      if (  title.indexOf("RTOCS") != -1 ) { //RTOCSだった
-        let days = startDate.getDay();
-        if (days == 0 || days == 7 ) { //スタートが日曜日だったら20:00にする RTOCS補正
+      if (  title.indexOf("RTOCS") !== -1 ) { //RTOCSだった
+        const days = startDate.getDay();
+        if (days === 0 || days === 7 ) { //スタートが日曜日だったら20:00にする RTOCS補正
           start = start + ( CountResult.HOUR_MILSEC * 20 );
           //開始日時刻 表示更新
           document.getElementById('start_day')!.innerText = new Date(start).toLocaleString()
@@ -263,44 +263,44 @@ class CountResult {
     }
     function getMinPost(title:string) {
       let minPost = 1; //最低投稿数 普通は週に1件 2件もあるので黄色
-      if (  title.indexOf("RTOCS") != -1 ) { //RTOCSだった
-        if (  title.indexOf("振り返り") == -1 ) { //振り返り以外のRTOCSだった
+      if (  title.indexOf("RTOCS") !== -1 ) { //RTOCSだった
+        if (  title.indexOf("振り返り") === -1 ) { //振り返り以外のRTOCSだった
           minPost = 3; //RTOCSは週に3件必要
         } //振り返りは1件
       }
       return minPost
     }
 
-    let chartData = this.getChartData();
+    const chartData = this.getChartData();
     if ( chartData != null ) {
       console.log("Chart data cache hit.");
       return chartData; //キャッシュ・ヒット
     }
-    let start = getStartTime(forum.title, new Date(forum.start))
+    const start = getStartTime(forum.title, new Date(forum.start))
     forum.minPost = getMinPost(forum.title)
 
-    let data = <CountingDatum[]>new Array();
-    let uuids:{[key:string]: number } = {};
+    const data = new Array() as CountingDatum[];
+    const uuids:{[key:string]: number } = {};
     let index = 0;
     let minWeek = 999;
     let maxWeek = -999;
     for(let number=0; number<forum.entry.length; number++) { //for inはダメで実際は1からだけど
       if ( forum.entry[number] && !forum.entry[number]!.deleted ){
         //削除されていないものだけ収集
-        let uuid = forum.entry[number]!.uuid;
-        let relation = forum.entry[number]!.relation;  //参照先
-        if ( relation==0 || forum.entry[relation]!.uuid != uuid ) {
+        const uuid = forum.entry[number]!.uuid;
+        const relation = forum.entry[number]!.relation;  //参照先
+        if ( relation===0 || forum.entry[relation]!.uuid !== uuid ) {
           //返信先が無いか、自分以外からの返信だった
-          let update = new Date( forum.entry[number]!.updated ).getTime(); //日付UTC
+          const update = new Date( forum.entry[number]!.updated ).getTime(); //日付UTC
           //第1週〜 ただし事務はそれ以前の発言もある
           let week = Math.floor( (update - start)/CountResult.WEEK_MILSEC )+1; //切り捨て
           if ( week < 0 ) { week = 0; } //開始以前は0週目とする -1週避け
           if ( week < minWeek ) { minWeek = week; }
           if ( week > maxWeek ) { maxWeek = week; }
 
-          let uuidIndex = uuids[uuid]! //なくても良い
+          const uuidIndex = uuids[uuid]! //なくても良い
           if ( isNaN(uuidIndex) ) {  //初めて出てきた人
-            data[index] = <CountingDatum>{};
+            data[index] = ({} as CountingDatum);
             data[index]!.d = new Array();
             data[index]!.d[week] = 1;
             data[index]!.uuid = uuid;
@@ -316,8 +316,8 @@ class CountResult {
       }
     }
     data.sort( (a:CountingDatum,b:CountingDatum)=>{
-      let bSum = this.arraySum(b);
-      let aSum = this.arraySum(a);
+      const bSum = this.arraySum(b);
+      const aSum = this.arraySum(a);
       return( bSum - aSum );
     })
     return this.setChartData(data, minWeek, maxWeek)  //nullが入らない this.getChartData()だとnullがあり得る
@@ -329,12 +329,12 @@ class CountResult {
     })
     return sum;
   }
-  private fillAuthorCache(i:number=0, data:Array<ACEntry|CountingDatum>, sendResponse:()=>void) {
+  private fillAuthorCache(i:number=0, data:(ACEntry|CountingDatum)[], sendResponse:()=>void) {
     if (i%10===0) { console.log("filleDataTableHeader()",i) } //AuthorNameCache更新 ログは10回に一度
     if ( i<data.length ) {
         if ( data[i] && !CountResult.authorNameCache[data[i]!.uuid]) { //ACentryのdata[0]はempty  data[i]は必ずある
          ACexMessageSender.send({cmd:BackgroundMsgCmd.GET_AUTHOR_CACHE, uuid:data[i]!.uuid}, (ret) => {
-          let response = <BackgroundResponseName>ret //なんか必ず返ってくる
+          const response = ret as BackgroundResponseName //なんか必ず返ってくる
            if ( !response.name ) {
              console.error("Can not found Author name in Background.", data[i]!.uuid)
              response.name = "" //Non In Cache
@@ -350,7 +350,7 @@ class CountResult {
     }
   }
   private drawChart() {
-    let chartData = this.getChartData();
+    const chartData = this.getChartData();
     if ( !chartData ) {
       console.log("nothing chart Data.");
     } else {
@@ -360,7 +360,7 @@ class CountResult {
     }
   }
   private drawChartMain(chartData:ChartData) {
-    let data = new google.visualization.DataTable();
+    const data = new google.visualization.DataTable();
     //タイトル行
     data.addColumn('number', MessageUtil.getMessage(["week_column"]));
     //for(let i=0;i<chartData.data.length;i++) {
@@ -369,10 +369,10 @@ class CountResult {
     });
     //}
     //データ
-    let rows = new Array();
-    let last = new Array(chartData.data.length);
+    const rows = new Array();
+    const last = new Array(chartData.data.length);
     for(let week=chartData.minWeek; week<=chartData.maxWeek; week++ ){
-      let row = new Array();
+      const row = new Array();
       row.push(week);
       //for(let i=0; i<chartData.data.length; i++) {
       chartData.data.forEach( (data,i) => {
@@ -395,7 +395,7 @@ class CountResult {
       //指定位置にグラフ描画
       let hight = 33 * chartData.data.length;
       if ( hight < 500 ) { hight = 500; }
-      let options = {
+      const options = {
         chart: {
           //効かず hAxis: { minValue: (chartData.minWeek>0?chartData.minWeek:1), maxValue: chartData.maxWeek },
           title: ' ', //TODO: グラフのタイトルのセット
@@ -404,7 +404,7 @@ class CountResult {
         width: (window.innerWidth)-5, //900
         height: hight
       };
-      let chart = new google.charts.Line(document.getElementById('linechart_material')!);
+      const chart = new google.charts.Line(document.getElementById('linechart_material')!);
       //let chart = new google.visualization.LineChart(document.getElementById('linechart_material')); //@Typeにある古いやり方?
       chart.draw(data, options);
     }
@@ -419,20 +419,20 @@ class CountResult {
     this.updateTableHeader(forum, "create_table");
     document.getElementById( "ranking_table" )!.style.display = "";
     //カウント用の変数準備
-    let postuser:{[key:string]: string} = {};
-    let counter:{[key:string]: number} = {};
-    let deleted:{[key:string]: number} = {};
-    let reply:{[key:string]: number} = {};
-    let ownReply:{[key:string]: number} = {};
-    let replied:{[key:string]: number} = {};
+    const postuser:{[key:string]: string} = {};
+    const counter:{[key:string]: number} = {};
+    const deleted:{[key:string]: number} = {};
+    const reply:{[key:string]: number} = {};
+    const ownReply:{[key:string]: number} = {};
+    const replied:{[key:string]: number} = {};
     //キャッシュからページ生成
     for(let i=0; i<forum.entry.length; i++) {
-      let entry = forum.entry[i];
+      const entry = forum.entry[i];
       if ( !entry ) {
         continue;
       }
-      let uuid = entry.uuid;
-      let deletedFlg =  entry.deleted;
+      const uuid = entry.uuid;
+      const deletedFlg =  entry.deleted;
       if ( !deletedFlg ) {
         //削除されていないものだけカウント
         if ( isNaN(counter[uuid]! ) ) {
@@ -440,10 +440,10 @@ class CountResult {
           //最初に見つかった名前を利用する→最初にキャッシュされた名前を利用する
         }
         counter[uuid]++; //発言数カウント
-        let identifier = i; //記事番号
+        const identifier = i; //記事番号
         postuser[identifier] = uuid; //誰のポストか覚えておく
-        let relation = entry.relation;  //参照先
-        if ( 0 !=  relation ) {
+        const relation = entry.relation;  //参照先
+        if ( 0 !==  relation ) {
           //誰かを参照している
           if ( isNaN(reply[uuid]!) ) {
             reply[uuid] = 0; //初期化が大切
@@ -451,7 +451,7 @@ class CountResult {
           if ( isNaN(replied[postuser[relation]!]!) ) {
             replied[postuser[relation]!] = 0; //初期化が大切
           }
-          if ( postuser[relation] != uuid ) {
+          if ( postuser[relation] !== uuid ) {
             //返信先が自分以外だったら参照数と相手の記事の被参照数カウントアップ
             reply[uuid]++;
             replied[postuser[relation]!]++;
@@ -473,7 +473,7 @@ class CountResult {
 
     this.messsage( MessageUtil.getMessage(["count_finish", "id"]) + forum.fid )
 
-    let data = this.calcWeeklyData(forum) //週別も計算 dataは必ず作られる
+    const data = this.calcWeeklyData(forum) //週別も計算 dataは必ず作られる
     //チャートデータが算出できたのでグラフ表示
     this.drawChart();
 
@@ -487,19 +487,19 @@ class CountResult {
       document.getElementById('table_header_bottom')!.insertAdjacentHTML("beforeend", "<th>" + week + "</th>")
     }
 
-    let ranking:Ranking[] = [];
-    for(let uuid in counter) {
+    const ranking:Ranking[] = [];
+    for(const uuid in counter) {
       ranking.push({"name": CountResult.authorNameCache[uuid]!, "count": counter[uuid]!
                     ,"deleted": deleted[uuid]!
                     ,"reply": reply[uuid]!, "ownReply": ownReply[uuid]!
                     ,"replied": replied[uuid]!, "uuid": uuid });
     }
-    ranking.sort( function(a,b) {
+    ranking.sort( (a,b) => {
       return( b.count - a.count );
     } );
     //for(let i=0; i<ranking.length; i++) {
     ranking.forEach( (rank, i) => {
-      let count    = rank.count
+      const count    = rank.count
       let deleted  = rank.deleted
       let reply    = rank.reply
       let ownReply = rank.ownReply
@@ -518,16 +518,16 @@ class CountResult {
         + '<td align="right">' + Math.round(+reply/count*100) + '%</td>'
         + '<td align="right">' + replied + '</td>'
         + '<td align="right">' + Math.round(+replied/count*100) + '%</td>';
-      let tr = document.createElement("tr")
+      const tr = document.createElement("tr")
       {//ヘッタ
-        let th = document.createElement("th")
+        const th = document.createElement("th")
         th.setAttribute("align", "right")
         th.setAttribute("class", "RankingNumber")
         th.innerText = ""+(i+1)
         tr.appendChild(th)
       }
       {//一行目
-        let td = document.createElement("td")
+        const td = document.createElement("td")
         td.setAttribute("class", "RankingName")
         td.innerText =  rank["name"]
         tr.appendChild(td);
@@ -535,7 +535,7 @@ class CountResult {
           Math.round(+reply/count*100) + '%',
           replied,
           Math.round(+replied/count*100) + '%'  ].forEach( (str) => {
-            let td = document.createElement("td")
+            const td = document.createElement("td")
             td.setAttribute("align", "right")
             td.innerText = ""+str
             tr.appendChild(td)
@@ -543,7 +543,7 @@ class CountResult {
       }
       let d = new Array();
       for( let j=0; j<data.data.length; j++ ) {
-        if ( rank.uuid == data.data[j]!.uuid ) {
+        if ( rank.uuid === data.data[j]!.uuid ) {
           d = data.data[j]!.d; break;
         }
       }
@@ -557,7 +557,7 @@ class CountResult {
           redClass = "yellow_cell"
         }
         item = item + ('<td align="right"' + (redClass!==""?('class="' + redClass + '" '):"") +'>' + count + '</td>');
-        let td = document.createElement("td")
+        const td = document.createElement("td")
         td.setAttribute("align", "right")
         if ( redClass!=="") { td.setAttribute("class", redClass) }
         td.innerText = count
@@ -571,4 +571,5 @@ class CountResult {
 
   }
 }
+// tslint:disable-next-line: no-unused-expression
 new CountResult();

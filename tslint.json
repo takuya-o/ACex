@@ -1,0 +1,21 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+      "comment-format": false,
+      "whitespace": false,
+      "semicolon": false,
+      "no-console": {
+         "severity": "off",
+         "options": ["debug", "info", "log"]
+      },
+      "no-console": {
+        "severity": "warning",
+        "options": ["time", "timeEnd", "trace"]
+      }
+    },
+    "rulesDirectory": []
+}

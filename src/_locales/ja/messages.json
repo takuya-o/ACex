@@ -161,8 +161,14 @@
   "count_button_enable":{
     "message":"コースの画面で「カウント」ボタンを表示する"
   },
+  "count_button_enable_tooltip":{
+    "message":"コースの画面に「カウント」ボタンが表示されます。\n古い機能です。"
+  },
   "coursename_rectriction":{
     "message":"コース名を制限し短くする"
+  },
+  "coursename_rectriction_tooltip":{
+    "message":"コース名から「大学院」などを取り短く表示します。"
   },
   "experimental_option_list":{
     "message":"実験的オプション"
@@ -179,8 +185,14 @@
   "downloadable":{
     "message":"映像ダウンロードを可能にする"
   },
+  "downloadable_tooltip":{
+    "message":"視聴画面で映像のダウンロードができるようになります。"
+  },
   "display_telop":{
     "message":"視聴認証情報表示"
+  },
+  "display_telop_tooltip":{
+    "message":"視聴画面で視聴認証の情報を表示します。"
   },
   "auth_time":{
     "message":"認証時刻"
@@ -215,8 +227,14 @@
   "check_license_by_chrome_web_store": {
     "message":"Chromeウェブストアのライセンス情報を確認する"
   },
+  "check_license_by_chrome_web_store_tooltip": {
+    "message":"Chromeウェブストアでのライセンス情報を確認します。\nメールアドレスの表示のために、追加でメールアドレス取得の権限が必要になります。"
+  },
   "trial_priod_days": {
     "message":"試用期間"
+  },
+  "trial_priod_days_tooltip": {
+    "message":"テスト用"
   },
   "days": {
     "message":"日"
@@ -226,6 +244,9 @@
   },
   "save_content_in_cache": {
     "message":"キャッシュにコンテンツ本文も保存する"
+  },
+  "save_content_in_cache_tooltip": {
+    "message":"データ分析向けにダウンロードするためにコンテンツ本文もキャッシュに保存します。\nメモリー利用量が増えるので注意してください。"
   },
   "api_key":{
     "message":"API Key:"
@@ -237,7 +258,7 @@
     "message":"AirSearch Betaの視聴画面で「画像PDF化資料」作成をサポート"
   },
   "support_airsearch_beta_tooltip":{
-    "message":"追加で全てのサイトのアクセス権限が必要になります。"
+    "message":"AirSearch Betaでも「画像PDF化資料」が作成できるようになります。\n追加で全てのサイトのアクセス権限が必要になります。"
   },
   "cannot_get_image_data":{
     "message":"スライドイメージのデータを取得できませんでした。"

@@ -161,8 +161,14 @@
   "count_button_enable":{
     "message":"Display 'Count' button on course page."
   },
+  "count_button_enable_tooltip":{
+    "message":"The 'count' button will appear on the course screen.\nThis is an old feature."
+  },
   "coursename_rectriction":{
     "message":"Trim course name"
+  },
+  "coursename_rectriction_tooltip":{
+    "message":"'Graduate school' etc. remove from the course name for displaing briefly."
   },
   "experimental_option_list":{
     "message":"Experimental Options"
@@ -179,8 +185,14 @@
   "downloadable":{
     "message":"Enable Video Download Link"
   },
+  "downloadable_tooltip":{
+    "message":"Enable to download the video on the recture video screen."
+  },
   "display_telop":{
     "message":"Display Telop"
+  },
+  "display_telop_tooltip":{
+    "message":"Dispaly telop information on the recture video screen."
   },
   "auth_time":{
     "message":"Authenticate time"
@@ -215,8 +227,14 @@
   "check_license_by_chrome_web_store": {
     "message":"Check License Information by Chrome Web Store"
   },
+  "check_license_by_chrome_web_store_tooltip": {
+    "message":"Check the license information on the Chrome Web Store.\nFor display your email address, the email address authority will be requested."
+  },
   "trial_priod_days": {
     "message":"Trial Priod Days"
+  },
+  "trial_priod_days_tooltip": {
+    "message": "For testing."
   },
   "days": {
     "message":"days"
@@ -226,6 +244,9 @@
   },
   "save_content_in_cache": {
     "message":"Save Content in Cache"
+  },
+  "save_content_in_cache_tooltip": {
+    "message":"Caching the content body for downloading.\nPlease note that memory usage will increase."
   },
   "api_key":{
     "message":"API Key:"
@@ -237,7 +258,7 @@
     "message":"Enable PDF documents by images on AirSearch Beta"
   },
   "support_airsearch_beta_tooltip":{
-    "message":"You will need additional access permissions for all sites."
+    "message":"AirSearch Beta will also be able to create 'PDF by images'.\nAdditional access permissions for all sites will be requested."
   },
   "cannot_get_image_data":{
     "message":"Could not get the data of the slide image."
