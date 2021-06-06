@@ -15,49 +15,13 @@
 // import "lib/jspdf.es.min.js"
 
 class MakeSlide {
-  //定数
-  private static FONT_NAME="ipag"
-  private static FONT_TYPE="normal" //ファイル名としてはそのまま使うsetFont時は小文字に自動変換 "normal"の場合ファイル名として含めない
   //jsPDF 追加font
   static font:string
 
-  private static setupFonts(cb:()=>void) {
-    if (!MakeSlide.font) {
-      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
-        if ( response.data !== "") {
-          console.log("Font:", response.length, response.data)
-          if ( response.data.length !== response.length ) {
-            console.error("Font length missmatch. Error on message passing?")
-          }
-          MakeSlide.font = response.data
-          jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
-        } else {
-          console.error("Can not get Font Data.")
-        }
-        if (cb) { cb() }
-      })
-    } else {
-      //font set 済み
-      console.info("Alread setup font.") //ここに来るパターンみつけていないけど
-      if (cb) { cb() }
-    }
-  }
-  static callAddFont = function(this:jspdf.jsPDF) { //jsPDFからコールバックされる
-    // 'this' will be ref to internal API object.
-    // this.addFileToVFS('Koruri-Regular.ttf', MakeSlide.font);
-    // this.addFont('Koruri-Regular.ttf', 'Koruri', 'regular');
-    // this.addFileToVFS('umeplus-gothic.ttf', MakeSlide.font);
-    // this.addFont('umeplus-gothic.ttf', 'umeplus-gothic', 'normal');
-    let filename = MakeSlide.FONT_NAME
-    if (MakeSlide.FONT_TYPE !== "normal" ) { //FONT_TYPEがnormalのときにはFONT_NAMEのみ
-      filename += "-" + MakeSlide.FONT_TYPE
-    }
-    filename += ".ttf"
-    this.addFileToVFS(filename, MakeSlide.font);
-    this.addFont(filename, MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase());
-  }
-
   public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>) {
+    if ( imgs.length === 0 ) {
+      throw new RangeError("setupPDF(): no images." + {title, subTitle, imgs} )
+    }
     const pdf = new jspdf.jsPDF({
       orientation: 'p',
       unit: 'px',
@@ -90,16 +54,23 @@ class MakeSlide {
     const p: PDFprops = { w: 446, h: 632, mx: 18, my: 18, iw: 0, ih: 0 } //54DPI(pxでほしいので実験算出値)
     const w = imgs[0]!.naturalWidth //小さいがそうだけど縦横比取るには十分なはず
     const h = imgs[0]!.naturalHeight
-    p.iw = p.w - (2 * p.mx)
-    p.ih = p.iw * h / w
-    if (p.ih > (p.h / 2)) {
+    if ( w === 0 || h === 0) {
+      throw new RangeError("setupPDF(): Image Side size 0. (" + w + "x" + h +")")
+    }
+    p.iw = p.w - (2 * p.mx)  //PDFイメージ幅 px
+    p.ih = p.iw * h / w      //PDFイメージ高 px  幅基準で高さを算出
+    if (p.ih > (p.h / 2)) { //縦に二枚分の高さpx が ページ高さを超えた
       console.info("縦にちぎれた", p.ih, ">", (p.h / 2))
       p.ih = (p.h / 2) - p.my
-      p.iw = p.ih * w / h
+      p.iw = p.ih * w / h      //PDFイメージ高さ基準で幅を算出
     }
     console.log(w + " x " + h, p.iw, p.ih)
     MakeSlide.onePage(title, subTitle, p, imgs, pdf)
   }
+
+  //定数
+  private static FONT_NAME="ipag"
+  private static FONT_TYPE="normal" //ファイル名としてはそのまま使うsetFont時は小文字に自動変換 "normal"の場合ファイル名として含めない
 
   private static onePage(title:string, subTitle:string, p:PDFprops, imgs:NodeListOf<HTMLImageElement>, pdf:jspdf.jsPDF, ctx:CanvasRenderingContext2D|null = null, buf:CanvasRenderingContext2D|null = null, i = 0) {
     //PDF処理中アイコン点滅
@@ -107,6 +78,7 @@ class MakeSlide {
       MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
       setTimeout( ()=>{
         //0.5秒後に消す  次のページに追いつかれても最後消すから問題なし
+        // tslint:disable-next-line: no-shadowed-variable
         chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: ""}, (_response:BackgroundResponse) => {
           MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
         })
@@ -121,9 +93,9 @@ class MakeSlide {
     } else {
       src = imgs[i]!.src  //この場合再ロードはいらないけれどonloadを触るのでnewしたImageを使う
     }
-    console.log(imgs[i]!.src.substr(0,200)) //頭だけ 元のsrc
+    console.log(imgs[i]!.src.substr(0,100)) //元のsrc 頭だけ
     img.onload = () => { //<img src= を変えてロードが終わってから
-      console.log(img.src.substr(0,200))  //頭だけ 変換後src
+      console.log(img.src.substr(0,100))  //変換後src 頭だけ
       const w = img.naturalWidth
       const h = img.naturalHeight
       const nUp = 2 //PDF 1ページにいくつの画像をいれるか
@@ -194,10 +166,16 @@ class MakeSlide {
           throw new Error("Cannot toDataURL")
         }
         chrome.runtime.sendMessage( {cmd:BackgroundMsgCmd.TEXT_DETECTION, text: base64}, (res:TextDetectionResult) => {
-          console.log("認識結果", res.ans)
           if ( res.result === "done" && res.ans.fullTextAnnotation?.text ) {
+            console.log("認識結果", res.ans)
             //pdf.setGState("trans")
             pdf.text(res.ans.fullTextAnnotation.text, p.w, p.my ) //TODO:画像と文字の重ね合わせ 今は右欄外にOCR結果を出力 (i%2)*(p.h/2)+p.my
+          } else if ( res.result === "fail") {
+            console.error("Image OCR text detection Error: "+ res.errorMessage)
+            alert(MessageUtil.getMessage(["ACex_name", "\n", "text_detection_error"]) + "\n" + res.errorMessage )
+            throw new Error(res.errorMessage) //認識失敗で中断
+          } else { // result === "none"  // no API key
+            console.log("No text detection.")
           }
           if ( i<(imgs.length-1) ) {
             MakeSlide.onePage(title,subTitle, p, imgs, pdf, ctx, buf, ++i)
@@ -242,9 +220,45 @@ class MakeSlide {
     return str.replace(/ +(?![A-Za-z])/gm,  "")
   }
   private static zenkaku2Hankaku(str:string) { //全角英数半角変換
-    return str.replace(/[！-｝]/g, function(s) {   //全角英数  〜を除く  cf. 半角英数[ -~]
+    return str.replace(/[！-｝]/g, (s) => {   //全角英数  〜を除く  cf. 半角英数[ -~]
         return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
     })
+  }
+
+  private static setupFonts(cb:()=>void) {
+    if (!MakeSlide.font) {
+      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
+        if ( response.data !== "") {
+          console.log("Font:", response.length, response.data)
+          if ( response.data.length !== response.length ) {
+            console.error("Font length missmatch. Error on message passing?")
+          }
+          MakeSlide.font = response.data
+          jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
+        } else {
+          console.error("Can not get Font Data.")
+        }
+        if (cb) { cb() }
+      })
+    } else {
+      //font set 済み
+      console.info("Alread setup font.") //ここに来るパターンみつけていないけど
+      if (cb) { cb() }
+    }
+  }
+  static callAddFont = function(this:jspdf.jsPDF) { //jsPDFからコールバックされる
+    // 'this' will be ref to internal API object.
+    // this.addFileToVFS('Koruri-Regular.ttf', MakeSlide.font);
+    // this.addFont('Koruri-Regular.ttf', 'Koruri', 'regular');
+    // this.addFileToVFS('umeplus-gothic.ttf', MakeSlide.font);
+    // this.addFont('umeplus-gothic.ttf', 'umeplus-gothic', 'normal');
+    let filename = MakeSlide.FONT_NAME
+    if (MakeSlide.FONT_TYPE !== "normal" ) { //FONT_TYPEがnormalのときにはFONT_NAMEのみ
+      filename += "-" + MakeSlide.FONT_TYPE
+    }
+    filename += ".ttf"
+    this.addFileToVFS(filename, MakeSlide.font);
+    this.addFont(filename, MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase());
   }
 
   constructor(cb:()=>void) {

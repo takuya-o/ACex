@@ -271,5 +271,8 @@
   },
   "image_data_could_not_be_acquired":{
     "message":"スライド画像データが取得できませんでした。"
-  }
+  },
+  "text_detection_error":{
+    "message":"API Keyでテキスト抽出を行いましたが失敗しました。"
+   }
 }

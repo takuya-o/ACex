@@ -4,7 +4,7 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.8.2021.152",
+  "version": "0.8.2021.6060",
   "minimum_chrome_version": "76",
 
   "permissions": [

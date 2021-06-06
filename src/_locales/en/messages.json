@@ -271,5 +271,8 @@
   },
   "image_data_could_not_be_acquired":{
     "message":"The slide image data could not be acquired."
+  },
+  "text_detection_error":{
+    "message":"Text extraction with API Key failed."
   }
 }

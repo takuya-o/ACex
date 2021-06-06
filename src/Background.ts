@@ -89,6 +89,9 @@ class Background{
         //   sendResponse({displayTelop: this.isDisplayTelop()});
         // } else if (msg.cmd === "isCountButton" ) {
         //   sendResponse({countButton: this.isCountButton()});
+        } else if (msg.cmd === BackgroundMsgCmd.GET_ZOOM_FACTOR ) {
+          this.getZoomFactor(sendResponse, sender.tab!) //tabはundefinedにはならない
+          return true //async
         } else if (msg.cmd === BackgroundMsgCmd.GET_CAPTURE_DATA ) {
           this.getCaptureData(sendResponse, sender.tab!) //tabはundefinedにはならない
           return true //async
@@ -247,17 +250,32 @@ class Background{
     })
   }
 
-  private getCaptureData(sendResponse:(dataUrl:string)=>void, senderTab:chrome.tabs.Tab) {
-    //アクティブタブのスクリーンショットのデータ取得
-    setTimeout( ()=>{
-      //待っている間にフォーカスが別のタブに行っているかもしれないので戻す
-      if (senderTab.id) { //nullのことは無いと思うけど
-        chrome.tabs.update(senderTab.id,{highlighted:true})
-      }
-      chrome.tabs.captureVisibleTab(senderTab.windowId, (dataUrl)=> { //WindowIdを指定してキャプチャ
-        sendResponse(dataUrl)
+  private getZoomFactor(sendResponse:(zoomFactor:number)=>void, senderTab:chrome.tabs.Tab) {
+    if (senderTab.id) { //nullのことは無いと思うけど
+      chrome.tabs.getZoom(senderTab.id, (zoomFactor)=>{ //カレントtabのZoom率を取得
+        //console.log("Browser Zoom:", zoomFactor)
+        sendResponse(zoomFactor)
       })
-    }, 1000) //少し(1000ms)待ってから TODO タイミングで良いのか
+    }
+  }
+  private getCaptureData(sendResponse:(dataUrl:string)=>void, senderTab:chrome.tabs.Tab) {
+    if (senderTab.id) { //nullのことは無いと思うけど
+      chrome.tabs.getZoom(senderTab.id, (zoomFactor)=>{ //カレントtabのZoom率を取得
+        //アクティブタブのスクリーンショットのデータ取得
+        chrome.tabs.setZoom(senderTab.id!, 1.0, ()=>{ //ズーム100%に戻して ここに入ってきても描画を待つ必要がある
+          setTimeout( ()=>{
+            //待っている間にフォーカスが別のタブに行っているかもしれないので戻す
+            chrome.tabs.update(senderTab.id!,{highlighted:true})
+            chrome.tabs.captureVisibleTab(senderTab.windowId, {format: "png"}, (dataUrl)=> {
+              //WindowIdを指定してキャプチャ //jpegだと圧縮されるのでpng
+              chrome.tabs.setZoom(senderTab.id!, zoomFactor, ()=>{ //ズーム元に戻す
+                sendResponse(dataUrl)
+              })//setZoom
+            })//capture
+          }, 800) //少し(1000ms)待ってから TODO タイミングで良いのか
+        })//resetZoom
+      })//getZoom
+    }
   }
   //フォントデータ読み込み
   private getFontData( sendResponse:(res:FontData)=>void ) {
@@ -323,8 +341,8 @@ class Background{
       console.log("認識結果", result, ans);
       sendResponse({result, ans})
     }).fail( (jqXHR, textStatus/*, errorThrown*/) => {
-      const errorMessage = "Ajax " + textStatus + "(" + jqXHR.status + ") " +
-                          !jqXHR.responseJSON.error?"":jqXHR.responseJSON.error.message
+      const errorMessage = "Google Vision API " + textStatus + "(" + jqXHR.status + ") " +
+                          (!jqXHR.responseJSON.error?"":jqXHR.responseJSON.error.message)
       console.log("--- " + errorMessage, jqXHR );
       sendResponse({result: "fail", errorMessage})
     });
@@ -461,9 +479,11 @@ class Background{
         if ( this.handlerTab === null ) {
           //タブハンドラーが空席状態なので最初に見つかったタブに登録
           for(const element in Background.tabList) {
-            this.sendMessageAssignTabHandler(Background.tabList[element]!,
-                                             Background.ASSIGN_TAB_HANDLER_MAX_RETRY);
-            break;
+            if ( Background.tabList[element] ) {
+              this.sendMessageAssignTabHandler(Background.tabList[element]!,
+                                               Background.ASSIGN_TAB_HANDLER_MAX_RETRY)
+              break
+            }
           }
         }
       }
@@ -515,39 +535,39 @@ class Background{
       if (items.tabList) { Background.tabList = items.tabList }
     }) //順序性は無い
     this.localStorageMigration();
-    let value = localStorage["ACsession"];
+    let value = localStorage.ACsession;
     if (value) {
       const acSession = JSON.parse(value);
-      this.userID = acSession["userID"];
-      this.sessionA = acSession["sessionA"];
+      this.userID = acSession.userID;
+      this.sessionA = acSession.sessionA;
     }
-    value = localStorage["Special"];
+    value = localStorage.Special;
     if (value) {
-      const special = JSON.parse(value);
-      const countButton = special["countButton"];
+      const special = JSON.parse(value)
+      const countButton = special.countButton;
       if ( countButton!=null ) { this.countButton = Boolean(countButton); } //Default true->false
-      this.coursenameRestrictionEnable = Boolean(special["couresenameRestriction"]);
-      this.experimentalEnable = Boolean(special["experimental"]);
-      const popupWaitForMac = special["popupWaitForMac"];
+      this.coursenameRestrictionEnable = Boolean(special.couresenameRestriction);
+      this.experimentalEnable = Boolean(special.experimental);
+      const popupWaitForMac = special.popupWaitForMac;
       if (popupWaitForMac) { this.popupWaitForMac = popupWaitForMac; }
-      const downloadable = special["downloadable"];
+      const downloadable = special.downloadable;
       if (downloadable!=null) { this.downloadable = Boolean(downloadable); } //Default true
-      const displayTelop = special["displayTelop"];
+      const displayTelop = special.displayTelop;
       if (displayTelop) { this.displayTelop = Boolean(displayTelop); }
-      const useLicenseInfo = special["useLicenseInfo"];
+      const useLicenseInfo = special.useLicenseInfo;
       if (useLicenseInfo) { this.useLicenseInfo = Boolean(useLicenseInfo); }
-      const trialPriodDays = special["trialPriodDays"];
+      const trialPriodDays = special.trialPriodDays;
       if (trialPriodDays) { this.trialPriodDays = trialPriodDays; }
-      const forumMemoryCacheSize = special["forumMemoryCacheSize"];
+      const forumMemoryCacheSize = special.forumMemoryCacheSize;
       if (forumMemoryCacheSize) { this.forumMemoryCacheSize = forumMemoryCacheSize; }
-      const saveContentInCache = special["saveContentInCache"];
+      const saveContentInCache = special.saveContentInCache;
       if ( saveContentInCache ) { this.saveContentInCache = Boolean(saveContentInCache); }
-      const apiKey = special["apiKey"]
+      const apiKey = special.apiKey
       if ( apiKey ) { this.apiKey = apiKey } else { this.apiKey = "" }
-      const supportAirSearchBeta = special["supportAirSearchBeta"]
+      const supportAirSearchBeta = special.supportAirSearchBeta
       if (supportAirSearchBeta!=null) { this.supportAirSearchBeta = Boolean(supportAirSearchBeta) } //Default false
     }
-    value = localStorage["Forums"];
+    value = localStorage.Forums;
     if (value) {
       try {
         this.forums = JSON.parse(value);
@@ -563,7 +583,7 @@ class Background{
     } else {
       this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
     }
-    value = localStorage["Authors"];
+    value = localStorage.Authors;
     if (value) {
       try {
         this.authors = JSON.parse(value);
@@ -615,7 +635,7 @@ class Background{
   private setACsession(userID:string, sessionA:string) {
     this.userID = userID;
     this.sessionA = sessionA;
-    localStorage["ACsession"]
+    localStorage.ACsession
       = JSON.stringify({"userID": userID, "sessionA": sessionA});
   }
   private getUserID() {
@@ -645,7 +665,7 @@ class Background{
     this.saveContentInCache = config.saveContentInCache;
     this.apiKey = config.apiKey
     this.supportAirSearchBeta = config.supportAirSearchBeta
-    localStorage["Special"]
+    localStorage.Special
       = JSON.stringify({"couresenameRestriction": config.cRmode,
                         "experimental": config.experimentalEnable,
                         "displayPopupMenu": Boolean(false),  //互換のため 書き込むけど読み込まない
@@ -731,7 +751,7 @@ class Background{
       for(const fid in this.forums.forum) {
         sorting.push({ "fid": fid, "date": new Date(this.forums.forum[""+fid]!.cacheDate!) }); //必ずある
       }
-      sorting.sort(function(a:FidDate,b:FidDate) { return( a.date.getTime() - b.date.getTime() ) } )
+      sorting.sort( (a:FidDate,b:FidDate) => (a.date.getTime() - b.date.getTime()) )
       //古いキャッシュから削除
       while ( diff-- > 0 ) {
         if ( sorting.length <= 0 ) {  //failsafe
@@ -749,7 +769,7 @@ class Background{
       }
     }
     try {
-      localStorage["Forums"] = JSON.stringify(this.forums);
+      localStorage.Forums = JSON.stringify(this.forums);
     } catch (e) {
       //多分 Out of memoryが発生している例外を握りつぶす
       console.error("setForumCache(): Unexpected Exception in store localStorage[Forums].", e, forum)
@@ -768,7 +788,7 @@ class Background{
       }
       this.authors.author[uuid] = author;
       try {
-        localStorage["Authors"] = JSON.stringify(this.authors);
+        localStorage.Authors = JSON.stringify(this.authors);
       } catch (e) {
         //多分 Out of memoryが発生しているが例外を握りつぶす
         console.error("setAuthorCache(): Unexpected Exception in store localStorage[Authors]={uuid:"+ uuid +",name:"+ name +"}", e)
@@ -820,7 +840,7 @@ class Background{
                         validDate: (this.license.validDate as Date).getTime(),
                         createDate: (this.license.createDate as Date).getTime()};
       } else {
-        if (this.license.createDate) delete this.license["createDate"];
+        if (this.license.createDate) delete this.license.createDate;
         storeLicense = {status: this.license.status,
                         validDate: (this.license.validDate as Date).getTime() };
       }
@@ -863,7 +883,7 @@ class Background{
       //まだ実験的機能
       getLicense();
     }else{
-      console.log("ACex: not getLicense(), becouse disable license check.");
+      console.log("ACex: not getLicense(), because disable license check.");
     }
     /*************************************************************************
      * Call to license server to request the license
@@ -957,7 +977,7 @@ class Background{
         //statusDiv.text("Getting auth token...");
         console.log("Calling chrome.identity.getAuthToken", interactive);
         chrome.identity.getAuthToken(
-          { interactive }, function(token) {
+          { interactive }, (token) => {
             if (chrome.runtime.lastError) {
               callback(chrome.runtime.lastError);
               return;

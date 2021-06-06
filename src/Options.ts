@@ -139,7 +139,7 @@ class Options {
         console.error("Runtime.lastError: " + chrome.runtime.lastError.message, chrome.runtime.lastError)
         result = false  //とれなかったけど cb()は必ず呼びたいのでfalseにしておく
       } else if (result !== lastPermission) {
-        console.warn("permission diffrent with config", permissions, result);
+        console.warn("permission different with config", permissions, result);
       }
       console.log("Permission contain", permissions, result)
       cb(result)

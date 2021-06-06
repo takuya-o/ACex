@@ -160,6 +160,7 @@ Version 0.3
 ### Permission
 activeTab - ブラウザタブの切替・管理のために利用します。
 storage, unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
-identity, identity.email - ライセンス管理のために利用します
+identity  - ライセンス管理のためにユーザを特定するため。
+identity.email - ユーザ管理のために連絡先を確認するため。
 <all_urls> - スライド画像をスクリーンチャプタで取得するために利用します。 (オプション)
 

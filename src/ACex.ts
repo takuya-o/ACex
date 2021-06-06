@@ -53,8 +53,8 @@ class ACex {
       })
       //URL変更検知
       window.addEventListener( "hashchange", (event:HashChangeEvent) => {
-        const url = event.newURL;
-        this.updateIcon(url, regexp); //アイコンと有ればボタン更新
+        const newURL = event.newURL;
+        this.updateIcon(newURL, regexp); //アイコンと有ればボタン更新
       })
     } else {
       //ACweb画面の時
@@ -141,8 +141,8 @@ class ACex {
     let settings:Settings|undefined
     const elements = window.document.getElementsByTagName("script");
     console.log("ACex: getSettings " + elements.length );
-    for (let i = 0; i < elements.length; i++) {
-      const text = elements[i]?.innerText;
+    for (const element of elements) {
+      const text = element.innerText;
       if (text) {
         const match = text.match(/(var|let) settings = ({.*});/);
         if (match) {
@@ -203,7 +203,7 @@ class ACex {
       for(let j=0; j<data.length; j++) {
         const dataCmd = data[j]?.split(",");
         if ( !dataCmd ) {
-          datas[j] = []
+          datas[j] = [] as string[]
         } else {
           datas[j] = dataCmd;
         }
@@ -211,24 +211,23 @@ class ACex {
       //console.log("ACex: telops=" + telops );
       const tab = document.getElementById('content-tab1'); //概要タブ
       if (tab) { //入れるの早すぎると消されるがリロードで出てくる
-        for(let i=0; i<telops.length; i++) {
+        for(const telop of telops) {
           //テロップ時間を文字列として取り出し行く
           //"telop": [{"choices": "6FAES", "id": "31614", "value": "6", "time": 537},..]
-          let telop = this.getHourString( new Date( +telops[i]!.time * 1000 )) //必ずあるはず
+          let telopString = this.getHourString( new Date( +telop.time * 1000 )) //必ずあるはず
           //該当のtelopの認証済み情報を検索
-          for(let j=0; j<datas.length; j++) {
-            const dataCmd = datas[j] as string[];
-            if ( dataCmd!.length >= 3 && dataCmd[0]==="I" && dataCmd[1]===telops[i]?.value ) {
+          for(const dataCmd of datas) {
+            if ( dataCmd.length >= 3 && dataCmd[0]==="I" && dataCmd[1]===telop.value ) {
               //該当のテロップの認証済み情報取得して文字列に追加
-              telop = telop + "  " + dataCmd[1] + ";"
+              telopString = telopString + "  " + dataCmd[1] + ";"
                 + this.getHourString( new Date( +dataCmd[2]! * 1000 )) //必ずある
               dataCmd[1]="";  //また見つけないように消しておく
               break; //一つみつけたらOK
             }
           }
-          console.log("ACex: time=" + telop);
+          console.log("ACex: time=" + telopString);
           const pElement = document.createElement("p")
-          pElement.append(MessageUtil.getMessage(["auth_time"]) + telop) //append()はstringもOK
+          pElement.append(MessageUtil.getMessage(["auth_time"]) + telopString) //append()はstringもOK
           tab.append(pElement)
         }
       }
@@ -246,8 +245,8 @@ class ACex {
     let userID = "";
     const elements = window.document.getElementsByTagName("script");
     //alert(elements.length + "個の要素を取得しました");
-    for (let i = 0; i < elements.length; i++) {
-      const text = elements[i]?.innerText;
+    for (const element of elements) {
+      const text = element.innerText;
       if (text) {
         //alert(i + ":" + elements[i].innerText);
         let match = text.match(/a=\w+/);

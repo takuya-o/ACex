@@ -59,7 +59,7 @@ build: #上書きと追加項目
         unofficial_build
       else
         cp "$PRIVATE_KEY" src.pem
-        offical_build
+        official_build
       fi
     }
     function unofficial_build() {
@@ -68,7 +68,7 @@ build: #上書きと追加項目
       --ignore-file="/(\.swp|.*~)/" --ignore-dir="/\.(?:svn|git|cvs)/" --verbose
       #DEBUG用に .tsと.map 含めておく
     }
-    function offical_build() {
+    function official_build() {
       ./build.rb
     }
     build
@@ -163,14 +163,10 @@ pages:
 
 #コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
 code_navigation:
-  allow_failure: true
+  image: sourcegraph/lsif-go:v1
+  allow_failure: true # recommended
   script:
-  - |
-    apk add --no-cache go git
-    export GOPATH="$HOME/go"
-    export PATH="$GOPATH/bin:$PATH"
-    go get github.com/sourcegraph/lsif-go/cmd/lsif-go
-    lsif-go
+    - lsif-go
   artifacts:
     reports:
       lsif: dump.lsif

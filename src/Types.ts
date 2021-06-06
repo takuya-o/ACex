@@ -19,6 +19,7 @@ interface DataLayer {
 //Backgroundへのメッセージ
 const BackgroundMsgCmd = {
   SET_ICON:"setIcon",
+  GET_ZOOM_FACTOR: "getZoomFactor",
   GET_CAPTURE_DATA:"getCaptureData",
   GET_AUTHOR_CACHE:"getAuthorCache",
   SET_AUTHOR_CACHE:"setAuthorCache",
