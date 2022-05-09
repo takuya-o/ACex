@@ -1,6 +1,15 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 /* global Class, chrome, e */
+
+// "type": "classic" 形式
+//importScripts("lib/tagmanager.js")
+//importScripts("lib/jquery.min.js")
+importScripts("Types.js")
+
+// "type": "moudle"形式 exportしていないと使えない
+// import "./Types.js"
+
 class Background{
   //定数
   private static ASSIGN_TAB_HANDLER_MAX_RETRY =   10 //回
@@ -20,7 +29,7 @@ class Background{
   private userID = "u="
   private sessionA = "a="
   private coursenameRestrictionEnable = false
-  private experimentalEnable = false
+  private experimental = false
   private popupWaitForMac = 500
   private downloadable = true
   private displayTelop = false
@@ -51,7 +60,7 @@ class Background{
     //ACex.jsとの通信受信
     chrome.runtime.onMessage.addListener(
       (msg:BackgroundMsg, sender:chrome.runtime.MessageSender, sendResponse:(ret?:BackgroundResponse)=>void) => {
-        console.log("--- Backgroupd Recv ACex:" + msg.cmd);
+        console.log("--- Backgroupd Recv ACex:", msg);
         if(msg.cmd === BackgroundMsgCmd.SET_SESSION) {
           if ( !msg.userID || !msg.sessionA ) {
             //セッション情報が取れなかった
@@ -61,17 +70,24 @@ class Background{
             this.setACsession(msg.userID, msg.sessionA);
           }
           //pageActionのicon表示
-          chrome.pageAction.show(sender.tab!.id!) //送り主のTabは必ずある
+          //chrome.pageAction.show(sender.tab!.id!) //送り主のTabは必ずある
+          chrome.action.enable(sender.tab?.id) //送り主のTabは必ずある V3対応
           sendResponse();
         } else if (msg.cmd === BackgroundMsgCmd.SET_ICON ) {
           //msg.textは空文字もありうる
           if ( msg.text === null || msg.text === undefined ) { msg.text="" }
           //pageActionのiconのイメージ変更
-          chrome.pageAction.setIcon({
-            tabId: sender.tab!.id!, //送り主のTabは必ずある
-            imageData: this.getIconImageData(null/*this.service.icon*/, msg.text)
-          });
-          // chrome.pageAction.setTitle({
+          // chrome.pageAction.setIcon({
+          //   tabId: sender.tab!.id!, //送り主のTabは必ずある
+          //   imageData: this.getIconImageData(null/*this.service.icon*/, msg.text)
+          // });
+            chrome.action.enable(sender.tab?.id) //念の為 アイコンを有効にしてからテキストを書く
+            chrome.action.setBadgeBackgroundColor( {tabId: sender.tab?.id, color: 'red'});
+            chrome.action.setBadgeText({ //V3対応
+              tabId: sender.tab?.id, //送り主のTabは必ずある
+              text: msg.text,
+            })
+          // chrome.pageAction.setTitle({  //V2で変わらなかった
           //   tabId: sender.tab.id,
           //   title: this.icon_title.filter(function(s){return s;}).join('\n')
           // });
@@ -136,6 +152,9 @@ class Background{
             expireDate: this.getLicenseExpireDate()
           })
         } else if (msg.cmd === BackgroundMsgCmd.GET_SESSION ){
+          if ( !this.getUserID() || !this.getSessionA() ) {
+            console.error("getSession(userID, sessionA): Can not found session data.", this.getUserID(), this.getSessionA())
+          }
           sendResponse({
             userID: this.getUserID(),
             sessionA: this.getSessionA(),
@@ -165,7 +184,7 @@ class Background{
         //   sendResponse()
         } else if (msg.cmd === BackgroundMsgCmd.GET_CONFIGURATIONS ){
           sendResponse({
-            experimentalEnable: this.isExperimentalEnable(),
+            experimental: this.isExperimental(),
             countButton: this.isCountButton(),
             cRmode: this.isCRmode(),
             popupWaitForMac: this.getPopupWaitForMac(),
@@ -209,6 +228,8 @@ class Background{
            }
            this.getTabId(msg.url, sendResponse)
            return true //async
+        // } else if (msg.cmd === BackgroundMsgCmd.GET_MY_TAB_ID) {
+        //   sendResponse(sender.tab?.id)
         } else {
           console.log("------ Backgroupd Recv ACex: Unknown message.");
           sendResponse();
@@ -219,10 +240,18 @@ class Background{
     //storage.syncの変更検知
     chrome.storage.onChanged.addListener((changes, namespace) => {
       if( namespace === "sync" ){
+        const changeSpecial = changes.Special
+        if ( changeSpecial ) {
+          const special = changeSpecial.newValue
+          console.log("--- ACex: sync.Special changed.", special, changes)
+          if ( special ) {
+            this.updateClassVars(special)
+          }
+        }
         const storageChange = changes.License;
         if ( storageChange ) {
           const license = storageChange.newValue;
-          console.log("ACex: storage change" + JSON.stringify(license));
+          console.log("--- ACex: sync.Licnese changed.",license, changes);
           if ( license ) {
             if (license.status) {
               this.license.status = license.status;
@@ -279,7 +308,7 @@ class Background{
   }
   //フォントデータ読み込み
   private getFontData( sendResponse:(res:FontData)=>void ) {
-    chrome.runtime.getPackageDirectoryEntry( (directoryEntry) => {
+    chrome.runtime.getPackageDirectoryEntry( (directoryEntry) => { //V3で呼べなくなった popupからのみ呼べるらしい
       directoryEntry.getFile(Background.FONT_FILENAME, {create: false},  (fileEntry)=>{
         fileEntry.file( (file)=>{
           const reader = new FileReader()
@@ -302,6 +331,13 @@ class Background{
         sendResponse({ data: "", length: -1})
       })
     })
+    //V3では "web_accessible_resources":["lib/ipag00303/ipag.ttf"]で読めるかも
+    // async function injectHtml():Promise<Blob> {
+    //   const res = await fetch(chrome.runtime.getURL(Background.FONT_FILENAME), { method: "GET" })
+    //   const blob = await res.blob()
+    //   //const dataUrl = (window.URL || window.webkitURL).createObjectURL(blob) //SeriviceWorkerではwindow使えない
+    //   return blob
+    // }
   }
 
   //OCRテキスト検出
@@ -317,37 +353,62 @@ class Background{
       features: [ { type: "DOCUMENT_TEXT_DETECTION", maxResults: 30 } ],
 
     } ]}
-    $.ajax( "https://vision.googleapis.com/v1/images:annotate?key=" + this.apiKey ,  //呼ばれるときにはOptionは取れているハズ
-    {
+    fetch("https://vision.googleapis.com/v1/images:annotate?key=" + this.apiKey, { //呼ばれるときにはOptionは取れているハズ
       method: "POST",
-      data: JSON.stringify(requests),
-      crossDomain: true,
-      dataType: 'json',
-      contentType: "Content-Type: application/json"
-    }).done( (data, textStatus/*, jqXHR*/) => {
-      console.log("--- Ajax OK: ", textStatus, data);
+      headers: new Headers({
+        "Content-Type": "application/json",
+          //"Authorization": "Bearer " + this.apiKey,
+      }),
+      mode: "cors",
+      body: JSON.stringify(requests),
+    }).then( (response)=>{
+      if (response.ok) {
+        console.log(`--- Ajax OK: ${response.statusText}`, response)
+        return response.json()
+      } else {
+        let addtionalMessage = ""
+        if (response.status === 403) {
+          addtionalMessage = `: API key is invalid or referrer is not allowed. ${chrome.runtime.getURL("")}`
+        }
+        console.error(`--- Ajax NG: ${response.status} ${response.statusText}${addtionalMessage}`, response)
+        throw new Error(`fetch() Error ${response.status} ${response.statusText}`)
+      }
+    }).then( (json)=>{
       let ans = ""
       let result = "done"
-      if ( data.responses.length < 1 ) {
-        console.warn(base64); //imgがscript描画されていない疑い
-        result = "none"
+      if (!json.responses) {
+        result = "none" //API errorすら戻ってない
+      } else if (json.responses.error) {
+        console.error(`Vision API Error ${json.responses.error.message}`, json.response.error)
+        throw new Error(json.responses.error.message)
       } else {
-        if (!data.responses[0]) { //.fullTextAnnotation.textが無いときが有ったので戻り先で注意
+        if ( json.responses.length < 1 ) {
+          console.warn(base64); //imgがscript描画されていない疑い
           result = "none"
         } else {
-          ans = data.responses[0]
+          if (!json.responses[0]) { //.fullTextAnnotation.textが無いときが有ったので戻り先で注意
+            result = "none"
+          } else {
+            ans = json.responses[0] //成功
+            // const textAnnotations = json.response[0].textAnnotations
+            // if (textAnnotations) {
+            //   ans = textAnnotations.map( (textAnnotation:any)=>{
+            //     return textAnnotation.description
+            //   }).join("\n")
+            // } else {
+            //   result = "none"
+            // }
+          }
         }
       }
       console.log("認識結果", result, ans);
       sendResponse({result, ans})
-    }).fail( (jqXHR, textStatus/*, errorThrown*/) => {
-      const errorMessage = "Google Vision API " + textStatus + "(" + jqXHR.status + ") " +
-                          (!jqXHR.responseJSON.error?"":jqXHR.responseJSON.error.message)
-      console.log("--- " + errorMessage, jqXHR );
+    }).catch( (error)=>{
+      const errorMessage = `Google Vision API ${error.message}`
+      console.log(`--- ${errorMessage}`, error );
       sendResponse({result: "fail", errorMessage})
-    });
+    })
   }
-
   // タブへonRemoveハンドラー設定指示メッセージ送信
   private sendMessageAssignTabHandler(tabId:number, retryCount:number) {
     if ( this.handlerTab ) { //既に登録済み
@@ -396,7 +457,7 @@ class Background{
      fid:   forum ID
      tabId: chromeのタブID
   */
-  private addTabId(fid:string, tabId:number) {
+  private addTabId(fid:string, tabId:number): void {
     fid = this.cleanupUrl(fid);
     console.log("--- addTabId:" + fid + " = " + tabId);
     try {
@@ -404,11 +465,12 @@ class Background{
       this.storeTabList()
       this.sendMessageAssignTabHandler(tabId, Background.ASSIGN_TAB_HANDLER_MAX_RETRY) //とりあえずTabHadlerの登録を試みる
     } catch (e) {
-      console.error("#-- addTabId()" + e.name + " " + e.message);
+      const err = e as Error
+      console.error("#-- addTabId()" + err.name + " " + err.message);
     }
   }
   // storage.lcoalにTabList保存
-  private storeTabList() {
+  private storeTabList(): void {
     chrome.storage.local.set({ "tabList": Background.tabList }, () => {
       //死んだ時用にtabList[]データを残す
       console.info("Update tabList[] on storage.local")
@@ -443,7 +505,8 @@ class Background{
         if (sendResponse) { sendResponse(tabId) }
       }
     } catch (e) {
-      console.warn("#-- getTabId()" + e.name + " " + e.message);
+      const err = e as Error
+      console.warn("#-- getTabId()" + err.name + " " + err.message);
       if (sendResponse) { sendResponse(tabId) } //分かっている値で返す
     }
     return tabId  //同期の時 既にタブが消されていたら一回目はゴミ
@@ -470,7 +533,8 @@ class Background{
             }
           }
         }
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error
         console.warn("#-- removeTabId():" + e.name + " " + e.message);
       }
       if ( !doneFlg ) {
@@ -521,13 +585,12 @@ class Background{
 
   private localStorageMigration() {
     //マイグレーション
-    //V0.0.0.3以前(11bf542b)であまりに古いので消すだけ
-    localStorage.removeItem("Oyo");
-    localStorage.removeItem("userID");
-    localStorage.removeItem("sessionA");
+    // 0.8以前のlocalStorageに入っていたデータはmanifest V3のService Workerでは読めないので
+    // ReleaseNote.tsでchrome.storageに移行する
+
     //現用 "ACsession" "Special"
     //キャッシュ用 "Authors" "Forums"
-  }
+   }
   //インスタンス変数管理
   private initializeClassValue() {
     chrome.storage.local.get(["tabList"], (items)=>{
@@ -535,75 +598,73 @@ class Background{
       if (items.tabList) { Background.tabList = items.tabList }
     }) //順序性は無い
     this.localStorageMigration();
-    let value = localStorage.ACsession;
-    if (value) {
-      const acSession = JSON.parse(value);
-      this.userID = acSession.userID;
-      this.sessionA = acSession.sessionA;
-    }
-    value = localStorage.Special;
-    if (value) {
-      const special = JSON.parse(value)
-      const countButton = special.countButton;
-      if ( countButton!=null ) { this.countButton = Boolean(countButton); } //Default true->false
-      this.coursenameRestrictionEnable = Boolean(special.couresenameRestriction);
-      this.experimentalEnable = Boolean(special.experimental);
-      const popupWaitForMac = special.popupWaitForMac;
-      if (popupWaitForMac) { this.popupWaitForMac = popupWaitForMac; }
-      const downloadable = special.downloadable;
-      if (downloadable!=null) { this.downloadable = Boolean(downloadable); } //Default true
-      const displayTelop = special.displayTelop;
-      if (displayTelop) { this.displayTelop = Boolean(displayTelop); }
-      const useLicenseInfo = special.useLicenseInfo;
-      if (useLicenseInfo) { this.useLicenseInfo = Boolean(useLicenseInfo); }
-      const trialPriodDays = special.trialPriodDays;
-      if (trialPriodDays) { this.trialPriodDays = trialPriodDays; }
-      const forumMemoryCacheSize = special.forumMemoryCacheSize;
-      if (forumMemoryCacheSize) { this.forumMemoryCacheSize = forumMemoryCacheSize; }
-      const saveContentInCache = special.saveContentInCache;
-      if ( saveContentInCache ) { this.saveContentInCache = Boolean(saveContentInCache); }
-      const apiKey = special.apiKey
-      if ( apiKey ) { this.apiKey = apiKey } else { this.apiKey = "" }
-      const supportAirSearchBeta = special.supportAirSearchBeta
-      if (supportAirSearchBeta!=null) { this.supportAirSearchBeta = Boolean(supportAirSearchBeta) } //Default false
-    }
-    value = localStorage.Forums;
-    if (value) {
-      try {
-        this.forums = JSON.parse(value);
-      } catch (e) {
-        console.error("#Exception:" + e.name + " " + e.message + "Forums Cache Clear", e);
+    chrome.storage.local.get(["ACsession"], (items)=>{
+      if (items.ACsession) {
+        this.userID = items.ACsession.userID
+        this.sessionA = items.ACsession.sessionA
+      }
+    })
+    chrome.storage.sync.get(["Special"], (items)=>{
+      if (items.Special) {
+        const special = items.Special
+        this.updateClassVars(special) //Default false
+      }
+    })
+    chrome.storage.local.get(["Forums"], (items)=>{
+      if (!items.Forums) {
+        console.info("Forums Cache Create")
         this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
+      } else {
+        this.forums = items.Forums
+        if ( this.forums.cacheFormatVer !== this.getCacheFormsFormatVer() ) {
+          //キャッシュのフォーマットバージョンが違ったらクリア
+          console.info("Forums Cache Clear by format version")
+          this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
+        }
       }
-      const cacheFormatVer = this.forums.cacheFormatVer;
-      if ( !cacheFormatVer ||  cacheFormatVer !== this.getCacheFormsFormatVer() ) {
-        //キャッシュのフォーマットバージョンが違ったらクリア
-        this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
-      }
-    } else {
-      this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
-    }
-    value = localStorage.Authors;
-    if (value) {
-      try {
-        this.authors = JSON.parse(value);
-      } catch (e) {
-        console.error("#Exception:" + e.name + " " + e.message);
+    })
+    chrome.storage.local.get(["Authors"], (items)=>{
+      if (!items.Authors) {
+        console.info("Authors Cache Create")
         this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
+      } else {
+        this.authors = items.Authors
+         if ( this.authors.cacheFormatVer !== this.getCacheAuthorsFormatVer() ) {
+          //キャッシュのフォーマットバージョンが違ったらクリア
+          console.info("Authors Cache Clear by format version")
+          this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
+        }
       }
-      const cacheFormatVer = this.authors.cacheFormatVer;
-      if ( !cacheFormatVer ||  cacheFormatVer !== this.getCacheAuthorsFormatVer() ) { // tslint:disable-line
-        //Potential timing attack on the right side of expression
-        //キャッシュのフォーマットバージョンが違ったらクリア
-        console.warn("Cache version mismatch:", cacheFormatVer)
-        this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
-      }
-    } else {
-      this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
-    }
+    })
     //ライセンス情報
     this.initializeLicenseValue()
   }
+  private updateClassVars(special: any) {
+    const countButton = special.countButton
+    if (countButton != null) { this.countButton = Boolean(countButton)}  //Default true->false
+    this.coursenameRestrictionEnable = Boolean(special.couresenameRestriction)
+    //console.log("--- Special Experimental", special.experimental)
+    this.experimental = Boolean(special.experimental)
+    const popupWaitForMac = special.popupWaitForMac
+    if (popupWaitForMac) { this.popupWaitForMac = popupWaitForMac}
+    const downloadable = special.downloadable
+    if (downloadable != null) { this.downloadable = Boolean(downloadable)}  //Default true
+    const displayTelop = special.displayTelop
+    if (displayTelop) { this.displayTelop = Boolean(displayTelop)}
+    const useLicenseInfo = special.useLicenseInfo
+    if (useLicenseInfo) { this.useLicenseInfo = Boolean(useLicenseInfo)}
+    const trialPriodDays = special.trialPriodDays
+    if (trialPriodDays) { this.trialPriodDays = trialPriodDays}
+    const forumMemoryCacheSize = special.forumMemoryCacheSize
+    if (forumMemoryCacheSize) { this.forumMemoryCacheSize = forumMemoryCacheSize}
+    const saveContentInCache = special.saveContentInCache
+    if (saveContentInCache) { this.saveContentInCache = Boolean(saveContentInCache)}
+    const apiKey = special.apiKey
+    if (apiKey) { this.apiKey = apiKey}  else { this.apiKey = ""}
+    const supportAirSearchBeta = special.supportAirSearchBeta
+    if (supportAirSearchBeta != null) { this.supportAirSearchBeta = Boolean(supportAirSearchBeta)}
+  }
+
   private initializeLicenseValue() {
     chrome.storage.sync.get("License", (items)=>{
       if (chrome.runtime.lastError) {
@@ -635,8 +696,7 @@ class Background{
   private setACsession(userID:string, sessionA:string) {
     this.userID = userID;
     this.sessionA = sessionA;
-    localStorage.ACsession
-      = JSON.stringify({"userID": userID, "sessionA": sessionA});
+    chrome.storage.local.set({ACsession:{userID, sessionA}})
   }
   private getUserID() {
     return this.userID;
@@ -654,7 +714,7 @@ class Background{
   // }
   private setSpecial(config:Configurations ) {
     this.coursenameRestrictionEnable = Boolean(config.cRmode);
-    this.experimentalEnable = Boolean(config.experimentalEnable);
+    this.experimental = Boolean(config.experimental);
     this.popupWaitForMac = config.popupWaitForMac;
     this.downloadable = config.downloadable;
     this.displayTelop = config.displayTelop;
@@ -665,37 +725,27 @@ class Background{
     this.saveContentInCache = config.saveContentInCache;
     this.apiKey = config.apiKey
     this.supportAirSearchBeta = config.supportAirSearchBeta
-    localStorage.Special
-      = JSON.stringify({"couresenameRestriction": config.cRmode,
-                        "experimental": config.experimentalEnable,
-                        "displayPopupMenu": Boolean(false),  //互換のため 書き込むけど読み込まない
-                        "popupWaitForMac": config.popupWaitForMac,
-                        "downloadable": config.downloadable,
-                        "displayTelop": config.displayTelop,
-                        "useLicenseInfo": config.useLicenseInfo,
-                        "trialPriodDays": config.trialPriodDays,
-                        "forumMemoryCacheSize": config.forumMemoryCacheSize,
-                        "countButton": config.countButton,
-                        "saveContentInCache": config.saveContentInCache,
-                        "apiKey": config.apiKey,
-                        "supportAirSearchBeta": config.supportAirSearchBeta,
-                       });
+    chrome.storage.sync.set({Special:{
+      couresenameRestriction: this.coursenameRestrictionEnable,
+      experimental: this.experimental,
+      displayPopupMenu: Boolean(false),  //互換のため 書き込むけど読み込まない
+      popupWaitForMac: this.popupWaitForMac,
+      downloadable: this.downloadable,
+      displayTelop: this.displayTelop,
+      useLicenseInfo: this.useLicenseInfo,
+      trialPriodDays: this.trialPriodDays,
+      forumMemoryCacheSize: this.forumMemoryCacheSize,
+      countButton: this.countButton,
+      saveContentInCache: this.saveContentInCache,
+      apiKey: this.apiKey,
+      supportAirSearchBeta: this.supportAirSearchBeta
+    }})
   }
-  // private enableDownloadable() { //downloadableだけ変える
-  //   this.downloadable = true;
-  //   let special:{[key:string]:boolean} = {} //boolean以外もあるけど…
-  //   let value = localStorage["Special"];
-  //   if (value) {
-  //     special = JSON.parse(value);
-  //   }
-  //   special["downloadable"] = true; //ここらへんは将来的には共通化
-  //   localStorage["Special"] = JSON.stringify(special);
-  // }
   private isCRmode() {
     return this.coursenameRestrictionEnable;
   }
-  private isExperimentalEnable() {
-    return this.experimentalEnable;
+  private isExperimental() {
+    return this.experimental;
   }
   private getPopupWaitForMac() {
     return this.popupWaitForMac;
@@ -769,10 +819,10 @@ class Background{
       }
     }
     try {
-      localStorage.Forums = JSON.stringify(this.forums);
+      chrome.storage.local.set({Forums:this.forums})
     } catch (e) {
       //多分 Out of memoryが発生している例外を握りつぶす
-      console.error("setForumCache(): Unexpected Exception in store localStorage[Forums].", e, forum)
+      console.error("setForumCache(): Unexpected Exception in storage.local.set({Forums}).", e, forum)
     }
   }
   private getForumCache(fid:number):Forum {
@@ -788,10 +838,10 @@ class Background{
       }
       this.authors.author[uuid] = author;
       try {
-        localStorage.Authors = JSON.stringify(this.authors);
+        chrome.storage.local.set({Authors:this.authors})
       } catch (e) {
         //多分 Out of memoryが発生しているが例外を握りつぶす
-        console.error("setAuthorCache(): Unexpected Exception in store localStorage[Authors]={uuid:"+ uuid +",name:"+ name +"}", e)
+        console.error("setAuthorCache(): Unexpected Exception in store.local.set({Authors})={uuid:"+ uuid +",name:"+ name +"}", e)
       }
     }
   }
@@ -1007,29 +1057,61 @@ class Background{
       }
     }
   }
-  //アイコンbadgeテキスト
-  private getIconImageData(img:HTMLImageElement|null,  text:string) {
-    console.log("getIconImageData()", null, text )
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx!.clearRect(0, 0, width, height) //必ずある
-    if (!img) {//iconが取れなそうなのでhtmlにicon置いておいて使う
-      img = (document.getElementById('icon') as HTMLImageElement);
-    }
-    if ( img ) { //まずアイコンデータを描画
-      ctx!.drawImage(img, 0, 0, img.width, img.height) //必ずある
-    }
-    if (text && ctx ) { //ついで文字を描画
-      //ctx.fillStyle = '#000000';
-      //ctx.fillRect(0, height - 9, width, 9);
-      ctx.font = 'bold 8px "arial" sans-serif';
-      ctx.fillStyle = '#ff0000';
-      ctx.textAlign = "center";
-      ctx.fillText(text, width/2, height-1, height);
-    }
-    return ctx!.getImageData(0, 0, width, height);
+  // //アイコンbadgeテキスト
+  // private getIconImageData(img:HTMLImageElement|null,  text:string) {
+  //   console.log("getIconImageData()", null, text )
+  //   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  //   const ctx = canvas.getContext('2d');
+  //   const width = canvas.width;
+  //   const height = canvas.height;
+  //   ctx!.clearRect(0, 0, width, height) //必ずある
+  //   if (!img) {//iconが取れなそうなのでhtmlにicon置いておいて使う
+  //     img = (document.getElementById('icon') as HTMLImageElement);
+  //   }
+  //   if ( img ) { //まずアイコンデータを描画
+  //     ctx!.drawImage(img, 0, 0, img.width, img.height) //必ずある
+  //   }
+  //   if (text && ctx ) { //ついで文字を描画
+  //     //ctx.fillStyle = '#000000';
+  //     //ctx.fillRect(0, height - 9, width, 9);
+  //     ctx.font = 'bold 8px "arial" sans-serif';
+  //     ctx.fillStyle = '#ff0000';
+  //     ctx.textAlign = "center";
+  //     ctx.fillText(text, width/2, height-1, height);
+  //   }
+  //   return ctx!.getImageData(0, 0, width, height);
+  // }
+
+
+
+
+  // page actionポイ動きにする
+  // https://developer.chrome.com/docs/extensions/reference/action/#emulating-pageactions-with-declarativecontent
+  static chromeActionDisable() {
+    // Page actions are disabled by default and enabled on select tabs
+    chrome.action.disable();
+    // サンプルにはURLでenbaleする方法も書いてあるが使わない
+    // ベーシがACから外れた時にdisableにならない。
+  }
+
+  // オプションをマイグレーションするリリースノートページを開く
+  public openReleaseNote() {
+    this.openNewTab("ACex_ReleaseNote.html")
   }
 }
 let bg = new Background();
+
+// // 特定のURLサイトへのアクセス時に main.js を動かす
+// chrome.tabs.onUpdated.addListener((_tabId, _changeInfo, tab) => {
+//   if (tab?.url?.indexOf('https://xxxxxxxxxxxxxxx') > -1) {
+//       chrome.scripting.executeScript({
+//           target: { tabId: tab.id! },
+//           files: ['main.js'],
+//       });
+//   }
+// });
+
+chrome.runtime.onInstalled.addListener(() => {
+  Background.chromeActionDisable()  // インストール時にはバッチをdisableにして page actionポイ動きにする
+  bg.openReleaseNote()
+})

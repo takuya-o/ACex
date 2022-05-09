@@ -1,5 +1,7 @@
 // -*- coding: utf-8-unix -*-
 
+//import { MakeSlide } from "./MakeSlide"
+
 class AirSearchExtender {
   // <input type="button" onclick="go(pid=000)">
   public static injectMakeButton() {

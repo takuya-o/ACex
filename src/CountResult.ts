@@ -1,6 +1,6 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
-/// <reference types="jquery" />
+/* /// <reference types="jquery" /> */
 /// <reference types="google.visualization" />
 /* global Class, chrome, google,  messageUtil, dataLayer, tabHandler, Ajax, e */
 
@@ -22,6 +22,7 @@ class CountResult {
   private sessionA:string = ""
   private isSaveContentInCache:boolean = false //ページを開いた後にオプション変更は効かない
   private chartData:ChartData|null = null
+  private noCharts = false //Google Chartがない場合
   private setChartData(data:CountingDatum[], minWeek:number, maxWeek:number){
     this.chartData = ({} as ChartData);
     this.chartData.data = data;
@@ -36,16 +37,18 @@ class CountResult {
     return this.chartData;
   }
   constructor() {
-    try {
-      google.charts.load('49', {packages: ['line'], 'language': chrome.i18n.getUILanguage() }); //'current'
-      //https://developers.google.com/chart/interactive/docs/release_notes?hl=en#Releases 46:Oct2018 49:Jul2020
-      google.charts.setOnLoadCallback(this.drawChart.bind(this));
-    } catch (e) {
-      this.messsage(MessageUtil.getMessage(["exception_occurred", e.message]))
-      dataLayer.push({'event': 'Exception-Occurred'+ e.message});
-      console.error("ACex: Exception:" + e.name + " " + e.message + " " + e.lineNumber);
-    }
     window.addEventListener("load", (_evt:Event) => {
+      try {
+        google.charts.load('49', {packages: ['line'], 'language': chrome.i18n.getUILanguage() }); //'current' 49:July 2020, 51:June 2021
+        //https://developers.google.com/chart/interactive/docs/release_notes?hl=en#Releases 46:Oct2018 49:Jul2020
+        google.charts.setOnLoadCallback(this.drawChart.bind(this)); //上で例外のときには設定されない
+      } catch (err) {
+        this.noCharts = true //Google Chartsが無い
+        const e = err as Error
+        this.messsage(MessageUtil.getMessage(["exception_occurred", e.name + " " + e.message]))
+        dataLayer.push({'event': 'Exception-Occurred '+ e.name + " " + e.message});
+        console.error("ACex: Exception:", err);
+      }
       //start
       MessageUtil.assignMessages();
       TabHandler.assignMessageHandlers(); //backgroundからの通信受信設定
@@ -54,6 +57,9 @@ class CountResult {
       document.getElementById("download")!.style.pointerEvents = "none"  //キーでは行けちゃうけどね
       chrome.runtime.sendMessage({cmd:BackgroundMsgCmd. GET_SESSION}, (session:BackgroundResponseSession) => {
         //start
+        if ( !session?.userID || !session?.sessionA ) { //sessionがnullのときが有る なんとTabHanderが返信している
+          this.messsage(MessageUtil.getMessage(["loding_fail"]))
+        }
         this.userID = session.userID.replace(/^u=/,"")
         this.sessionA = session.sessionA.replace(/^a=/,"")
         this.isSaveContentInCache = session.saveContentInCache
@@ -124,20 +130,25 @@ class CountResult {
       console.log("--- Create Forum Data:" + fid);
       dataLayer.push({'event': 'forum-' + fid });
       this.messsage( MessageUtil.getMessage(["discussion_data", "loding", "id"]) + fid )
-      $.ajax(
-        "https://aircamp.us/svlAC/GetForumContents", //https://bbtmba.aircamp.us/svlAC/GetForumContents
-        { method: "GET",
-          data: {
-            "fid": fid,
-            "u": this.userID,
-            "a": this.sessionA,
-            "format": "json",
-            "body": (isSaveContentInCache?"1":"0")
-            // &tag=1&msgtype=0&l=ja
-          }
+      let params = new URLSearchParams()
+      params.append("fid", fid)
+      params.append("u", this.userID)
+      params.append("a", this.sessionA)
+      params.append("format", "json")
+      params.append("body", (isSaveContentInCache?"1":"0"))
+      // &tag=1&msgtype=0&l=ja
+      fetch("https://aircamp.us/svlAC/GetForumContents?" + params.toString(), { //https://bbtmba.aircamp.us/svlAC/GetForumContents
+        method: "GET",
+        mode: "cors",
+      }).then(response => {
+        if (response.ok) {
+          return response.json()
+        } else {
+          throw new Error(`${response.status} ${response.statusText}`)
         }
-      ).done( (response:ForumContents)=>{
-        forum = this.createCache(response, fid);
+      }).then(json => {
+        console.log("### GetForumContents:", json)
+        forum = this.createCache(json, fid);
         //URLからforceクリア
         if ( forceLoad ) {
           location.replace(location.href.replace(/&force=.*$/, "")); //履歴にforce=true残さない
@@ -146,11 +157,39 @@ class CountResult {
           //location.hrefを変えるとリロードされるので変えないときだけ
           this.createTable(forum);
         }
-      }).fail( (_response, statusText) => {
-        this.messsage( MessageUtil.getMessage(["discussion_data", "loding_fail", fid, statusText]) )
-        dataLayer.push({'event': 'Failure-GetForumContents'
-                        + fid + statusText });
+      }).catch(error => {
+        console.error("### GetForumContents ERR:", error)
+        this.messsage( MessageUtil.getMessage(["discussion_data", "loding_fail"]) + `${fid} ${error.name}:${error.message}` )
+        dataLayer.push({'event': `Failure-GetForumContents ${error.name}:${error.message}` })
       })
+
+      // $.ajax(
+      //   "https://aircamp.us/svlAC/GetForumContents", //https://bbtmba.aircamp.us/svlAC/GetForumContents
+      //   { method: "GET",
+      //     data: {
+      //       "fid": fid,
+      //       "u": this.userID,
+      //       "a": this.sessionA,
+      //       "format": "json",
+      //       "body": (isSaveContentInCache?"1":"0")
+      //       // &tag=1&msgtype=0&l=ja
+      //     }
+      //   }
+      // ).done( (response:ForumContents)=>{
+      //   forum = this.createCache(response, fid);
+      //   //URLからforceクリア
+      //   if ( forceLoad ) {
+      //     location.replace(location.href.replace(/&force=.*$/, "")); //履歴にforce=true残さない
+      //     //forceリロードすると再描画(F5リロード)してしまう
+      //   } else {
+      //     //location.hrefを変えるとリロードされるので変えないときだけ
+      //     this.createTable(forum);
+      //   }
+      // }).fail( (_response, statusText) => {
+      //   this.messsage( MessageUtil.getMessage(["discussion_data", "loding_fail", fid, statusText]) )
+      //   dataLayer.push({'event': 'Failure-GetForumContents'
+      //                   + fid + statusText });
+      // })
     }
   }
   private getDate(dateStr:string) {
@@ -161,7 +200,7 @@ class CountResult {
   private messsage(msg:string) {
     const message = document.getElementById('message')
     if ( !message ) {
-      console.warn("Cannot display message: " + msg)
+      console.warn( new Error(`Cannot display message: ${msg}`).stack)
     } else{
       message.innerText = msg
     }
@@ -190,7 +229,7 @@ class CountResult {
       const author = entry.author; //name, uuid
       const number = entry.identifier; //記事番号
       forum.entry[number] = ({} as ACEntry);
-      forum.entry[number]!.uuid = author!.uuid;
+      forum.entry[number]!.uuid = author!.uuid; //numberかも
       if ( !CountResult.authorNameCache[author.uuid]) {//キャッシュに無かったら
         CountResult.authorNameCache[author.uuid] = author.name
         //既にBackgroundにはキャッシュされているかもしれないけど
@@ -247,9 +286,8 @@ class CountResult {
     document.getElementById('title')!.innerText = title
     document.title = title + " " + document.title;
   }
-  private calcWeeklyData(forum:Forum) {
-    function getStartTime(title:string, startDate:Date) {
-      //人別 週別 データ作成
+  private calcWeeklyData(forum:Forum) { //人別 週別 データ作成
+    function getStartTime(title:string, startDate:Date) { // 開始日時を返す(タイトルがRTCOSのときは補正付き)
       let start = startDate.getTime();
       if (  title.indexOf("RTOCS") !== -1 ) { //RTOCSだった
         const days = startDate.getDay();
@@ -261,7 +299,7 @@ class CountResult {
       }
       return start
     }
-    function getMinPost(title:string) {
+    function getMinPost(title:string) { // 必要発言数を返す(タイトルがRTCOSのときは補正付き)
       let minPost = 1; //最低投稿数 普通は週に1件 2件もあるので黄色
       if (  title.indexOf("RTOCS") !== -1 ) { //RTOCSだった
         if (  title.indexOf("振り返り") === -1 ) { //振り返り以外のRTOCSだった
@@ -287,7 +325,7 @@ class CountResult {
     for(let number=0; number<forum.entry.length; number++) { //for inはダメで実際は1からだけど
       if ( forum.entry[number] && !forum.entry[number]!.deleted ){
         //削除されていないものだけ収集
-        const uuid = forum.entry[number]!.uuid;
+        const uuid = forum.entry[number]!.uuid  //forumに入っているuuidはnumberかも
         const relation = forum.entry[number]!.relation;  //参照先
         if ( relation===0 || forum.entry[relation]!.uuid !== uuid ) {
           //返信先が無いか、自分以外からの返信だった
@@ -304,6 +342,7 @@ class CountResult {
             data[index]!.d = new Array();
             data[index]!.d[week] = 1;
             data[index]!.uuid = uuid;
+            data[index]!.name = CountResult.authorNameCache[uuid]! // 必ずキャッシュに有る
             uuids[uuid] = index++;
           } else {
             if ( isNaN(data[uuidIndex]?.d[week]!) ) { //その人で初めて出てきた週 .d[]が無いとundefinedで数値でないのでfalse
@@ -330,14 +369,14 @@ class CountResult {
     return sum;
   }
   private fillAuthorCache(i:number=0, data:(ACEntry|CountingDatum)[], sendResponse:()=>void) {
-    if (i%10===0) { console.log("filleDataTableHeader()",i) } //AuthorNameCache更新 ログは10回に一度
+    if (i%(data.length/10)===0) { console.log("fillAuthorCache() Entry=",i) } //AuthorNameCache更新 ログはEntry数/10ごとに出す。
     if ( i<data.length ) {
         if ( data[i] && !CountResult.authorNameCache[data[i]!.uuid]) { //ACentryのdata[0]はempty  data[i]は必ずある
          ACexMessageSender.send({cmd:BackgroundMsgCmd.GET_AUTHOR_CACHE, uuid:data[i]!.uuid}, (ret) => {
           const response = ret as BackgroundResponseName //なんか必ず返ってくる
            if ( !response.name ) {
              console.error("Can not found Author name in Background.", data[i]!.uuid)
-             response.name = "" //Non In Cache
+             response.name = "" //Non In Cache  forumキャッシュにはnameは入っていないのいないのでSET_AUTHOR_CACHEはできないので名無し
            }
            CountResult.authorNameCache[data[i]!.uuid] = response.name
            this.fillAuthorCache(++i, data, sendResponse)
@@ -471,24 +510,41 @@ class CountResult {
       }
     } // forum.entryでのforループ
 
-    this.messsage( MessageUtil.getMessage(["count_finish", "id"]) + forum.fid )
+    const finishMessages:Array<string> = /* グラフ出るよ this.noCharts ? ["count_finish", "no_charts", "id"] :*/ ["count_finish", "id"]
+    this.messsage( MessageUtil.getMessage(finishMessages) + forum.fid )
 
-    const data = this.calcWeeklyData(forum) //週別も計算 dataは必ず作られる
-    //チャートデータが算出できたのでグラフ表示
-    this.drawChart();
-
-    if (!data) {
-      console.error("No data for weekly count table.",data)
+    const chartData = this.calcWeeklyData(forum) //週別も計算 dataは必ず作られる setChartData()も済んでいる
+    if (this.noCharts) {
+      let countingDatum = chartData.data; //this.getChartData()?.data //dataだけどテーブル用とグラフ用では微妙に異なる
+      if (!countingDatum) {
+        console.error("ACex: Can not postMessage for sandbox by no chart data")
+      } else {
+        this.fillAuthorCache(0, countingDatum, () => {
+          // Google Chartが初期化できなかったのでサンドボックス表示
+          let hight = 33 * chartData.data.length;
+          if ( hight < 500 ) { hight = 500; }
+          hight+=50 //少し下駄を入れる
+          let iframe = document.getElementById("graph_frame") as HTMLIFrameElement
+          iframe.style.height = hight + "px";
+          iframe.contentWindow?.postMessage({'chartData': chartData, 'language': chrome.i18n.getUILanguage()}, "*")
+        })
+      }
+    } else {
+      //チャートデータが算出できたのでGoogle Chartsがあればグラフ表示
+      this.drawChart();
+    }
+    if (!chartData) {
+      console.error("No data for weekly count table.",chartData)
       return;
     }
     //週別情報のテーブルヘッタ追加
-    document.getElementById('week_header')!.setAttribute("colspan", ""+ (data.maxWeek-data.minWeek+1))
-    for(let week=data.minWeek; week<=data.maxWeek; week++) {
+    document.getElementById('week_header')!.setAttribute("colspan", ""+ (chartData.maxWeek-chartData.minWeek+1))
+    for(let week=chartData.minWeek; week<=chartData.maxWeek; week++) {
       document.getElementById('table_header_bottom')!.insertAdjacentHTML("beforeend", "<th>" + week + "</th>")
     }
 
     const ranking:Ranking[] = [];
-    for(const uuid in counter) {
+    for(const uuid in counter) { //ここでuuidの型が強制的にstringになるよ 実はuuidはnumber
       ranking.push({"name": CountResult.authorNameCache[uuid]!, "count": counter[uuid]!
                     ,"deleted": deleted[uuid]!
                     ,"reply": reply[uuid]!, "ownReply": ownReply[uuid]!
@@ -508,16 +564,15 @@ class CountResult {
       if ( isNaN(reply) )    { reply   = 0; };
       if ( isNaN(ownReply) ) { ownReply= 0; };
       if ( isNaN(replied) )  { replied = 0; };
-      let item = '<tr>'
-        + '<th align="right" class="RankingNumber">'+ (i+1) +'</th>'
-        + '<td class="RankingName">' + rank["name"] + '</td>'
-        + '<td align="right">' + count + '</td>'
-        + '<td align="right">' + deleted +  '</td>'
-        + '<td align="right">' + ownReply + '</td>'
-        + '<td align="right">' + reply + '</td>'
-        + '<td align="right">' + Math.round(+reply/count*100) + '%</td>'
-        + '<td align="right">' + replied + '</td>'
-        + '<td align="right">' + Math.round(+replied/count*100) + '%</td>';
+        // + '<th align="right" class="RankingNumber">'+ (i+1) +'</th>'
+        // + '<td class="RankingName">' + rank["name"] + '</td>'
+        // + '<td align="right">' + count + '</td>'
+        // + '<td align="right">' + deleted +  '</td>'
+        // + '<td align="right">' + ownReply + '</td>'
+        // + '<td align="right">' + reply + '</td>'
+        // + '<td align="right">' + Math.round(+reply/count*100) + '%</td>'
+        // + '<td align="right">' + replied + '</td>'
+        // + '<td align="right">' + Math.round(+replied/count*100) + '%</td>';
       const tr = document.createElement("tr")
       {//ヘッタ
         const th = document.createElement("th")
@@ -526,7 +581,7 @@ class CountResult {
         th.innerText = ""+(i+1)
         tr.appendChild(th)
       }
-      {//一行目
+      {//一行目〜
         const td = document.createElement("td")
         td.setAttribute("class", "RankingName")
         td.innerText =  rank["name"]
@@ -534,20 +589,22 @@ class CountResult {
         [ count, deleted, ownReply, reply,
           Math.round(+reply/count*100) + '%',
           replied,
-          Math.round(+replied/count*100) + '%'  ].forEach( (str) => {
-            const td = document.createElement("td")
-            td.setAttribute("align", "right")
-            td.innerText = ""+str
-            tr.appendChild(td)
-          })
+          Math.round(+replied/count*100) + '%'
+        ].forEach( (str) => {
+          const td = document.createElement("td")
+          td.setAttribute("align", "right")
+          td.innerText = ""+str
+          tr.appendChild(td)
+        })
       }
+      // 週毎データ
       let d = new Array();
-      for( let j=0; j<data.data.length; j++ ) {
-        if ( rank.uuid === data.data[j]!.uuid ) {
-          d = data.data[j]!.d; break;
+      for( let j=0; j<chartData.data.length; j++ ) { //一応、週テータもソートしてあるけどuuidでマッチを探す
+        if ( rank.uuid == chartData.data[j]!.uuid ) { //rank.uuidはstringなので、data.data[j]!.uuidはnumberなので注意
+          d = chartData.data[j]!.d; break;
         }
       }
-      for(let week=data.minWeek; week<=data.maxWeek; week++) {
+      for(let week=chartData.minWeek; week<=chartData.maxWeek; week++) {
         let count = d[week];
         if ( isNaN(count) ) { count = 0; }
         let redClass = "";
@@ -556,14 +613,14 @@ class CountResult {
         }else if ( count < (forum.minPost+1) ) {
           redClass = "yellow_cell"
         }
-        item = item + ('<td align="right"' + (redClass!==""?('class="' + redClass + '" '):"") +'>' + count + '</td>');
+        // item = item + ('<td align="right"' + (redClass!==""?('class="' + redClass + '" '):"") +'>' + count + '</td>');
         const td = document.createElement("td")
         td.setAttribute("align", "right")
         if ( redClass!=="") { td.setAttribute("class", redClass) }
         td.innerText = count
         tr.appendChild(td)
       }
-      item = item + '</tr>';
+      // item = item + '</tr>';
       //document.getElementById( "ranking_table").insertAdjacentHTML("beforeend", item)
       document.getElementById( "ranking_table")!.appendChild(tr)
     })

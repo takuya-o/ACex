@@ -7,16 +7,18 @@
 /nbproject/private/
 /built/
 /deploy/
-/src/*.js.map
-/src/*.js
-/src/lib/jquery.min.js
-/src/lib/jspdf.umd.min.js
-/src/lib/*.map
+/src/**/*.js
+/src/**/*.js.map
+!/src/lib/tagmanager.js
+/src/lib/**/*.js
+/src/lib/**/*.min.map
 /node_modules/
+/.npm/
 /for*/
-coverage/
-.nyc_output/
-tsconfig.tsbuildinfo
+/coverage/
+/.nyc_output/
+/tsconfig.tsbuildinfo
+dump.lsif
 .env
 
 

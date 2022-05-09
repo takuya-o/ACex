@@ -1,18 +1,21 @@
-/* -*- coding: utf-8-unix -*- */
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable block-no-empty */
+/* stylelint-disable selector-id-pattern */
+
 #experimental_option_list {
-display:none
+  display: none;
 }
 
 #popup_wait_for_mac {
-text-align:right
+  text-align: right;
 }
 
 #trial_priod_days {
-text-align:right
+  text-align: right;
 }
 
 #forum_memory_cache_size {
-text-align:right
+  text-align: right;
 }
 
 #count_button_option {
@@ -103,7 +106,8 @@ text-align:right
 
 }
 
-
 footer {
-    height: 32px;
+  height: 32px;
 }
+
+/* -*- coding: utf-8-unix -*- */

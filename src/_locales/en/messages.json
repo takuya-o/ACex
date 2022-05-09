@@ -11,6 +11,24 @@
   "chrome_extension_name":{
     "message":"AC extender"
   },
+  "ACex_Release_Note":{
+    "message":"AirCampus Portal Extender Releasse Note"
+  },
+  "Version":{
+    "message":"Version"
+  },
+  "ACex_Release_Options":{
+    "message":"AirCampus Portal Extender Options"
+  },
+  "ACex_Release_Course_List":{
+    "message":"Course List - AirCampus Portal Extender"
+  },
+  "ACex_Release_Count_Result":{
+    "message":"Count Result - AirCampus Portal Extender"
+  },
+  "ACex_Release_Count_Graph":{
+    "message":"Count Result Graph - AirCampus Portal Extender"
+  },
   "save":{
     "message":"Save"
   },
@@ -70,6 +88,9 @@
   },
   "count_finish":{
     "message":"Count Finish."
+  },
+  "no_charts":{
+    "message":"Could not display charts."
   },
   "last_update":{
     "message":"Data Last Update:"
@@ -274,5 +295,20 @@
   },
   "text_detection_error":{
     "message":"Text extraction with API Key failed."
+  },
+  "Doing_data_migration":{
+    "message":"Doing options data migration."
+  },
+  "Data_migration_done":{
+    "message":"Options data migration done."
+  },
+  "No_data_migration":{
+    "message":"No optional data migration was required."
+  },
+  "Ver0_9":{
+    "message":" "
+  },
+  "Option_data_migration":{
+    "message":"This page automatically migrates options data."
   }
 }

@@ -1,0 +1,7 @@
+# https://stackoverflow.com/questions/18530981/create-google-chrome-extension-package-without-specified-files
+
+*.swp
+*~
+*.ts
+*.map
+.AppleDouble

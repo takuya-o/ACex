@@ -33,15 +33,30 @@ class TabHandler {
     )
   }
   public static assignMessageHandlers() {
-    chrome.runtime.onMessage.addListener( (msg:string, _sender:chrome.runtime.MessageSender, sendResponse:()=>void) =>{
-      console.log("--- Recv ACex:", msg);
+    chrome.runtime.onMessage.addListener( (msg:string, _sender:chrome.runtime.MessageSender, sendResponse:(res?:any)=>void) =>{
+      console.log("--- Recv TabHandler:", msg);
       if(msg === "assignTabHandler") {
         TabHandler.assignTabHandlers();//tab.onRemoved()登録
         sendResponse();
       } else {
-        console.log("--- Recv ACex: Unknown message.");
-        sendResponse();//とりあえず無視
+        console.log("--- Recv TabHandler: Unknown message.")
+        // ループしちゃう
+        // if ( typeof msg === "object" ) {
+        //   const backgroudMessage = msg as BackgroundMsg
+        //   if ( typeof ( backgroudMessage?.cmd) === "string" ) {
+        //     //Background行きのメッセージを受けちゃったらしい
+        //     console.log("--- Recv TabHandler: Resend to background")
+        //     chrome.runtime.sendMessage( backgroudMessage, (response:BackgroundResponse)=>{
+        //       if (chrome.runtime.lastError) {
+        //         console.error("--- Recv TabHandler: resend error:", chrome.runtime.lastError)
+        //       }
+        //       sendResponse(response)
+        //     })
+        //     return true //非同期
+        //   }
+        // }
       }
+      return false //同期
     })
     console.log("assignMessageHandlers() ")
   }

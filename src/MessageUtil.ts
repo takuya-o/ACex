@@ -44,9 +44,12 @@ class MessageUtil {
   public static getMessage(args: string[]) {//arg:配列
     let ret = "";
     args.forEach( (arg, i) => {
+      let message = ""
       if ( i !== 0 ) { ret = ret + " "; };
-      let message = chrome.i18n.getMessage(arg);
-      if (!message) { message = arg; };
+      if ( chrome?.i18n ) {
+        message = chrome.i18n.getMessage(arg) // chrome.i18nが使える場合
+      }
+      if (!message) { message = arg; }; // chrome.i18nが使えない場合もしくは取れなかった場合
       ret = ret + message;
     })
     return ret;

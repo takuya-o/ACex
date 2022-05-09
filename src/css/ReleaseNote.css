@@ -1,0 +1,11 @@
+article {
+  margin: 0 0 1rem;
+}
+
+footer {
+  border: 5pt solid #ccc;
+  padding: 10pt;
+  margin: 5pt;
+  height: 14pt;
+  font-size: 10pt;
+}

@@ -6,20 +6,27 @@ Chromeブラウザ用のAirCampusのディスカッションの「発言数カ�
 ## ビルド方法
 
 ### ビルド準備
-crxmakeがある環境で、crxmakeに--key-outputオプションをつけて秘密キーACex.pemを作る。
+crxmakeがある環境で、crxmakeに --key-outputオプションをつけて秘密キーACex.pemを作る。
 
 例:
 ```sh
 $ crxmake --pack-extension="src" --extension-output="ACex.crx" --key-output=seckey.pem --verbose
 ```
 
-※最近 crxmakeでは正しいキーが作れないことがあるので chromeで作った方が良いかも。
+※最近、crxmakeでは正しいキーが作れないことがあるのでchromeで作った方が良いかも。
+
+#### フォント準備
+``` shell
+$ base64 -w 0 <ipag.ttf >ipag.base64 #改行なし
+$ (echo -n 'const ipag ="';cat ipag.base64 ;echo -n '"') >ipag-ttf.js #文字列は改行で切れる
+```
+
 
 ### ビルド
 ./build.rbする。
 
 ### Gitlab-CI
-dockerコンテナで、パッケージングをして、CIとしています。
+Dockerコンテナで、パッケージングをして、CIとしています。
 
 
 ## インストール方法
@@ -49,7 +56,7 @@ dockerコンテナで、パッケージングをして、CIとしています。
 ※終了したディスカッションは、「開講中のみ」ボタンをOffにすることにより表示されるようになります。
 
 ### AirCampusポータルの場合
-1. ChromeブラウザーでAirCampusポータルでカウントしたいディスカッションを開いてください。
+1. ChromeブラウザーでAirCampusポータルからカウントしたいディスカッションを開いてください。
 2. ツールバーのこの拡張機能のアイコンに赤く「count」とバッチがつきます。
 3. アイコンをクリックすると、別タブに投稿数一覧の表が開きます。
 
@@ -98,6 +105,9 @@ It may become unusable due to changes in AirCampus specifications.
 It is using Google Tag Manager and Google Analytics to investigate usage.
 
 ### What is new!
+Version 0.9
+Support Manifest V3.
+
 Version 0.8
 Supporting AirSearch beta(Dec.2020), partially.
 * Focused slide image, and video download.
@@ -127,40 +137,42 @@ identity, identity.email - Used for license management.
 ※BBTのウェブサイト「AirCampus for Web」は2020/1/15にサービスが終了し、代わりに「AirCampusポータル」になりました。
 ※AirSearch Bata(2020年12月現在)として公開されている新しいAirSearchと、そこから起動される新しい視聴画面に対応中です。いまのところ視聴画面での視聴情報表示に対応する見通しはありません。
 
-以下の機能が ビジネス・ブレークスルー(BBT)の「AirCampusポータル」に追加されます。
+以下の機能がビジネス・ブレークスルー(BBT)の「AirCampusポータル」に追加されます。
 - 各フォローラムの発言数カウント・グラフ化する
 - 視聴画面で講義映像をダウンロードする
 - AirSearchの画像からPDF資料を作成する
-  さらに Google VisionのAPI Keyを利用すれば、PDF資料にOCRによるテキストも埋め込むこともできます。
+  さらにGoogle VisionのAPI Keyを利用すれば、PDF資料にOCRによるテキストも埋め込むことができます
 
-ソースは、GitHub で公開しています。
+ソースは、GitHubで公開しています。
 AirCampusの仕様変更により使えなくなってしまうことがあるかもしれません。
 
 Google Tag ManagerとGoogle Analyticsを使用して使用状況を調査しています。
 
 ### What is new!
+Version 0.9
+Manifest V3対応。
+
 Version 0.8
 部分的にAirSearch beta(2020/12)をサポート。
-* スライドの曇り止めとビデオダウンロード。
-* 視聴画面で「画像PDF化資料」作成をサポート。(実験的オプション)
+* スライドの曇り止めとビデオダウンロード
+* 視聴画面で「画像PDF化資料」作成をサポート(実験的オプション)
 
 Version 0.7
 AirSearchの画像からPDF資料を作成する機能をサポートしました。
 
 Version 0.6
-バックグラウンド処理をイベントにして実行時のメモリ削減を行いました。
-オプション画面の改善を行いました。
+バックグラウンド処理をイベントにして実行時のメモリ削減しました。
+オプション画面の改善しました。
 
 Version 0.4
 ACサーバからのデータを全てJSONで取得するようにしました。
 
 Version 0.3
-機能の整理を行いました。
+機能の整理しました。
 
 ### Permission
 activeTab - ブラウザタブの切替・管理のために利用します。
 storage, unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
+<all_urls> - スライド画像をスクリーンチャプタで取得するために利用します。
 identity  - ライセンス管理のためにユーザを特定するため。
 identity.email - ユーザ管理のために連絡先を確認するため。
-<all_urls> - スライド画像をスクリーンチャプタで取得するために利用します。 (オプション)
-

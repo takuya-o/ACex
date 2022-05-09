@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-      "module": "ES6",
+      "module": "ES2020",
+      "suppressImplicitAnyIndexErrors": true,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "forceConsistentCasingInFileNames": true,
 
       "strict": true,
       "noImplicitAny": true,
@@ -17,19 +21,22 @@
       "noFallthroughCasesInSwitch": true,
       "noUncheckedIndexedAccess": true,
 
-      "removeComments": false,
+      "removeComments": false,  // CI/CD時にコマンドオプションで消す
       "preserveConstEnums": true,
+      "newLine": "LF",
       "sourceMap": true,
       "outDir": "./src",
       "allowJs": false, //.jsもコンパイル
       "checkJs": false,
       "incremental": true,
       "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-      "target": "ES6"
+      "target": "ES2020",
+      "esModuleInterop": true
   },
   "exclude": [
     "node_modules/",
-    "src/lib/"
+    "src/lib/",
+    ".npm/"
   ],
   "include": ["./src/**/*"]
 }

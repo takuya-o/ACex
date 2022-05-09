@@ -1,6 +1,14 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 
+//importScripts("MakeSlide.js")
+//import { MakeSlide } from "./MakeSlide"
+
+// declare class MakeSlide {
+//   constructor(cb:()=>void)
+//   public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>):void
+// }
+
 class PlayerExstender {
   //定数
   private static RETRY_MAX = 10
@@ -33,13 +41,13 @@ class PlayerExstender {
   }
 
   private static sharpner(retry = PlayerExstender.RETRY_MAX) {
-    const imgs = document.querySelectorAll('div.carousel-item img.d-block.w-100.filterBlur2') //divの子がimgだけど、フェールセーフで子孫
+    const imgs = document.querySelectorAll('img.filterBlur2') //パス変わるので曇り入っているイメージ全部にした 古いのも含むよ
     if (imgs.length === 0) {
       if (retry > 0 ) {
-        console.log("Retry get image", retry)
+        console.log("Retry get Blur image", retry)
         setTimeout( PlayerExstender.sharpner, PlayerExstender.RETRY_WAIT, --retry )
       } else {
-        console.log("Retry over: Cannot get slide images.") //TODO: AirSearchiのBetaが取れたらwranにする
+        console.log("Retry over: Cannot get slide Blur images.") //TODO: AirSearchiのBetaが取れたらwranにする
       }
       return
     }

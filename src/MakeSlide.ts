@@ -1,6 +1,94 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="jspdf" />
 
+// import jsPDF from "jspdf"
+// importするとjavascriptになったときにも残ってエラーになるので疑似定義
+declare namespace jspdf {
+  class jsPDF {
+    constructor(orientation?:any,
+      unit?:string,
+      format?:string|Array<Number>,
+      compressPdf?:number
+    );
+    addPage(format?: string | number[], orientation?: 'p'|'portrait'|'l'|'landscape'): jsPDF;
+    setPage(n:number):jsPDF;
+    insertPage(beforePage:number):jsPDF;
+    movePage(targetPage:number, beforePage:number):jsPDF;
+    deletePage(n:number):jsPDF;
+    setDisplayMode(zoom?:string, layout?:string, pmode?:string):jsPDF;
+    text(text:any, x:any, y:any, flags?:any, angle?:any, align?:any):jsPDF;
+    lstext(text:string, x:number, y:number, spacing:number):jsPDF;
+    line(x1:number, y1:number, x2:number, y2:number):any;
+    clip():void;
+    lines(lines:any, x:any, y:any, scale?:any, style?:string, closed?:boolean):jsPDF;
+    rect(x:number, y:number, w:number, h:number, style?:string):jsPDF;
+    triangle(x1:number, y1:number, x2:number, y2:number, x3:number, y3:number, style:string):jsPDF;
+    roundedRect(x:number, y:number, w:number, h:number, rx:number, ry:number, style:string):jsPDF;
+    ellipse(x:number, y:number, rx:number, ry:number, style?:string):jsPDF;
+    circle(x:number, y:number, r:number, style:string):jsPDF;
+    setProperties(properties:any):jsPDF;
+    setFontSize(size:number):jsPDF;
+    setFont(fontName?:string, fontStyle?:string):jsPDF;
+    setFontStyle(style:string):jsPDF;
+    setFontType(style:string):jsPDF;
+    getFontList():any;
+    addFont(postScriptName:string, fontName:string, fontStyle:string):string;
+    setLineWidth(width:number):jsPDF;
+    setDrawColor(ch1:number|string):jsPDF;
+    setDrawColor(ch1:number, ch2:number, ch3:number, ch4?:number):jsPDF;
+    setFillColor(ch1:number|string):jsPDF;
+    setFillColor(ch1:number, ch2:number, ch3:number, ch4?:number):jsPDF;
+    setTextColor(ch1:number|string):jsPDF;
+    setTextColor(ch1:number, ch2:number, ch3:number, ch4?: number):jsPDF;
+    setLineCap(style:string|number):jsPDF;
+    setLineJoin(style:string|number):jsPDF;
+    output(type?:string, options?:any):any;
+    save(filename:string): void;
+    save(filename:string, options: {returnPromise: boolean}): Promise<any>;
+
+    // jsPDF plugin: addImage
+    sHashCode(str:string):any;
+    isString(object:any):boolean;
+    extractInfoFromBase64DataURI(dataURI:string):any[];
+    supportsArrayBuffer():boolean;
+    isArrayBuffer(object:any):boolean;
+    isArrayBufferView(object:any):boolean;
+    binaryStringToUint8Array(binary_string:string):Uint8Array;
+    arrayBufferToBinaryString(buffer:any):string;
+    arrayBufferToBase64(arrayBuffer:ArrayBuffer):string;
+    createImageInfo(data:any, wd:any, ht:any, cs:any, bpc:any, imageIndex:number, alias:any, f?:any, dp?:any, trns?:any, pal?:any, smask?:any):any;
+    addImage(imageData?:any, format?:any, x?:number, y?:number, w?:number, h?:number, alias?:any, compression?:any, rotation?:any):jsPDF;
+    processJPEG(data:any, index:number, alias:any, compression?:any, dataAsBinaryString?:string):any;
+    processJPG():any;
+
+    // jsPDF plugin: vfs
+    existsFileInVFS(filename:string):boolean;
+    addFileToVFS(filename:string, filecontent:string):jsPDF;
+    getFileFromVFS(filename:string):string;
+
+
+    //どこ?
+    setLanguage(langCode:string):jsPDF //langcode
+    static API: any
+  }
+  //namespace jsPDF {}
+}
+
+// declare module 'jspdf' {
+//   class jsPDF {
+//     constructor(orientation?:any,
+//       unit?:string,
+//       format?:string|Array<Number>,
+//       compressPdf?:number);
+//   }
+//   namespace jsPDF {}
+// }
+
+//import * as jspdf from "jspdf" // "jspdf.t.ts"ファイルのjspdfモジュールから関数とクラスをimport
+
+//import { jspdf } from "jspdf"
+//var jspdf = require("jspdf").jspdf
+
 //VScode生成 import * as jspdf from "jspdf"
 
 //const module = await import('./lib/jspdf.es.min.js');
@@ -14,11 +102,13 @@
 
 // import "lib/jspdf.es.min.js"
 
+declare const ipag:string //IPAフォント lib/ipag00303/ipag-ttf.js
+
 class MakeSlide {
   //jsPDF 追加font
   static font:string
 
-  public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>) {
+  public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>):void {
     if ( imgs.length === 0 ) {
       throw new RangeError("setupPDF(): no images." + {title, subTitle, imgs} )
     }
@@ -48,7 +138,7 @@ class MakeSlide {
     // let gsTrans = {"opacity": 0, "stroke-opacity": 0}
     // pdf.addGState("trans", gsTrans)
     //pdf.setTextColor("#FFFFFF") //white
-    pdf.setLanguage("ja-jp")
+    pdf.setLanguage("ja") // ja-jpは定義されていない
     //jsPDFのdefaultは300dpi https://github.com/MrRio/jsPDF/issues/132#issuecomment-28238493
     //let p = {w:210, h:297, mx:10, my:10} //{ w:2480, h:3507, mx:118, my:118} //マージン余白px
     const p: PDFprops = { w: 446, h: 632, mx: 18, my: 18, iw: 0, ih: 0 } //54DPI(pxでほしいので実験算出値)
@@ -227,19 +317,24 @@ class MakeSlide {
 
   private static setupFonts(cb:()=>void) {
     if (!MakeSlide.font) {
-      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
-        if ( response.data !== "") {
-          console.log("Font:", response.length, response.data)
-          if ( response.data.length !== response.length ) {
-            console.error("Font length missmatch. Error on message passing?")
-          }
-          MakeSlide.font = response.data
-          jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
-        } else {
-          console.error("Can not get Font Data.")
-        }
-        if (cb) { cb() }
-      })
+      console.log("Font:", ipag.length, ipag)
+      MakeSlide.font = ipag //事前JavaScript版フォントを使う
+      jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
+      if (cb) { cb() }
+
+      // chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
+      //   if ( response?.data ) {
+      //     console.log("Font:", response.length, response.data)
+      //     if ( response.data.length !== response.length ) {
+      //       console.error("Font length missmatch. Error on message passing?")
+      //     }
+      //     MakeSlide.font = response.data
+      //     jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
+      //   } else {
+      //     console.error("Can not get Font Data.")
+      //   }
+      //   if (cb) { cb() }
+      // })
     } else {
       //font set 済み
       console.info("Alread setup font.") //ここに来るパターンみつけていないけど

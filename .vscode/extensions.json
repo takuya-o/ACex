@@ -1,0 +1,9 @@
+{
+        "recommendations": [
+                "dbaeumer.vscode-eslint",
+                "mkaufman.htmlhint",
+                "stylelint.vscode-stylelint",
+                "redhat.vscode-yaml",
+                "taichi.vscode-textlint"
+        ]
+}

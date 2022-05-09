@@ -11,6 +11,24 @@
   "chrome_extension_name":{
     "message":"AC extender"
   },
+  "ACex_Release_Note":{
+    "message":"AirCampusポータルExtender リリースノート"
+  },
+  "Version":{
+    "message":"バージョン"
+  },
+  "ACex_Release_Options":{
+    "message":"AirCampusポータルExtenderオプション"
+  },
+  "ACex_Release_Course_List":{
+    "message":"AirCampusポータルExtenderコースリスト"
+  },
+  "ACex_Release_Count_Result":{
+    "message":"AirCampusポータルExtender計測結果"
+  },
+  "ACex_Release_Count_Graph":{
+    "message":"AirCampusポータルExtender計測結果グラフ"
+  },
   "save":{
     "message":"保存"
   },
@@ -70,6 +88,9 @@
   },
   "count_finish":{
     "message":"計測完了"
+  },
+  "no_charts":{
+    "message":"グラフ表示できません"
   },
   "last_update":{
     "message":"データ更新時刻:"
@@ -274,5 +295,20 @@
   },
   "text_detection_error":{
     "message":"API Keyでテキスト抽出を行いましたが失敗しました。"
-   }
+  },
+  "Doing_data_migration":{
+    "message":"オプションデータ移行中"
+  },
+  "Data_migration_done":{
+    "message":"オプションデータ移行完了"
+  },
+  "No_data_migration":{
+    "message":"オプションデータ移行は必要ありませんでした。"
+  },
+  "Ver0_9":{
+    "message":" "
+  },
+  "Option_data_migration":{
+    "message":"このページでは自動的にオプションデータのマイグレーションを行います。"
+  }
 }

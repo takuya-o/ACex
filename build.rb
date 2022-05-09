@@ -17,7 +17,7 @@ require 'crxmake'
 CrxMake.zip(
   :ex_dir => "./src",
   :pkey   => "./src.pem",
-  :zip_output => "./acex.zip",
+  :zip_output => "./acex-crxmake.zip",
   :verbose => true,
   :ignorefile => /(\.swp|.*~|\.ts|\.map)/,
   :ignoredir => /\.(?:svn|git|cvs|AppleDouble)/

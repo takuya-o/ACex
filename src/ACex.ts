@@ -90,6 +90,8 @@ class ACex {
       iconText="";  //defaultのアイコン
       //badgeText="";
     }
+    //chrome.action.enable() //コンテンツスクリプトでは使えない?
+    //chrome.action.setBadgeText({text:"OK"})
     //Backgroundに最新icon通知
     chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: iconText}, (_response:BackgroundResponse) => {
       MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
@@ -115,7 +117,7 @@ class ACex {
         input.setAttribute('value', MessageUtil.getMessage(["Count"]));
         input.addEventListener("click", () => {
           //AjaxでURLが毎回変わっていることがあるので取りなおす
-          const match = window.document.URL.match(regexp);
+          const match = window.document.URL.match(regexp); //location.hrefやchrome.tabs.query()で取るもの?
           if ( !match ) {
             alert("Faital Error: Can't get forum ID.");
           } else {

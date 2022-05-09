@@ -39,6 +39,7 @@ const BackgroundMsgCmd = {
   GET_FONTDATA:"getFontData",
   REMOVE_TAB_ID: "removeTabId",
   GET_TAB_ID: "getTabId",
+  // GET_MY_TAB_ID: "getMyTabId",
   LOG:"log"
 }
 type BackgroundMsgCmd = typeof BackgroundMsgCmd[keyof typeof BackgroundMsgCmd]
@@ -101,7 +102,7 @@ type BackgroundResponse = BackgroundResponseName|BackgroundResponseUrl|Backgroun
 
 //オプション設定
 type Configurations = {
-  experimentalEnable: boolean,
+  experimental: boolean,
   countButton: boolean,
   cRmode: boolean,
   popupWaitForMac: number,
@@ -258,7 +259,8 @@ type ForumContents = { //サーバからくるForum中身
 //グラフ作成
 type CountingDatum = { //ID毎の各週の投稿数カウント
   d:number[], //各週の投稿数
-  uuid: string
+  uuid: string,
+  name: string
 }
 
 type ChartData = { //グラフデータ

@@ -6,7 +6,10 @@ variables:
 
   #Dependency Scan remote is  ULTIMATE GOLD only Gemnasiumでのライブラリ脆弱性
   DEP_SCAN_DISABLE_REMOTE_CHECKS: local
+  #SAST_CONFIDENCE_LEVEL: 1 #低リスクも挙がる
   GITLAB_FEATURES: "$GITLAB_FEATURES container_scanning dependency_scanning license_scanning sast "
+  SAST_BANDIT_EXCLUDED_PATHS: "node_modules/*, src/lib/*"
+  #SECRET_DETECTION_HISTORIC_SCAN: "true" # 時間を掛けて履歴もチェック
 
 stages:
   - build
@@ -29,63 +32,110 @@ include:
   - template: Jobs/Build.gitlab-ci.yml
 #  - template: Jobs/Test.gitlab-ci.yml
   - template: Jobs/Code-Quality.gitlab-ci.yml
+  - template: Jobs/Code-Intelligence.gitlab-ci.yml
 #  - template: Jobs/Deploy.gitlab-ci.yml
 #  - template: Jobs/Browser-Performance-Testing.gitlab-ci.yml
 #  - template: Security/DAST.gitlab-ci.yml
   - template: Security/Container-Scanning.gitlab-ci.yml
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/License-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/License-Scanning.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+#  - template: Jobs/Code-Intelligence.gitlab-ci.yml #for go
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+#  - template: Security/Secure-Binaries.gitlab-ci.yml # GitLabのScecureプロダクトのDockerイメージをローカルに持ってくる
+
+# https://docs.gitlab.com/ee/ci/caching/#inherit-global-configuration-but-override-specific-settings-per-job
+.cache: &default_cache
+  key:
+    files:
+    - package-lock.json
+    #npm-$CI_COMMIT_REF_SLUG
+  paths:
+  - .npm/
+  - node_modules/
+  policy: pull #pull-push
+
+.cache: &owasp_cache
+  key: OWASP
+  paths:
+    - data/
+  policy: pull-push
+  when: 'always' #OWASPが自動更新するので (default)on_success
 
 build: #上書きと追加項目
   image: "node:alpine" #11.10.1-alpine <- alpine:2.9
   tags:
   - Docker
-  services:
+  needs: []
+  cache:
+    <<: *default_cache
+    policy: pull-push   #Use npm cache & create node_modules
   script:
   - |
     function install_crxmake() {
-      apk add --no-cache ruby
+      apk add --no-cache ruby zip #ruby-dev openssl-dev gcc musl-dev make
       export PATH=`gem environment gempath|sed 's/:.*$//'`/bin:$PATH
       gem install --user-install --no-document crxmake  #ruby-rdocパッケージいれず-no-..
+      #gem install --user-install --no-document openssl_pkcs8 #Chrome WebStore need PKCS8
     }
     function build() {
-      #npm WARN tar ENOENT: no such file or directory,でACexでは動かない
-      #npm install
-      #cp -p node_modules/jquery/dist/jquery.min.js src/lib/
-      #./node_modules/.bin/tsc
       install_crxmake
-      if [ -z "$PRIVATE_KEY" ];then
-        unofficial_build
-      else
+      if [ -n "$PRIVATE_KEY" -a  ! -f src.pem ];then
+        # 正式版の鍵があれば使う 上書きしない
         cp "$PRIVATE_KEY" src.pem
-        official_build
       fi
-    }
-    function unofficial_build() {
-      crxmake --pack-extension="src" --zip-output="${CI_PROJECT_NAME}.zip" \
-      --key-output=src-tmp.pem  \
-      --ignore-file="/(\.swp|.*~)/" --ignore-dir="/\.(?:svn|git|cvs)/" --verbose
-      #DEBUG用に .tsと.map 含めておく
-    }
-    function official_build() {
-      ./build.rb
+      ./build.sh
     }
     build
   artifacts:
     paths:
     - ${CI_PROJECT_NAME}.zip
 
+#コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
+code_navigation:
+  stage: deploy
+  image: "node:alpine" #11.10.1-alpine <- alpine:2.9
+  needs: [ build ]
+  cache:
+    <<: *default_cache
+  allow_failure: true # recommended
+  script:
+  - |
+    # ./node_modules/.bin/lsif-typescript index #JS --infer-tsconfig
+    # mv dump.lsif-typed dump.lsif
+    # https://github.com/sourcegraph/lsif-node/blob/master/OLD_README.md
+    apk add --no-cache git
+    ./node_modules/.bin/lsif-tsc -p . #JS --AllowJs --checkJs
+  artifacts:
+    reports:
+      lsif: dump.lsif
+
+#コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
+#code_navigation:
+# テンプレートではまだgoのみサポート
+
 code_quality:  #STARTER BRONZE->CORE FREE
   tags: #追加項目
   - DinD
+#  script:
+#  - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
+
+code_quality_html:
+  extends: code_quality
+  script:
+    # 環境変数をscriptで設定する必要が有る
+    - export REPORT_FORMAT=html
+    # html出力できるイメージはGitLab CIの最新masterテンプレートから持ってくる
+    - export CODE_QUALITY_IMAGE=$(wget -q -O - https://gitlab.com/gitlab-org/gitlab/-/raw/master/lib/gitlab/ci/templates/Jobs/Code-Quality.gitlab-ci.yml|awk '/CODE_QUALITY_IMAGE:/{gsub(/^"|"$/,"",$2);print $2}')
+    - !reference [code_quality, script]
+  artifacts:
+    paths: [gl-code-quality-report.html]
 
 container_scanning: #Docker image形式を検査する
   tags: #追加項目
   - DinD
+  needs: []
   artifacts:
-#    reports:
-#      container_scanning: gl-container-scanning-report.json
     expose_as: 'Container Scanning Report JSON'
     paths:
       - gl-container-scanning-report.json
@@ -93,26 +143,41 @@ container_scanning: #Docker image形式を検査する
 dependency_scanning:  #ULTIMATE GOLD
   tags: #追加項目
   - DinD
+  needs: []
 #  script:
 #    - cat gl-dependency-scanning-report.json #Defaultで出力済み
   artifacts:
-    expose_as: "Dependency JSON"
-    paths: [ "gl-dependency-scanning-report.json" ]
+    paths:
+      - "**/cyclonedx-*.json"
+#    reports:
+#      dependency_scanning: gl-dependency-scanning-report.json
+#    expose_as: "Dependency JSON"
+      - "gl-dependency-scanning-report.json"
 
 license_scanning: #ULTIMATE GOLD
   tags: #追加項目
   - DinD
-#  script: #置換え catでwrite errorがでる
-#    - /run.sh analyze .
-#    - cat $LM_REPORT_FILE #for CE defaultで出ない?
+  needs: []
+#  script:
+#    - cat gl-license-management-report.json
   artifacts:
-    expose_as: "License Scanning Report"
-    paths: [ "gl-license-scanning-report.html", $LM_REPORT_FILE ]
+    expose_as: "License Scanning Report json"
+    paths: [ "gl-license-scanning-report.json", "gl-license-scanning-report.html", $LM_REPORT_FILE ]
+
+secret_detection:
+  tags: #追加項目
+  - DinD
+  artifacts:
+    expose_as: "Secret detection JSON"
+    paths:
+      - "gl-secret-detection-report.json"
 
 sast: #ULTIMATE GOLD->CORE FREE(ESLint)
   tags: #追加項目
   - DinD
-
+#  script:
+#    - sast  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
+#    - cat gl-sast-report.json
 
 #のこりのテストはreviewが必要
 # dast:
@@ -121,8 +186,11 @@ sast: #ULTIMATE GOLD->CORE FREE(ESLint)
 cov-test:
   image: "node:alpine" #15.5.0-alpine3.11
   stage: test
+  needs: [ build ]
+  cache:
+    <<: *default_cache
+    policy: pull   #Not update
   script:
-    - npm install
     - node_modules/.bin/npx nyc --reporter cobertura mocha
   artifacts:
     reports:
@@ -131,28 +199,51 @@ cov-test:
     - if: '$TEST_DISABLED'
       when: never
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH'
-      
+      exists:
+        - .nycrc
+
 pages:
   stage: deploy
+  needs:
+    - code_quality
+    - code_quality_html
+  #  - cov-test  # This depend on .nycrc
+  #  - container_scanning # $CONTAINER_SCANNING_DISABLED
+  #  - dependency_scanning
+    - gemnasium-dependency_scanning
+    - retire-js-dependency_scanning
+    - license_scanning
+  #  - sast
+    - brakeman-sast
+    - eslint-sast
+    - nodejs-scan-sast
+    - semgrep-sast
+    - owasp-dependency-check
   script:
-  - mkdir .public
-  - cp -r -p
-        gl-code-quality-report.json
-        gl-container-scanning-report.json
-        gl-dependency-scanning-report.json
-        gl-license-scanning-report.html $LM_REPORT_FILE
-        gl-sast-report.json
+  - |
+    mkdir .public
+    cp -r -p \
+        gl-code-quality-report.json \
+        gl-code-quality-report.html \
+        coverage/cobertura-coverage.xml \
+        gl-container-scanning-report.json \
+        gl-dependency-scanning-report.json \
+        gl-license-scanning-report.html \
+        gl-sast-report.json \
+        report \
         .public/ || true
-  - echo "<html><header><title>CI Reports ${CI_JOB_ID}</title></header><body>
+    echo "<html><header><title>CI Reports ${CI_JOB_ID}</title></header><body>
           <ul>" >index.html
-  - (cd .public;
-      for file in *;
-      do echo '<li><a href="'$file'">'$file'</a></li>';
-      done ) >>index.html
-  - echo '</ul>
+    (cd .public;
+      for file in *;do
+        set +e
+        [[ -e "$file" ]] &&  echo '<li><a href="'$file'">'$file'</a></li>' # "
+        set -e
+      done )>>index.html
+    echo '</ul>
           </body></html>' >>index.html
-  - mv index.html .public
-  - mv .public public
+    mv index.html .public
+    mv .public public
   artifacts:
     expose_as: "CI Reports"
     paths:
@@ -160,16 +251,60 @@ pages:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
-
-#コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
-code_navigation:
-  image: sourcegraph/lsif-go:v1
-  allow_failure: true # recommended
+# OSS脆弱性チェック  OWASP Dependency Check https://knowledge-swimmer.com/gitlab-ci-owasp-dependency-check
+owasp-dependency-check:
+  stage: test
+#  only:
+#  - schedules
+  needs: [ build ]
+  image:
+    name: owasp/dependency-check:latest
+    entrypoint: [""]
+  cache:
+    - <<: *default_cache
+    - <<: *owasp_cache
   script:
-    - lsif-go
+  - /usr/share/dependency-check/bin/dependency-check.sh --out report
+    --failOnCVSS 3 --project "OWASP $CI_PROJECT_TITLE" --scan .
+    --suppression owasp-dependency-check-suppressions.xml
+    --data data
+    #--noupdate
   artifacts:
-    reports:
-      lsif: dump.lsif
+    when: on_failure
+    paths:
+    - report
+
+reviewdog:
+  stage: test
+  needs: [ build ]
+  image: "node:alpine" #11.10.1-alpine <- alpine:2.9
+  cache:
+    <<: *default_cache
+  allow_failure: true # CIに失敗してもMRをMerge可能なようにする設定
+  variables:
+    # see: https://kiririmode.hatenablog.jp/entry/20220327/1648344999
+    GIT_STRATEGY: clone
+    GIT_DEPTH: "0"
+  script:
+  - |
+    apk add --no-cache --update git
+    # apk add --update npm
+    # npm install # package.jsonに登録したtextlintのインストール
+    # reviewdogのinstall
+    # bin/ 以下に実行ファイルがインストールされます
+    wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s
+    # textlintとreviewdogの実行
+    # *.md ファイルを対象にlinterを実行しています
+    npx stylelint "src/**/*.css" | bin/reviewdog -f=stylelint -name="stylelint" -reporter=gitlab-mr-discussion || true
+    npx tsc --pretty false --noEmit |bin/reviewdog -f=tsc -name="tsc" -reporter=gitlab-mr-discussion || true
+    npx textlint -f checkstyle --no-color "**/*.md" | bin/reviewdog -f=checkstyle -name="textlint" -reporter=gitlab-mr-discussion || true
+    #npx textlint -f stylish "**/*.md" | bin/reviewdog -f=eslint -name="textlint" -reporter=gitlab-mr-discussion
+    npx htmlhint -f checkstyle --nocolor "src/**/*.html" | bin/reviewdog -f=checkstyle -name="htmlhint" -reporter=gitlab-mr-discussion || true
+  only:
+    - branches
+  except:
+    - master
+
 
 # ---------------------------------------------------------------------------
 .auto_devops: &auto_devops |

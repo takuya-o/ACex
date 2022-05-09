@@ -1,0 +1,22 @@
+version: 1
+rules:
+  - expected: Docker
+    pattern: docker
+    specs:
+      - from: docker
+        to: Docker
+  - expected: Ansible
+    pattern: ansible
+  - expected: Ansistrano
+    pattern: ansistrano
+  - expected: Kubernetes
+    pattern: kubernetes
+  - expected: React
+    pattern: react
+  - expected: Redux
+    pattern: redux
+  - expected: Next.js
+    patterns:
+      - next.js
+      - Nextjs
+

@@ -1,6 +1,6 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
-/// <reference types="jquery" />
+/* /// <reference types="jquery" /> */
 /* global Class, chrome, messageUtil, tabHandler, Ajax, dataLayer */
 
 // requirejs.config({
@@ -47,27 +47,54 @@ class CurseList {
     document.getElementById('cmd_name')!.innerText = MessageUtil.getMessage([cmd, "selectCourse"])
     this.message( MessageUtil.getMessage(["loding"]) )
 
-    $.ajax(
-      "https://aircamp.us/svlAC/GetCourseList",
-      { method: "GET",
-        data: {
-          act: 1,
-          u: this.userID,
-          a: this.sessionA,
-          format: "json"
-        },
-        crossDomain: true
+    let params = this.mkSessionParams()
+    params.append("act", "1")
+    fetch("https://aircamp.us/svlAC/GetCourseList?" + params.toString(), {
+      method: "GET",
+      mode: "cors",
+    }).then(response => {
+      if (response.ok) {
+        return response.json()
+      } else {
+        throw new Error(`${response.status} ${response.statusText}`)
       }
-    ).done( (data:ProgramList, _textStatus, _jqXHR) => {
-        this.programItemList(data, cmd)
-      }
-    ).fail( (_jqXHR, textStatus) => {
-        this.message( MessageUtil.getMessage(["program_list", "loding_fail"] ) + textStatus )
-        dataLayer.push({'event': 'Failure-GetCourseList3'
-                          + textStatus })
-      }
-    )
+    }).then(json => {
+      console.log("### GetCouseList:", json)
+      this.programItemList(json, cmd)
+    }).catch(error => {
+      console.error("### GetCouseList ERR:", error)
+      this.message( `${MessageUtil.getMessage(["program_list", "loding_fail"])} ${error.name}:${error.message}` )
+      dataLayer.push({'event': `Failure-GetCourseList3 ${error.name}:${error.message}` });
+    })
+    // $.ajax(
+    //   "https://aircamp.us/svlAC/GetCourseList",
+    //   { method: "GET",
+    //     data: {
+    //       act: 1,
+    //       u: this.userID,
+    //       a: this.sessionA,
+    //       format: "json"
+    //     },
+    //     crossDomain: true
+    //   }
+    // ).done( (data:ProgramList, _textStatus, _jqXHR) => {
+    //     this.programItemList(data, cmd)
+    //   }
+    // ).fail( (_jqXHR, textStatus) => {
+    //     this.message( MessageUtil.getMessage(["program_list", "loding_fail"] ) + textStatus )
+    //     dataLayer.push({'event': 'Failure-GetCourseList3'
+    //                       + textStatus })
+    //   }
+    // )
   }
+  private mkSessionParams() {
+    let params = new URLSearchParams()
+    params.append("u", this.userID)
+    params.append("a", this.sessionA)
+    params.append("format", "json")
+    return params
+  }
+
   private programItemList(programList:ProgramList, cmd:string) {
     this.message( MessageUtil.getMessage(["course_list", "loding_success"]) )
     let now = new Date();
@@ -182,27 +209,48 @@ class CurseList {
       //まだ無かった
       console.log("--- Create CourseItem:" + courseID);
       dataLayer.push({'event': 'course-' + courseID });
-      $.ajax(
-        "https://aircamp.us/svlAC/GetCourseItemList",
-        //https://bic.aircamp.us/svlAC/TxGetCourseItemList?u=US120029&a=fac3c9f51cef5b326587035e7123b586feaaf5f9&cid=19211&aid=&fid=-1&tag=1&flat=1&mode=0&format=json&cmplid=
-        { method: "GET",
-          data: {
-            "cid": courseID,
-            "u": this.userID,
-            "a": this.sessionA,
-            "format": "json"
-          }
+      let params = this.mkSessionParams()
+      params.append("cid", courseID)
+      fetch("https://aircamp.us/svlAC/GetCourseItemList?" + params.toString(), {
+      //https://bic.aircamp.us/svlAC/TxGetCourseItemList?u=US120029&a=fac3c9f51cef5b326587035e7123b586feaaf5f9&cid=19211&aid=&fid=-1&tag=1&flat=1&mode=0&format=json&cmplid=
+          method: "GET",
+          mode: "cors",
+      }).then( (response) => {
+        if (response.ok) {
+          return response.json()
+        } else {
+          throw new Error(`${response.status} ${response.statusText}`)
         }
-      ).done( (data:CourseItemList) => {
-            this.courseItemList(data, courseID);
-          }
-      ).fail((_data, textStatus ) => {
-            this.message( MessageUtil.getMessage(["course_list", "logind_fail", "id",
-                                courseID, textStatus]) )
-            dataLayer.push({'event': 'Failure-GetCourseItemList'
-                            + courseID + textStatus });
-          }
-      )
+      }).then(json => {
+        console.log("### couseItemList:", json)
+        this.courseItemList(json, courseID);
+      }).catch(error => {
+        console.error("### couseItemList ERR:", error)
+        this.message( `${MessageUtil.getMessage(["course_list", "logind_fail", "id"])}${courseID} ${error.name}:${error.message}` )
+        dataLayer.push({'event': `Failure-GetCourseItemList ${courseID} ${error.name}:${error.messsage}` });
+      })
+
+      // $.ajax(
+      //   "https://aircamp.us/svlAC/GetCourseItemList",
+      //   //https://bic.aircamp.us/svlAC/TxGetCourseItemList?u=US120029&a=fac3c9f51cef5b326587035e7123b586feaaf5f9&cid=19211&aid=&fid=-1&tag=1&flat=1&mode=0&format=json&cmplid=
+      //   { method: "GET",
+      //     data: {
+      //       "cid": courseID,
+      //       "u": this.userID,
+      //       "a": this.sessionA,
+      //       "format": "json"
+      //     }
+      //   }
+      // ).done( (data:CourseItemList) => {
+      //       this.courseItemList(data, courseID);
+      //     }
+      // ).fail((_data, textStatus ) => {
+      //       this.message( MessageUtil.getMessage(["course_list", "logind_fail", "id",
+      //                           courseID, textStatus]) )
+      //       dataLayer.push({'event': 'Failure-GetCourseItemList'
+      //                       + courseID + textStatus });
+      //     }
+      // )
     }
   }
   private courseItemList(courseItemList:CourseItemList, courseID:string) {

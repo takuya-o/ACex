@@ -9,19 +9,19 @@ class Popup {
     window.addEventListener("load", (_evt:Event) => {
       chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_CONFIGURATIONS}, (config:Configurations) => {
         //通常モード
-        let wait = 0;
+        let wait = 100; //Linuxでも0msで実行すると間に合わなくなった
         if(navigator.userAgent.indexOf('Mac') !== -1){
           //0.5秒後に移動Mac対策
           wait = config.popupWaitForMac
         }
         document.getElementById('content')!.style.display="none"
         setTimeout(function(this:Popup) {
-          this.preview("count");
+          this.preview("count", wait) //閉じるまでの時間もPopupするまでのWait時間と同じ
         }.bind(this), wait);
       })
     })
   }
-  private preview(cmd:string) {
+  private preview(cmd:string, wait:number = 100) {
     chrome.tabs.query({ currentWindow:true, active:true }, tabs => {
       for (const tab of tabs ) { //1つしか無いけど
         if (tab.id) {
@@ -29,7 +29,7 @@ class Popup {
             MessageUtil.checkRuntimeError("getUrl()")
             console.log("getUrl()", openedUrl)
             let url = "";
-            if ( cmd==="count" && openedUrl.match(/^https?:\/\/[^.\/]+\.aircamp\.us\/course\//) ) {
+            if ( cmd==="count" && openedUrl?.match(/^https?:\/\/[^.\/]+\.aircamp\.us\/course\//) ) {
               //HTML5版でコース画面
               const regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/;
               const match = openedUrl.match(regexp);
@@ -43,7 +43,9 @@ class Popup {
             chrome.runtime.sendMessage({cmd: BackgroundMsgCmd.OPEN, url}, (_response) => {
               MessageUtil.checkRuntimeError(BackgroundMsgCmd.OPEN) //bgへのメッセージ送信失敗でtab開けず
             })
-            window.close();  // popupを閉じる処理 MacOSで重要
+            setTimeout( ()=>{
+              window.close();  // popupを閉じる処理 MacOSで重要
+            }, wait)
           })
         } else {
           console.error("Faital Error tab.id", tab.id)

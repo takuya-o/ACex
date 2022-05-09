@@ -1,35 +1,47 @@
-/* -*- coding: utf-8-unix -*- */
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable block-no-empty */
+/* stylelint-disable selector-list-comma-newline-after */
+/* stylelint-disable selector-id-pattern */
+
 #ranking_table {
-    border-collapse: collapse; /* 枠線の表示方法 */
-    border: 1px #1C79C6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
+  border-collapse: collapse; /* 枠線の表示方法 */
+  border: 1px #1c79c6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
 }
-#ranking_table TD, TH {
-    border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
-    padding: 5px; /* セル内の余白 */
+
+#ranking_table td, th {
+  border: 1px #1c79c6 solid; /* セルの枠線（太さ・色・スタイル） */
+  padding: 5px; /* セル内の余白 */
 }
+
 #graph_table {
-    border-collapse: collapse; /* 枠線の表示方法 */
-    border: 1px #1C79C6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
+  border-collapse: collapse; /* 枠線の表示方法 */
+  border: 1px #1c79c6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
 }
-#graph_table TD, TH {
-    border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
-    padding: 5px; /* セル内の余白 */
+
+#graph_table td, th {
+  border: 1px #1c79c6 solid; /* セルの枠線（太さ・色・スタイル） */
+  padding: 5px; /* セル内の余白 */
 }
+
 #update_time {
-    /*text-align: right; 右寄せ*/
+  /* text-align: right; 右寄せ */
 }
+
 #week_header {
 }
+
 #table_header_bottom {
 }
+
 #end_day {
 }
 
-td.red_cell { /*そのセルを赤くする*/
-    color: red;
+td.red_cell { /* そのセルを赤くする */
+  color: red;
 }
-td.yellow_cell { /*そのセルを黄色くする*/
-    color: #AA0;
+
+td.yellow_cell { /* そのセルを黄色くする */
+  color: #aa0;
 }
 
 .MSG_number_column {
@@ -88,3 +100,9 @@ td.yellow_cell { /*そのセルを黄色くする*/
 
 }
 
+#graph_frame {
+  width: 100%;
+  height: 550px;
+}
+
+/* -*- coding: utf-8-unix -*- */

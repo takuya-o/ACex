@@ -1,8 +1,9 @@
-/* -*- coding: utf-8-unix -*- */
+/* stylelint-disable block-no-empty */
+/* stylelint-disable selector-class-pattern */
 body {
-/*    overflow-x: hidden;*/
-    width:20em;
-    height:5em;
+  /* overflow-x: hidden; */
+  width: 20em;
+  height: 5em;
 }
 
 .MSG_reader {
@@ -12,3 +13,5 @@ body {
 .MSG_count {
 
 }
+
+/* -*- coding: utf-8-unix -*- */

@@ -10,36 +10,54 @@
     "build": "sh -xe build.sh",
     "pretest": "node_modules/.bin/tsc",
     "test": "node_modules/.bin/npx nyc mocha",
-    "coverage": "node_modules/.bin/npx nyc --reporter cobertura mocha"
+    "coverage": "node_modules/.bin/npx nyc --reporter cobertura mocha",
+    "test-hate": "mocha --reporter=dot ./test/js/",
+    "test-report": "mocha --reporter=doc ./test/js/ > ./mocha-report.html",
+    "textlint": "textlint",
+    "htmlhint": "htmlhint",
+    "stylelint": "stylelint \"src/**/*.css\" \"src/**/*.scss\""
   },
   "repository": {
     "type": "git",
     "url": "git@gitlab-ce.docker.on-o.com:ChromeExtentions/acex.git"
   },
   "keywords": [
+    "Chrome Extentions",
     "BBT",
     "AirCampus"
   ],
   "author": "Takuya Ono",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@types/chrome": "^0.0.144",
-    "@types/google.visualization": "^0.0.66",
-    "@types/jquery": "^3.5.5",
-    "@types/jspdf": "^1.3.3",
-    "crx": "^5.0.1",
-    "mocha": "^8.4.0",
-    "npm": "^7.16.0",
-    "npm-check-updates": "^11.6.0",
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@sourcegraph/lsif-tsc": "^0.7.6",
+    "@types/chrome": "^0.0.184",
+    "@types/google.visualization": "^0.0.68",
+    "@types/jquery": "^3.5.14",
+    "@types/jspdf": "<2.0.0",
+    "crx3": "^1.1.3",
+    "htmlhint": "^1.1.4",
+    "mocha": "^10.0.0",
+    "npm": "^8.9.0",
+    "npm-check-updates": "^12.5.11",
     "nyc": "^15.1.0",
-    "source-map-support": "^0.5.19",
-    "ts-node": "^10.0.0",
+    "source-map-support": "^0.5.21",
+    "stylelint": "^14.8.2",
+    "stylelint-config-recommended": "^7.0.0",
+    "stylelint-config-standard": "^25.0.0",
+    "textlint": "^12.1.1",
+    "textlint-rule-no-mixed-zenkaku-and-hankaku-alphabet": "^1.0.1",
+    "textlint-rule-preset-ja-spacing": "^2.2.0",
+    "textlint-rule-preset-ja-technical-writing": "^7.0.0",
+    "textlint-rule-preset-jtf-style": "^2.3.12",
+    "textlint-rule-prh": "^5.3.0",
+    "ts-node": "^10.7.0",
     "tslint": "^6.1.3",
-    "typescript": "^4.3.2"
+    "typescript": "^4.6.4",
+    "tyscan": "^0.3.2"
   },
   "dependencies": {
     "jquery": "^3.6.0",
-    "jspdf": "^2.3.1"
+    "jspdf": "<2.0.0"
   }
 }
