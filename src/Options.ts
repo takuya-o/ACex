@@ -1,6 +1,7 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 /* global Class, chrome, messageUtil */
+/* tslint:disable: object-literal-sort-keys */
 
 // import MessageUtil = require("./MessageUtil")
 
@@ -8,7 +9,8 @@ class Options {
   // 定数
   //private static OPTIONAL_PERMISSION_ALL_URLS: chrome.permissions.Permissions = {origins: ["<all_urls>"]}
   //"https://player.aircamp.us/"  PDFのためスクリーンショットを作成するのに必要 URLだとpermissionを追加できるけど一度追加すると削除できない
-  private static OPTIONAL_PERMISSION_IDENTITY: chrome.permissions.Permissions = {permissions: ["identity", "identity.email"]}
+  private static OPTIONAL_PERMISSION_IDENTITY: chrome.permissions.Permissions
+    = {permissions: ["identity", "identity.email"]}
   private lastSupportAirSearchBeta:boolean = false
   private lastUseLicenseInfo:boolean = false
 
@@ -38,7 +40,8 @@ class Options {
       }
       const licenseStatusElement = document.getElementById("license_status") as HTMLElement
       if (license.status) {
-        licenseStatusElement.textContent = MessageUtil.getMessage(["license_MSG_"+ license.status]); //LicenseStatusだけどstringとして利用
+        licenseStatusElement.textContent
+        = MessageUtil.getMessage(["license_MSG_"+ license.status]); //LicenseStatusだけどstringとして利用
       }
       if ( license.status === LicenseStatus.FULL ) {
         licenseStatusElement.style.color="Black";
@@ -123,24 +126,39 @@ class Options {
       this.lastUseLicenseInfo = config.useLicenseInfo
 
       //PermissionにConfig値に合わせる
-      // this.containsPermissions(this.lastSupportAirSearchBeta, Options.OPTIONAL_PERMISSION_ALL_URLS, (resultSupportAirSearchBeta)=> {
+      // this.containsPermissions(this.lastSupportAirSearchBeta,
+      //   Options.OPTIONAL_PERMISSION_ALL_URLS, (resultSupportAirSearchBeta)=> {
       //   this.lastSupportAirSearchBeta = resultSupportAirSearchBeta
       //   this.getInputElement("support_airsearch_beta").checked = resultSupportAirSearchBeta
 
-        this.containsPermissions(this.lastUseLicenseInfo, Options.OPTIONAL_PERMISSION_IDENTITY, (resultUseLicenseInfo)=>{
+        this.containsPermissions(this.lastUseLicenseInfo, Options.OPTIONAL_PERMISSION_IDENTITY,
+          (resultUseLicenseInfo)=>{
           this.lastUseLicenseInfo = resultUseLicenseInfo;
           this.getInputElement("check_license_by_chrome_web_store").checked = resultUseLicenseInfo;
 
           //this.onClickSave(new Event("dummy")) //ここでまとめて config更新
-          this.setConfig(config.experimental, config.countButton, config.cRmode, config.popupWaitForMac, config.downloadable, config.displayTelop, this.lastUseLicenseInfo, config.trialPriodDays, config.forumMemoryCacheSize, config.saveContentInCache, config.apiKey, this.lastSupportAirSearchBeta)
-
+          this.setConfig(
+            config.experimental,
+            config.countButton,
+            config.cRmode,
+            config.popupWaitForMac,
+            config.downloadable,
+            config.displayTelop,
+            this.lastUseLicenseInfo,
+            config.trialPriodDays,
+            config.forumMemoryCacheSize,
+            config.saveContentInCache,
+            config.apiKey,
+            this.lastSupportAirSearchBeta,
+          )
           // オプション情報が取れたところでライセンス情報を表示する
           this.displayLicenseStatus()
         })
       // })
     })
   }
-  private containsPermissions(lastPermission: boolean, permissions: chrome.permissions.Permissions, cb: (permission: boolean)=>void ) { //Permissionsとstoreされたconfigを同期して正しい表示にする
+  private containsPermissions(lastPermission: boolean, permissions: chrome.permissions.Permissions,
+    cb: (permission: boolean)=>void ) { //Permissionsとstoreされたconfigを同期して正しい表示にする
     chrome.permissions.contains(permissions , (result) => {
       if (chrome.runtime.lastError) {
         console.error("Runtime.lastError: " + chrome.runtime.lastError.message, chrome.runtime.lastError)
@@ -175,54 +193,86 @@ class Options {
     this.displayExperimentalOptionList()
 
     //スイッチによりPermission設定 必要なときだけchangePermission()を呼びたいが、まとめsetConfig()するため、いつも呼ぶ
-    // this.setPermissions(this.lastSupportAirSearchBeta, supportAirSearchBeta, Options.OPTIONAL_PERMISSION_ALL_URLS, (resultSupporAirSearchBeta)=> {
+    // this.setPermissions(this.lastSupportAirSearchBeta, supportAirSearchBeta,
+    //   Options.OPTIONAL_PERMISSION_ALL_URLS, (resultSupporAirSearchBeta)=> {
     //   if ( this.lastSupportAirSearchBeta !== resultSupporAirSearchBeta ) {
     //     this.lastSupportAirSearchBeta = resultSupporAirSearchBeta
     //   }
     //   this.getInputElement("support_airsearch_beta").checked = resultSupporAirSearchBeta
     this.lastSupportAirSearchBeta = supportAirSearchBeta //permission変えずにlast更新のみ
 
-      this.setPermissions(this.lastUseLicenseInfo, useLicenseInfo, Options.OPTIONAL_PERMISSION_IDENTITY, (resultUseLicenseInfo)=> {
+      this.setPermissions(this.lastUseLicenseInfo, useLicenseInfo, Options.OPTIONAL_PERMISSION_IDENTITY,
+        (resultUseLicenseInfo)=> {
         if ( this.lastUseLicenseInfo !== resultUseLicenseInfo ) {
           this.lastUseLicenseInfo = resultUseLicenseInfo
         }
-          this.getInputElement("check_license_by_chrome_web_store").checked = resultUseLicenseInfo
+        this.getInputElement("check_license_by_chrome_web_store").checked = resultUseLicenseInfo
 
         //最後にまとめてConfig更新 TODO:Permission関係はユーザ反応が入るので、分けてひとづつ更新にしたい
-        this.setConfig(experimental, countButton, coursenameRestriction, popupWaitForMac, downloadable, displayTelop, this.lastUseLicenseInfo, trialPriodDays, forumMemoryCacheSize, saveContentInCache, apiKey, this.lastSupportAirSearchBeta, ()=>{
-          document.getElementById('message')!.innerText = MessageUtil.getMessage(["options_saved"])
-          setTimeout(() => {
-            document.getElementById('message')!.innerText = "" //一秒後にメッセージを消す
-          }, 1000)
-        })
+        this.setConfig(
+          experimental, countButton,
+          coursenameRestriction,
+          popupWaitForMac,
+          downloadable, displayTelop,
+          this.lastUseLicenseInfo,
+          trialPriodDays,
+          forumMemoryCacheSize,
+          saveContentInCache,
+          apiKey,
+          this.lastSupportAirSearchBeta,
+          ()=>{
+            document.getElementById("message")!.innerText = MessageUtil.getMessage(["options_saved"])
+            setTimeout(() => {
+              document.getElementById("message")!.innerText = "" //一秒後にメッセージを消す
+            }, 1000)
+          },
+        )
       })
     // })
 
   }
 
-  private setConfig(experimental: boolean, countButton: boolean, coursenameRestriction: boolean, popupWaitForMac: number, downloadable: boolean, displayTelop: boolean, useLicenseInfo: boolean, trialPriodDays: number, forumMemoryCacheSize: number, saveContentInCache: boolean, apiKey: string, supportAirSearchBeta: boolean, cb? :()=>void) {
-    chrome.runtime.sendMessage({
-      cmd: BackgroundMsgCmd.SET_CONFIGURATIONS, config: {
-        experimental: experimental,
-        countButton,
-        cRmode: coursenameRestriction,
-        popupWaitForMac,
-        downloadable,
-        displayTelop,
-        useLicenseInfo,
-        trialPriodDays,
-        forumMemoryCacheSize,
-        saveContentInCache,
-        apiKey,
-        supportAirSearchBeta,
-      }
-    }, () => {
-      if(cb) { cb() }
-    })
+  private setConfig(
+    experimental: boolean,
+    countButton: boolean,
+    coursenameRestriction: boolean,
+    popupWaitForMac: number,
+    downloadable: boolean,
+    displayTelop: boolean,
+    useLicenseInfo: boolean,
+    trialPriodDays: number,
+    forumMemoryCacheSize: number,
+    saveContentInCache: boolean,
+    apiKey: string,
+    supportAirSearchBeta: boolean,
+    cb? :()=>void) {
+    chrome.runtime.sendMessage(
+      {
+        cmd: BackgroundMsgCmd.SET_CONFIGURATIONS,
+        config: {
+          experimental,
+          countButton,
+          cRmode: coursenameRestriction,
+          popupWaitForMac,
+          downloadable,
+          displayTelop,
+          useLicenseInfo,
+          trialPriodDays,
+          forumMemoryCacheSize,
+          saveContentInCache,
+          apiKey,
+          supportAirSearchBeta,
+        },
+      },
+      () => {
+        if(cb) { cb() }
+      },
+    )
   }
 
   //Permissionをpermission:booleanへ変更要求する  不許可だったり削除できなかったら変更前の値を返す
-  private setPermissions(lastPermission:boolean, permission: boolean, permissions: chrome.permissions.Permissions, cb: (permission: boolean)=>void) {
+  private setPermissions(lastPermission:boolean, permission: boolean, permissions: chrome.permissions.Permissions,
+    cb: (permission: boolean)=>void) {
     if (lastPermission === permission) {
       console.log("Permission is not change:", permissions, permission) //パーミッションの変更なしなので何もしない
       cb(permission)

@@ -3,73 +3,81 @@
 
 // import jsPDF from "jspdf"
 // importするとjavascriptになったときにも残ってエラーになるので疑似定義
+/* tslint:disable: max-classes-per-file */
+/* tslint:disable: object-literal-sort-keys */
+
+// tslint:disable-next-line: no-namespace
 declare namespace jspdf {
+  // tslint:disable-next-line: class-name
   class jsPDF {
+    public static API: any
     constructor(orientation?:any,
       unit?:string,
+      // tslint:disable-next-line: array-type ban-types
       format?:string|Array<Number>,
-      compressPdf?:number
+      compressPdf?:number,
     );
-    addPage(format?: string | number[], orientation?: 'p'|'portrait'|'l'|'landscape'): jsPDF;
-    setPage(n:number):jsPDF;
-    insertPage(beforePage:number):jsPDF;
-    movePage(targetPage:number, beforePage:number):jsPDF;
-    deletePage(n:number):jsPDF;
-    setDisplayMode(zoom?:string, layout?:string, pmode?:string):jsPDF;
-    text(text:any, x:any, y:any, flags?:any, angle?:any, align?:any):jsPDF;
-    lstext(text:string, x:number, y:number, spacing:number):jsPDF;
-    line(x1:number, y1:number, x2:number, y2:number):any;
-    clip():void;
-    lines(lines:any, x:any, y:any, scale?:any, style?:string, closed?:boolean):jsPDF;
-    rect(x:number, y:number, w:number, h:number, style?:string):jsPDF;
-    triangle(x1:number, y1:number, x2:number, y2:number, x3:number, y3:number, style:string):jsPDF;
-    roundedRect(x:number, y:number, w:number, h:number, rx:number, ry:number, style:string):jsPDF;
-    ellipse(x:number, y:number, rx:number, ry:number, style?:string):jsPDF;
-    circle(x:number, y:number, r:number, style:string):jsPDF;
-    setProperties(properties:any):jsPDF;
-    setFontSize(size:number):jsPDF;
-    setFont(fontName?:string, fontStyle?:string):jsPDF;
-    setFontStyle(style:string):jsPDF;
-    setFontType(style:string):jsPDF;
-    getFontList():any;
-    addFont(postScriptName:string, fontName:string, fontStyle:string):string;
-    setLineWidth(width:number):jsPDF;
-    setDrawColor(ch1:number|string):jsPDF;
-    setDrawColor(ch1:number, ch2:number, ch3:number, ch4?:number):jsPDF;
-    setFillColor(ch1:number|string):jsPDF;
-    setFillColor(ch1:number, ch2:number, ch3:number, ch4?:number):jsPDF;
-    setTextColor(ch1:number|string):jsPDF;
-    setTextColor(ch1:number, ch2:number, ch3:number, ch4?: number):jsPDF;
-    setLineCap(style:string|number):jsPDF;
-    setLineJoin(style:string|number):jsPDF;
-    output(type?:string, options?:any):any;
-    save(filename:string): void;
-    save(filename:string, options: {returnPromise: boolean}): Promise<any>;
+    public addPage(format?: string | number[], orientation?: "p"|"portrait"|"l"|"landscape"): jsPDF;
+    public setPage(n:number):jsPDF;
+    public insertPage(beforePage:number):jsPDF;
+    public movePage(targetPage:number, beforePage:number):jsPDF;
+    public deletePage(n:number):jsPDF;
+    public setDisplayMode(zoom?:string, layout?:string, pmode?:string):jsPDF;
+    public text(text:any, x:any, y:any, flags?:any, angle?:any, align?:any):jsPDF;
+    public lstext(text:string, x:number, y:number, spacing:number):jsPDF;
+    public line(x1:number, y1:number, x2:number, y2:number):any;
+    public clip():void;
+    public lines(lines:any, x:any, y:any, scale?:any, style?:string, closed?:boolean):jsPDF;
+    public rect(x:number, y:number, w:number, h:number, style?:string):jsPDF;
+    public triangle(x1:number, y1:number, x2:number, y2:number, x3:number, y3:number, style:string):jsPDF;
+    public roundedRect(x:number, y:number, w:number, h:number, rx:number, ry:number, style:string):jsPDF;
+    public ellipse(x:number, y:number, rx:number, ry:number, style?:string):jsPDF;
+    public circle(x:number, y:number, r:number, style:string):jsPDF;
+    public setProperties(properties:any):jsPDF;
+    public setFontSize(size:number):jsPDF;
+    public setFont(fontName?:string, fontStyle?:string):jsPDF;
+    public setFontStyle(style:string):jsPDF;
+    public setFontType(style:string):jsPDF;
+    public getFontList():any;
+    public addFont(postScriptName:string, fontName:string, fontStyle:string):string;
+    public setLineWidth(width:number):jsPDF;
+    public setDrawColor(ch1:number|string):jsPDF;
+    public setDrawColor(ch1:number, ch2:number, ch3:number, ch4?:number):jsPDF;
+    public setFillColor(ch1:number|string):jsPDF;
+    public setFillColor(ch1:number, ch2:number, ch3:number, ch4?:number):jsPDF;
+    public setTextColor(ch1:number|string):jsPDF;
+    public setTextColor(ch1:number, ch2:number, ch3:number, ch4?: number):jsPDF;
+    public setLineCap(style:string|number):jsPDF;
+    public setLineJoin(style:string|number):jsPDF;
+    public output(type?:string, options?:any):any;
+    public save(filename:string): void;
+    public save(filename:string, options: {returnPromise: boolean}): Promise<any>;
 
     // jsPDF plugin: addImage
-    sHashCode(str:string):any;
-    isString(object:any):boolean;
-    extractInfoFromBase64DataURI(dataURI:string):any[];
-    supportsArrayBuffer():boolean;
-    isArrayBuffer(object:any):boolean;
-    isArrayBufferView(object:any):boolean;
-    binaryStringToUint8Array(binary_string:string):Uint8Array;
-    arrayBufferToBinaryString(buffer:any):string;
-    arrayBufferToBase64(arrayBuffer:ArrayBuffer):string;
-    createImageInfo(data:any, wd:any, ht:any, cs:any, bpc:any, imageIndex:number, alias:any, f?:any, dp?:any, trns?:any, pal?:any, smask?:any):any;
-    addImage(imageData?:any, format?:any, x?:number, y?:number, w?:number, h?:number, alias?:any, compression?:any, rotation?:any):jsPDF;
-    processJPEG(data:any, index:number, alias:any, compression?:any, dataAsBinaryString?:string):any;
-    processJPG():any;
+    public sHashCode(str:string):any;
+    public isString(object:any):boolean;
+    public extractInfoFromBase64DataURI(dataURI:string):any[];
+    public supportsArrayBuffer():boolean;
+    public isArrayBuffer(object:any):boolean;
+    public isArrayBufferView(object:any):boolean;
+    // tslint:disable-next-line: variable-name
+    public binaryStringToUint8Array(binary_string:string):Uint8Array;
+    public arrayBufferToBinaryString(buffer:any):string;
+    public arrayBufferToBase64(arrayBuffer:ArrayBuffer):string;
+    public createImageInfo(data:any, wd:any, ht:any, cs:any, bpc:any, imageIndex:number, alias:any,
+      f?:any, dp?:any, trns?:any, pal?:any, smask?:any):any;
+    public addImage(imageData?:any, format?:any, x?:number, y?:number, w?:number, h?:number, alias?:any,
+      compression?:any, rotation?:any):jsPDF;
+    public processJPEG(data:any, index:number, alias:any, compression?:any, dataAsBinaryString?:string):any;
+    public processJPG():any;
 
     // jsPDF plugin: vfs
-    existsFileInVFS(filename:string):boolean;
-    addFileToVFS(filename:string, filecontent:string):jsPDF;
-    getFileFromVFS(filename:string):string;
-
+    public existsFileInVFS(filename:string):boolean;
+    public addFileToVFS(filename:string, filecontent:string):jsPDF;
+    public getFileFromVFS(filename:string):string;
 
     //どこ?
-    setLanguage(langCode:string):jsPDF //langcode
-    static API: any
+    public setLanguage(langCode:string):jsPDF //langcode
   }
   //namespace jsPDF {}
 }
@@ -105,19 +113,16 @@ declare namespace jspdf {
 declare const ipag:string //IPAフォント lib/ipag00303/ipag-ttf.js
 
 class MakeSlide {
-  //jsPDF 追加font
-  static font:string
-
   public static setupPDF(title: string, subTitle: string, imgs: NodeListOf<HTMLImageElement>):void {
     if ( imgs.length === 0 ) {
       throw new RangeError("setupPDF(): no images." + {title, subTitle, imgs} )
     }
     const pdf = new jspdf.jsPDF({
-      orientation: 'p',
-      unit: 'px',
-      format: 'a4',
+      orientation: "p",
+      unit: "px",
+      format: "a4",
       putOnlyUsedFonts: true,
-      compress: true
+      compress: true,
     })
     const manifest = chrome.runtime.getManifest() //Chrome拡張機能のマニュフェストファイル取得
     pdf.setProperties({
@@ -125,7 +130,7 @@ class MakeSlide {
       subject: subTitle,
       author: "BBT",
       //keywords: tagged:
-      creator: manifest.short_name + " " + manifest.version
+      creator: manifest.short_name + " " + manifest.version,
     })
     pdf.setFont(MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase())
     //pdf.setFont('NotoSansCJKjp-Regular', 'normal')
@@ -157,12 +162,29 @@ class MakeSlide {
     console.log(w + " x " + h, p.iw, p.ih)
     MakeSlide.onePage(title, subTitle, p, imgs, pdf)
   }
+  public static callAddFont = function(this:jspdf.jsPDF) { //jsPDFからコールバックされる
+    // 'this' will be ref to internal API object.
+    // this.addFileToVFS('Koruri-Regular.ttf', MakeSlide.font);
+    // this.addFont('Koruri-Regular.ttf', 'Koruri', 'regular');
+    // this.addFileToVFS('umeplus-gothic.ttf', MakeSlide.font);
+    // this.addFont('umeplus-gothic.ttf', 'umeplus-gothic', 'normal');
+    let filename = MakeSlide.FONT_NAME
+    if (MakeSlide.FONT_TYPE !== "normal" ) { //FONT_TYPEがnormalのときにはFONT_NAMEのみ
+      filename += "-" + MakeSlide.FONT_TYPE
+    }
+    filename += ".ttf"
+    this.addFileToVFS(filename, MakeSlide.font);
+    this.addFont(filename, MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase());
+  }
+  //jsPDF 追加font
+  private static font:string
 
   //定数
   private static FONT_NAME="ipag"
   private static FONT_TYPE="normal" //ファイル名としてはそのまま使うsetFont時は小文字に自動変換 "normal"の場合ファイル名として含めない
 
-  private static onePage(title:string, subTitle:string, p:PDFprops, imgs:NodeListOf<HTMLImageElement>, pdf:jspdf.jsPDF, ctx:CanvasRenderingContext2D|null = null, buf:CanvasRenderingContext2D|null = null, i = 0) {
+  private static onePage(title:string, subTitle:string, p:PDFprops, imgs:NodeListOf<HTMLImageElement>,
+    pdf:jspdf.jsPDF, ctx:CanvasRenderingContext2D|null = null, buf:CanvasRenderingContext2D|null = null, i = 0) {
     //PDF処理中アイコン点滅
     chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: "PDF"}, (_response:BackgroundResponse) => {
       MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
@@ -193,17 +215,17 @@ class MakeSlide {
       const ocrPages = nUp*1 // OCRの1ページの画像数 nUpの倍数が良い
       if ( i === 0 || !ctx ) { //最初のページのときにCanvas作る
         console.log("Create Canvas")
-        const canvas = document.createElement('canvas')
+        const canvas = document.createElement("canvas")
         canvas.width = w //サイズ設定をしておかないとdrawできない
         canvas.height = h*ocrPages  //縦 2枚分
         console.info("img ", w, "x", h )
-        ctx = canvas.getContext('2d')  //各画像でctxは使い回す
+        ctx = canvas.getContext("2d")  //各画像でctxは使い回す
         //確認のために表示 img.after(canvas) //ベージ毎に書き換わる
         //PDFへ画像の貼り付け用
-        const bufCanvas = document.createElement('canvas')
+        const bufCanvas = document.createElement("canvas")
         bufCanvas.width = w //サイズ設定をしておかないとdrawできない
         bufCanvas.height = h
-        buf=bufCanvas.getContext('2d')
+        buf=bufCanvas.getContext("2d")
       }
       //2ページをまとめる
       if ( i%ocrPages === 0 ) { //最初のページでクリア
@@ -245,7 +267,8 @@ class MakeSlide {
             console.error("Buf no init.")
             throw new Error("Buf no init.")
           } else {
-            pdf.addImage(buf.canvas, "JPEG", p.mx, (j%nUp)*(p.h/nUp) + p.my, p.iw, p.ih, "Page " + (b+j+1) ) //資料は640x360や640x480
+            pdf.addImage(buf.canvas, "JPEG", p.mx, (j%nUp)*(p.h/nUp) + p.my, p.iw, p.ih,
+            "Page " + (b+j+1) ) //資料は640x360や640x480
           }
         }
         console.log("Google Cloud Vition API call.",i )
@@ -319,7 +342,7 @@ class MakeSlide {
     if (!MakeSlide.font) {
       console.log("Font:", ipag.length, ipag)
       MakeSlide.font = ipag //事前JavaScript版フォントを使う
-      jspdf.jsPDF.API.events.push(['addFonts', MakeSlide.callAddFont])
+      jspdf.jsPDF.API.events.push(["addFonts", MakeSlide.callAddFont])
       if (cb) { cb() }
 
       // chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_FONTDATA}, (response:FontData) => {
@@ -340,20 +363,6 @@ class MakeSlide {
       console.info("Alread setup font.") //ここに来るパターンみつけていないけど
       if (cb) { cb() }
     }
-  }
-  static callAddFont = function(this:jspdf.jsPDF) { //jsPDFからコールバックされる
-    // 'this' will be ref to internal API object.
-    // this.addFileToVFS('Koruri-Regular.ttf', MakeSlide.font);
-    // this.addFont('Koruri-Regular.ttf', 'Koruri', 'regular');
-    // this.addFileToVFS('umeplus-gothic.ttf', MakeSlide.font);
-    // this.addFont('umeplus-gothic.ttf', 'umeplus-gothic', 'normal');
-    let filename = MakeSlide.FONT_NAME
-    if (MakeSlide.FONT_TYPE !== "normal" ) { //FONT_TYPEがnormalのときにはFONT_NAMEのみ
-      filename += "-" + MakeSlide.FONT_TYPE
-    }
-    filename += ".ttf"
-    this.addFileToVFS(filename, MakeSlide.font);
-    this.addFont(filename, MakeSlide.FONT_NAME, MakeSlide.FONT_TYPE.toLowerCase());
   }
 
   constructor(cb:()=>void) {

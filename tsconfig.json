@@ -31,7 +31,7 @@
       "incremental": true,
       "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
       "target": "ES2020",
-      "esModuleInterop": true
+      "esModuleInterop": true,
   },
   "exclude": [
     "node_modules/",

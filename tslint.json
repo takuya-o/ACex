@@ -6,16 +6,32 @@
     "jsRules": {},
     "rules": {
       "comment-format": false,
-      "whitespace": false,
+      "whitespace": true,
       "semicolon": false,
       "no-console": {
          "severity": "off",
          "options": ["debug", "info", "log"]
       },
-      "no-console": {
-        "severity": "warning",
-        "options": ["time", "timeEnd", "trace"]
-      }
+
+      "one-line": [true, "check-catch", "check-finally", "check-else"],
+      "max-line-length": [true, {"limit": 120, "check-strings": true}],
+      "quotemark": [true, "double", "avoid-escape", "avoid-template", "jsx-double"],
+      "typedef-whitespace": true,
+      "variable-name": [true, "check-format", "allow-leading-underscore", "allow-pascal-case"],
+      "align": true,
+      "curly": true,
+      "interface-name": [true, "always-prefix"],
+      "member-ordering": [true, {"order": "statics-first"}],
+      "trailing-comma": [true, {"multiline": "always", "singleline": "never"}],
+      "arrow-parens": true,
+      "no-consecutive-blank-lines": true,
+      "object-literal-key-quotes": [ true, "as-needed" ],
+      "object-literal-sort-keys": true,
+      "member-access": true,
+      "interface-over-type-literal": true,
+      "no-unused-expression": true,
+      "array-type": [true, "array-simple"]
+
     },
     "rulesDirectory": []
 }

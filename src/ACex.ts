@@ -1,6 +1,8 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 /* global Class, chrome, MessageUtil */
+/* tslint:disable:object-literal-sort-keys */
+/* tslint:disable:variable-name */
 
 //コンテンツスクリプトではこれできないからMessageUtilLocal.tsにexportなしを作った
 // require.config({ //for contents script on require.js
@@ -19,7 +21,7 @@ class ACex {
       if ( settings ) { //セッティング情報が見つかったら
         //Videoダウンロード表示
         chrome.runtime.sendMessage(
-          {cmd: BackgroundMsgCmd.GET_CONFIGURATIONS}, (response:Configurations) => {
+          {cmd: BackgroundMsgCmd.GET_CONFIGURATIONS}, (response: Configurations) => {
             //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
             MessageUtil.checkRuntimeError(BackgroundMsgCmd.GET_CONFIGURATIONS)
             console.log("ACex: isDownloadable() = " + response.downloadable);
@@ -42,7 +44,7 @@ class ACex {
       //RexExp準備 ツリーからの更新は#以下のURLしか変えない
       //おしらせ一覧などを経由すると/informationなどが入る
       const regexp = /^https?:\/\/[^.\/]+\.aircamp\.us\/course\/\d+(|[\/\?].*)#forum\/(\d+)/; //この正規表現使いまわされるから()の追加には注意
-      chrome.runtime.sendMessage({cmd:BackgroundMsgCmd.GET_CONFIGURATIONS}, (response:Configurations) => {
+      chrome.runtime.sendMessage({cmd: BackgroundMsgCmd.GET_CONFIGURATIONS}, (response: Configurations) => {
         //コンテント・スクリプトなのでgetBackground()出来ないのでメッセージ
         MessageUtil.checkRuntimeError(BackgroundMsgCmd.GET_CONFIGURATIONS)
         console.log("ACex: isCountButton() = " + response.countButton);
@@ -52,7 +54,7 @@ class ACex {
         this.updateIcon(url, regexp); //アイコンと有ればボタン更新
       })
       //URL変更検知
-      window.addEventListener( "hashchange", (event:HashChangeEvent) => {
+      window.addEventListener( "hashchange", (event: HashChangeEvent) => {
         const newURL = event.newURL;
         this.updateIcon(newURL, regexp); //アイコンと有ればボタン更新
       })
@@ -62,7 +64,8 @@ class ACex {
       this.getACconfig();
     }
     //URL渡し用のメッセージハンドラ
-    chrome.runtime.onMessage.addListener( (msg:{cmd:string}, _sender:chrome.runtime.MessageSender, sendResponse:(res:string)=>void) =>{
+    chrome.runtime.onMessage.addListener(
+      (msg: {cmd: string}, _sender: chrome.runtime.MessageSender, sendResponse: (res: string)=>void) =>{
       console.log("--- Recv ACex:", msg);
       if(msg.cmd === "getUrl") {
         sendResponse(window.document.URL) //このタブのURLを返す
@@ -74,8 +77,8 @@ class ACex {
     console.log("assign onMessage ")
   }
 
-  private updateIcon(url:string, regexp:RegExp) { //private
-    const input =document.getElementById('ACexCountButton') as HTMLButtonElement; //ボタンが無い場合がある
+  private updateIcon(url: string, regexp: RegExp) { //private
+    const input =document.getElementById("ACexCountButton") as HTMLButtonElement; //ボタンが無い場合がある
     let iconText = "";
     //PageActionではバッチテキスト使えない let badgeText = ""
     if ( url.match(regexp) ) {
@@ -93,9 +96,10 @@ class ACex {
     //chrome.action.enable() //コンテンツスクリプトでは使えない?
     //chrome.action.setBadgeText({text:"OK"})
     //Backgroundに最新icon通知
-    chrome.runtime.sendMessage( {cmd: BackgroundMsgCmd.SET_ICON, text: iconText}, (_response:BackgroundResponse) => {
+    chrome.runtime.sendMessage(
+      {cmd: BackgroundMsgCmd.SET_ICON, text: iconText}, (_response: BackgroundResponse) => {
       MessageUtil.checkRuntimeError(BackgroundMsgCmd.SET_ICON)
-    } );
+    });
     // //Backgroundに最新iconバッチテキスト通知
     // chrome.runtime.sendMessage( {cmd: "setBadgeText", text: badgeText}, function(response) {
     //   if (chrome.runtime.lastError) {
@@ -104,17 +108,17 @@ class ACex {
     //   }
     // } );
   }
-  private injectCountButton(regexp:RegExp) { //private
+  private injectCountButton(regexp: RegExp) { //private
     //navにボタンをinjection
-    const navs =document.getElementsByTagName('nav');
+    const navs =document.getElementsByTagName("nav");
     if ( navs.length > 0 ) { //入れるの早すぎると消されるがリロードで出てくる
-      const uls = navs[0]!.getElementsByTagName('ul') //必ずある
+      const uls = navs[0]!.getElementsByTagName("ul") //必ずある
       if ( uls.length > 0 ) {
-        const input = document.createElement('input');
+        const input = document.createElement("input");
         input.disabled = true;
-        input.setAttribute('id', 'ACexCountButton');
-        input.setAttribute('type', 'button');
-        input.setAttribute('value', MessageUtil.getMessage(["Count"]));
+        input.setAttribute("id", "ACexCountButton");
+        input.setAttribute("type", "button");
+        input.setAttribute("value", MessageUtil.getMessage(["Count"]));
         input.addEventListener("click", () => {
           //AjaxでURLが毎回変わっていることがあるので取りなおす
           const match = window.document.URL.match(regexp); //location.hrefやchrome.tabs.query()で取るもの?
@@ -134,13 +138,13 @@ class ACex {
             }
           }
         });
-        const li = document.createElement('li');
+        const li = document.createElement("li");
         uls[0]!.appendChild( li.appendChild(input) )  //必ずある
       }
     }
   }
   private getSettings() { //ACのsetting情報を取得する
-    let settings:Settings|undefined
+    let settings: Settings|undefined
     const elements = window.document.getElementsByTagName("script");
     console.log("ACex: getSettings " + elements.length );
     for (const element of elements) {
@@ -156,11 +160,11 @@ class ACex {
     }
     return settings;
   }
-  private getVideoSources(settings:Settings) {
+  private getVideoSources(settings: Settings) {
     //映像ファイル情報取得
-    const sources:Sources = (settings.playlist).sources; //[].file & .label
+    const sources: Sources = (settings.playlist).sources; //[].file & .label
     if ( sources ) {
-      const tab = document.getElementById('content-tab1'); //概要タブ
+      const tab = document.getElementById("content-tab1"); //概要タブ
       if (tab) { //入れるの早すぎると消されるがリロードで出てくる
         //for(let i=0; i<sources.length; i++ ) {
         sources.forEach( (source)=> {
@@ -188,13 +192,13 @@ class ACex {
       console.log("ACex: Can not find Video source information"); //failsafe
     }
   }
-  private getACtelop(settings:Settings) {
-    const datas:(string)[][] = new Array()
+  private getACtelop(settings: Settings) {
+    const datas: string[][] = new Array()
     console.log("ACex: getACtelop" );
     //テロップ情報取得
     const telops = settings.telop;
     if ( telops ) { //テロップ情報が有ったら
-      let data:string[]
+      let data: string[]
       if ( settings.data ) { //認証済み情報も取得
         //"data": "C,S,0,2015/08/10 07:32:01;I,6,537;"
         data = (settings.data as string).split(";");
@@ -211,7 +215,7 @@ class ACex {
         }
       }
       //console.log("ACex: telops=" + telops );
-      const tab = document.getElementById('content-tab1'); //概要タブ
+      const tab = document.getElementById("content-tab1"); //概要タブ
       if (tab) { //入れるの早すぎると消されるがリロードで出てくる
         for(const telop of telops) {
           //テロップ時間を文字列として取り出し行く
@@ -233,11 +237,11 @@ class ACex {
           tab.append(pElement)
         }
       }
-    }else{
+    } else {
       console.log("ACex: no telop");
     }
   }
-  private getHourString(date:Date) { //時間を文字列 0:00:00 にする
+  private getHourString(date: Date) { //時間を文字列 0:00:00 にする
     return date.getUTCHours() + ":"
       + ("00" + date.getUTCMinutes()).slice(-2) + ":"
       + ("00" + date.getUTCSeconds()).slice(-2);

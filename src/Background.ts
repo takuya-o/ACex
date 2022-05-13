@@ -1,6 +1,8 @@
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 /* global Class, chrome, e */
+/* tslint:disable:object-literal-sort-keys */
+/* tslint:disable:variable-name */
 
 // "type": "classic" 形式
 //importScripts("lib/tagmanager.js")
@@ -10,22 +12,30 @@ importScripts("Types.js")
 // "type": "moudle"形式 exportしていないと使えない
 // import "./Types.js"
 
-class Background{
+class Background {
+  // page actionポイ動きにする
+  // https://developer.chrome.com/docs/extensions/reference/action/#emulating-pageactions-with-declarativecontent
+  public static chromeActionDisable() {
+    // Page actions are disabled by default and enabled on select tabs
+    chrome.action.disable();
+    // サンプルにはURLでenbaleする方法も書いてあるが使わない
+    // ベーシがACから外れた時にdisableにならない。
+  }
   //定数
   private static ASSIGN_TAB_HANDLER_MAX_RETRY =   10 //回
   private static ASSIGN_TAB_HANDLER_RETRY_WAIT = 200 //msまつ
   private static FONT_FILENAME="lib/ipag00303/ipag.ttf"
   //クラス変数
-  private static tabList:{[key:string]:number} = {}  //Tab管理用連想記憶配列 {}
-  private static defaultLicense:License = {
+  private static tabList: {[key:string]: number} = {}  //Tab管理用連想記憶配列 {}
+  private static defaultLicense: License = {
     status: LicenseStatus.UNKNOWN, //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
     validDate: new Date(),
     //不明時はメモリも確保しないcreateDate: null//store.syncだと{}になる
     expireDate: undefined,
   }
   //インスタンス変数
-  private license:License = Object.create(Background.defaultLicense)
-  private handlerTab:number|null =  null //Eventからの立ち上がりでnullのままだけど、複数登録しても害は無いのでそのまま
+  private license: License = Object.create(Background.defaultLicense)
+  private handlerTab: number|null =  null //Eventからの立ち上がりでnullのままだけど、複数登録しても害は無いのでそのまま
   private userID = "u="
   private sessionA = "a="
   private coursenameRestrictionEnable = false
@@ -40,8 +50,8 @@ class Background{
   private apiKey = ""
   private supportAirSearchBeta = false
   //キャッシュ
-  private forums:Forums = {cacheFormatVer: -1, forum:{}} //とりあえずダミー
-  private authors:Authors = {cacheFormatVer: -1, author:{}} //Formキャッシュにはnameを保存せずこちらで一括キャッシュ(容量効率向上)  とりあえずダミー
+  private forums: Forums = {cacheFormatVer: -1, forum: {}} //とりあえずダミー
+  private authors: Authors = {cacheFormatVer: -1, author: {}} //Formキャッシュにはnameを保存せずこちらで一括キャッシュ(容量効率向上)  とりあえずダミー
   private saveContentInCache = false
   constructor() {
     this.initializeClassValue();
@@ -50,16 +60,21 @@ class Background{
     if ( this.getLicenseValidDate()?.getMilliseconds() > Date.now() ) {
       //期限来ていない UNKNOWNでもNONEでも
       console.log("ACex: License is Valid.");
-    }else{
+    } else {
       //FULLでもFREE_TRIALでも期限来てたら許可取り直し
       console.log("ACex: License is not Valid.");
       this.setupAuth(true);
     }
   }
+  // オプションをマイグレーションするリリースノートページを開く
+  public openReleaseNote() {
+    this.openNewTab("ACex_ReleaseNote.html")
+  }
+
   private assignEventHandlers() { //private
     //ACex.jsとの通信受信
     chrome.runtime.onMessage.addListener(
-      (msg:BackgroundMsg, sender:chrome.runtime.MessageSender, sendResponse:(ret?:BackgroundResponse)=>void) => {
+      (msg: BackgroundMsg, sender: chrome.runtime.MessageSender, sendResponse: (ret?: BackgroundResponse) => void) => {
         console.log("--- Backgroupd Recv ACex:", msg);
         if(msg.cmd === BackgroundMsgCmd.SET_SESSION) {
           if ( !msg.userID || !msg.sessionA ) {
@@ -81,15 +96,15 @@ class Background{
           //   tabId: sender.tab!.id!, //送り主のTabは必ずある
           //   imageData: this.getIconImageData(null/*this.service.icon*/, msg.text)
           // });
-            chrome.action.enable(sender.tab?.id) //念の為 アイコンを有効にしてからテキストを書く
-            chrome.action.setBadgeBackgroundColor( {tabId: sender.tab?.id, color: 'red'});
-            chrome.action.setBadgeText({ //V3対応
-              tabId: sender.tab?.id, //送り主のTabは必ずある
-              text: msg.text,
-            })
+          chrome.action.enable(sender.tab?.id) //念の為 アイコンを有効にしてからテキストを書く
+          chrome.action.setBadgeBackgroundColor( {tabId: sender.tab?.id, color: "red"});
+          chrome.action.setBadgeText({ //V3対応
+            tabId: sender.tab?.id, //送り主のTabは必ずある
+            text: msg.text,
+          })
           // chrome.pageAction.setTitle({  //V2で変わらなかった
           //   tabId: sender.tab.id,
-          //   title: this.icon_title.filter(function(s){return s;}).join('\n')
+          //   title: this.icon_title.filter(function(s) {return s;}).join("\n")
           // });
           sendResponse();
         // } else if (msg.cmd === "setBadgeText" ) {
@@ -132,28 +147,19 @@ class Background{
             sendResponse({forum: this.getForumCache(msg.fid)});
           }
         } else if (msg.cmd === BackgroundMsgCmd.SET_FORUM_CACHE ) {
-          if (!msg.forum) {
-            console.error("setForumCache(forum): Can not found argument forum", msg.forum)
-          } else {
-            this.setForumCache(msg.forum)
-          }
-          sendResponse();
+          this.checkAndExec(msg.forum, this.setForumCache, sendResponse);
         } else if (msg.cmd === BackgroundMsgCmd.OPEN ) {
-          if (!msg.url) {
-            console.error("open: Can not found argument url", msg.url)
-          } else {
-            this.openTab(msg.url);
-          }
-          sendResponse();
+          this.checkAndExec(msg.url, this.openTab, sendResponse);
         } else if (msg.cmd === BackgroundMsgCmd.GET_LICENSE ) {
           sendResponse({
             validDate: this.getLicenseValidDate(),
             status: this.getLicenseStatus(),
-            expireDate: this.getLicenseExpireDate()
+            expireDate: this.getLicenseExpireDate(),
           })
-        } else if (msg.cmd === BackgroundMsgCmd.GET_SESSION ){
+        } else if (msg.cmd === BackgroundMsgCmd.GET_SESSION ) {
           if ( !this.getUserID() || !this.getSessionA() ) {
-            console.error("getSession(userID, sessionA): Can not found session data.", this.getUserID(), this.getSessionA())
+            console.error("getSession(userID, sessionA): Can not found session data.",
+              this.getUserID(), this.getSessionA())
           }
           sendResponse({
             userID: this.getUserID(),
@@ -161,28 +167,23 @@ class Background{
             crMode: this.isCRmode(),
             saveContentInCache: this.isSaveContentInCache(),
           })
-        } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIGURATIONS ){
-          if (!msg.config) {
-            console.error("setSpecial: Can not found argument config", msg.config)
-          } else {
-            this.setSpecial(msg.config)
-          }
-          sendResponse()
-        // } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIG_LICENSE ){
+        } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIGURATIONS ) {
+          this.checkAndExec(msg.config, this.setSpecial, sendResponse);
+        // } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIG_LICENSE ) {
         //   if(!msg.configLicense) {
         //     console.error("setSpecial: Can not found argument config", msg.configLicense)
         //   } else {
         //     this.setConfigLisence(msg.configLicense)
         //   }
         //   sendResponse()
-        // } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIG_LICENSE ){
+        // } else if (msg.cmd === BackgroundMsgCmd.SET_CONFIG_LICENSE ) {
         //   if(!msg.configAirSearchBeta) {
         //     console.error("setSpecial: Can not found argument config", msg.configAirSearchBeta)
         //   } else {
         //     this.setConfigAriSearchBeta(msg.configAirSearchBeta)
         //   }
         //   sendResponse()
-        } else if (msg.cmd === BackgroundMsgCmd.GET_CONFIGURATIONS ){
+        } else if (msg.cmd === BackgroundMsgCmd.GET_CONFIGURATIONS ) {
           sendResponse({
             experimental: this.isExperimental(),
             countButton: this.isCountButton(),
@@ -197,7 +198,7 @@ class Background{
             apiKey: this.getAPIkey(),
             supportAirSearchBeta: this.isSupportAirSearchBeta(),
           })
-        } else if (msg.cmd === BackgroundMsgCmd.SETUP_AUTH ){
+        } else if (msg.cmd === BackgroundMsgCmd.SETUP_AUTH ) {
           this.setupAuth(true)
           sendResponse()
         } else if (msg.cmd === BackgroundMsgCmd.TEXT_DETECTION) {
@@ -235,11 +236,12 @@ class Background{
           sendResponse();
         }
         return false //同期
+      // tslint:disable-next-line: trailing-comma
       }
     )
     //storage.syncの変更検知
     chrome.storage.onChanged.addListener((changes, namespace) => {
-      if( namespace === "sync" ){
+      if( namespace === "sync" ) {
         const changeSpecial = changes.Special
         if ( changeSpecial ) {
           const special = changeSpecial.newValue
@@ -266,7 +268,7 @@ class Background{
             if (license.createDate) {
               this.license.createDate = new Date(license.createDate);
             } else {
-              if (this.license.createDate) delete this.license.createDate;
+              if (this.license.createDate) { delete this.license.createDate; }
             }
             console.log("ACex: storage changed"+JSON.stringify(this.license));
             // console.log('Storage key "%s" in namespace "%s" changed. ' +
@@ -279,25 +281,36 @@ class Background{
     })
   }
 
-  private getZoomFactor(sendResponse:(zoomFactor:number)=>void, senderTab:chrome.tabs.Tab) {
+  private checkAndExec(arg: string|Forum|Configurations|undefined, execMethod: (arg: any) => void,
+    sendResponse: (ret?: BackgroundResponse) => void) {
+    if (!arg) {
+      console.error(`${execMethod.name}: Can not found argument`, arg);
+    } else {
+      execMethod(arg)
+      //this.setForumCache(msg.forum);
+    }
+    sendResponse();
+  }
+
+  private getZoomFactor(sendResponse: (zoomFactor: number) => void, senderTab: chrome.tabs.Tab) {
     if (senderTab.id) { //nullのことは無いと思うけど
-      chrome.tabs.getZoom(senderTab.id, (zoomFactor)=>{ //カレントtabのZoom率を取得
+      chrome.tabs.getZoom(senderTab.id, (zoomFactor) => { //カレントtabのZoom率を取得
         //console.log("Browser Zoom:", zoomFactor)
         sendResponse(zoomFactor)
       })
     }
   }
-  private getCaptureData(sendResponse:(dataUrl:string)=>void, senderTab:chrome.tabs.Tab) {
+  private getCaptureData(sendResponse: (dataUrl: string) => void, senderTab: chrome.tabs.Tab) {
     if (senderTab.id) { //nullのことは無いと思うけど
-      chrome.tabs.getZoom(senderTab.id, (zoomFactor)=>{ //カレントtabのZoom率を取得
+      chrome.tabs.getZoom(senderTab.id, (zoomFactor) => { //カレントtabのZoom率を取得
         //アクティブタブのスクリーンショットのデータ取得
-        chrome.tabs.setZoom(senderTab.id!, 1.0, ()=>{ //ズーム100%に戻して ここに入ってきても描画を待つ必要がある
-          setTimeout( ()=>{
+        chrome.tabs.setZoom(senderTab.id!, 1.0, () => { //ズーム100%に戻して ここに入ってきても描画を待つ必要がある
+          setTimeout( () => {
             //待っている間にフォーカスが別のタブに行っているかもしれないので戻す
             chrome.tabs.update(senderTab.id!,{highlighted:true})
-            chrome.tabs.captureVisibleTab(senderTab.windowId, {format: "png"}, (dataUrl)=> {
+            chrome.tabs.captureVisibleTab(senderTab.windowId, {format: "png"}, (dataUrl) => {
               //WindowIdを指定してキャプチャ //jpegだと圧縮されるのでpng
-              chrome.tabs.setZoom(senderTab.id!, zoomFactor, ()=>{ //ズーム元に戻す
+              chrome.tabs.setZoom(senderTab.id!, zoomFactor, () => { //ズーム元に戻す
                 sendResponse(dataUrl)
               })//setZoom
             })//capture
@@ -307,19 +320,19 @@ class Background{
     }
   }
   //フォントデータ読み込み
-  private getFontData( sendResponse:(res:FontData)=>void ) {
+  private getFontData( sendResponse: (res: FontData) => void ) {
     chrome.runtime.getPackageDirectoryEntry( (directoryEntry) => { //V3で呼べなくなった popupからのみ呼べるらしい
-      directoryEntry.getFile(Background.FONT_FILENAME, {create: false},  (fileEntry)=>{
-        fileEntry.file( (file)=>{
+      directoryEntry.getFile(Background.FONT_FILENAME, {create: false},  (fileEntry) => {
+        fileEntry.file( (file) => {
           const reader = new FileReader()
-          reader.onloadend = (ev)=>{
+          reader.onloadend = (ev) => {
             const result = ev?.target?.result as string //"undefined"かも
-            const font = result.substr(result.indexOf(',')+1)
+            const font = result.substr(result.indexOf(",")+1)
             console.info(font)
             console.info("Font length:", font.length )
             sendResponse({data: font, length: font.length})
           }
-          reader.onerror = (ev)=>{
+          reader.onerror = (ev) => {
             console.error("Font File Read Error",ev)
             reader.abort()
             sendResponse({data: "",length: -1})
@@ -341,7 +354,7 @@ class Background{
   }
 
   //OCRテキスト検出
-  private textDetection(base64:string, sendResponse:(res:TextDetectionResult)=>void) {
+  private textDetection(base64: string, sendResponse: (res: TextDetectionResult) => void) {
     if ( !this.apiKey ) {
       //API keyが入っていなければ終わり
       console.log("no API key")
@@ -361,7 +374,7 @@ class Background{
       }),
       mode: "cors",
       body: JSON.stringify(requests),
-    }).then( (response)=>{
+    }).then( (response) => {
       if (response.ok) {
         console.log(`--- Ajax OK: ${response.statusText}`, response)
         return response.json()
@@ -373,7 +386,7 @@ class Background{
         console.error(`--- Ajax NG: ${response.status} ${response.statusText}${addtionalMessage}`, response)
         throw new Error(`fetch() Error ${response.status} ${response.statusText}`)
       }
-    }).then( (json)=>{
+    }).then( (json) => {
       let ans = ""
       let result = "done"
       if (!json.responses) {
@@ -403,16 +416,16 @@ class Background{
       }
       console.log("認識結果", result, ans);
       sendResponse({result, ans})
-    }).catch( (error)=>{
+    }).catch( (error) => {
       const errorMessage = `Google Vision API ${error.message}`
       console.log(`--- ${errorMessage}`, error );
       sendResponse({result: "fail", errorMessage})
     })
   }
   // タブへonRemoveハンドラー設定指示メッセージ送信
-  private sendMessageAssignTabHandler(tabId:number, retryCount:number) {
+  private sendMessageAssignTabHandler(tabId: number, retryCount: number) {
     if ( this.handlerTab ) { //既に登録済み
-      chrome.tabs.get(this.handlerTab, (tab:chrome.tabs.Tab)=>{
+      chrome.tabs.get(this.handlerTab, (tab: chrome.tabs.Tab) => {
         //まだハンドラーに登録したタブがあるか確認
         if ( chrome.runtime.lastError || tab === null ) {
           console.log("#-- tab was closed." + tabId);
@@ -424,7 +437,7 @@ class Background{
       this.assignTabHandler(tabId, retryCount)
     }
   }
-  private assignTabHandler(tabId:number, retryCount:number) {
+  private assignTabHandler(tabId: number, retryCount: number) {
     if ( this.handlerTab === null ) { //eventHandler登録が必要
       console.log("--- assignTabHandlers(" + tabId + ", " + retryCount-- + ")");
       chrome.tabs.sendMessage(tabId, "assignTabHandler", (_response) => {
@@ -434,21 +447,21 @@ class Background{
             if (retryCount>0) {//送信が早すぎるとタブが受信準備出来ていないのでリトライ
               console.log("----: sendMessage: Retry.");
               setTimeout(
-                function(this:Background) {
+                function(this: Background) {
                   this.sendMessageAssignTabHandler(tabId, retryCount);
                 }.bind(this),
                 Background.ASSIGN_TAB_HANDLER_RETRY_WAIT); //何ms待ってリトライするか
             } else {
               console.error("####: sendMessage: Retry Fail.");
             }
-          }else{ //送信成功
+          } else { //送信成功
             this.handlerTab = tabId;
           }
       })
     }
   }
   /* タブID記録用のurlをきれいにする */
-  private cleanupUrl(url:string) { //private
+  private cleanupUrl(url: string) { //private
     //Chrome拡張のprotocol:path/削除
     url = url.replace(chrome.runtime.getURL(""), "");
     return url;
@@ -457,7 +470,7 @@ class Background{
      fid:   forum ID
      tabId: chromeのタブID
   */
-  private addTabId(fid:string, tabId:number): void {
+  private addTabId(fid: string, tabId:  number): void {
     fid = this.cleanupUrl(fid);
     console.log("--- addTabId:" + fid + " = " + tabId);
     try {
@@ -471,7 +484,7 @@ class Background{
   }
   // storage.lcoalにTabList保存
   private storeTabList(): void {
-    chrome.storage.local.set({ "tabList": Background.tabList }, () => {
+    chrome.storage.local.set({ tabList: Background.tabList }, () => {
       //死んだ時用にtabList[]データを残す
       console.info("Update tabList[] on storage.local")
     })
@@ -482,7 +495,7 @@ class Background{
      sendResponse(tabId): 非同期返し先
      将来的には全部非同期にしたいけど現状は同期呼び出しもされる
   */
-  private getTabId(fid:string, sendResponse?:(tabId:TabId)=>void) {
+  private getTabId(fid: string, sendResponse?: (tabId: TabId) => void) {
     let tabId:number|undefined
     fid = this.cleanupUrl(fid);
     console.log("--- getTabId(" + fid + ")");
@@ -492,7 +505,7 @@ class Background{
         //普段はEventListenerで消されるので問題ないが
         //念の為に存在確認して既に無ければ削除
         //その場合、非同期なので一回目はゴミが返る
-        chrome.tabs.get(tabId, (tab:chrome.tabs.Tab) => {
+        chrome.tabs.get(tabId, (tab: chrome.tabs.Tab) => {
           if ( chrome.runtime.lastError || tab === null ) {
             console.log("#-- tab was closed." + tabId);
             this.removeTabId(tabId!); //遅いがとりあえず次のために削除
@@ -512,7 +525,7 @@ class Background{
     return tabId  //同期の時 既にタブが消されていたら一回目はゴミ
   }
   /* タブが閉じられたのでリストから削除 */
-  private removeTabId(tabId:number) {
+  private removeTabId(tabId: number) {
     console.log("--- removeTabId()");
     if (tabId === null ) {
       console.log("#-- removeTabId() argument is null");
@@ -553,7 +566,7 @@ class Background{
       }
     }
   }
-  private openTab(url:string) { //courselist.jsからcopy共通化が必要
+  private openTab(url: string) { //courselist.jsからcopy共通化が必要
     //該当のURLをタブで開く。既に開いていたらそれを使う
     const tabId = this.getTabId(url);
     if ( tabId == null ) { //nullとの==比較でundefinedも見つけてる 0があるかもしれないから!tabIdは使えない
@@ -562,7 +575,7 @@ class Background{
     } else {
       //forumを開いているタブを開く
       console.log("--- reuse tab:",tabId, url)
-      chrome.tabs.update(tabId,{highlighted:true}, (_tab)=>{
+      chrome.tabs.update(tabId,{highlighted:true}, (_tab) => {
         if( chrome.runtime.lastError ) {
           //タブが消されていて無かったので新規にタブを作る
           //最近 タブが閉じられた時にonRemoveが発生せず、良く起こる
@@ -593,52 +606,48 @@ class Background{
    }
   //インスタンス変数管理
   private initializeClassValue() {
-    chrome.storage.local.get(["tabList"], (items)=>{
+    chrome.storage.local.get(["tabList"], (items) => {
       //有ったら使う
       if (items.tabList) { Background.tabList = items.tabList }
     }) //順序性は無い
     this.localStorageMigration();
-    chrome.storage.local.get(["ACsession"], (items)=>{
+    chrome.storage.local.get(["ACsession"], (items) => {
       if (items.ACsession) {
         this.userID = items.ACsession.userID
         this.sessionA = items.ACsession.sessionA
       }
     })
-    chrome.storage.sync.get(["Special"], (items)=>{
+    chrome.storage.sync.get(["Special"], (items) => {
       if (items.Special) {
         const special = items.Special
         this.updateClassVars(special) //Default false
       }
     })
-    chrome.storage.local.get(["Forums"], (items)=>{
-      if (!items.Forums) {
-        console.info("Forums Cache Create")
-        this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
-      } else {
-        this.forums = items.Forums
-        if ( this.forums.cacheFormatVer !== this.getCacheFormsFormatVer() ) {
-          //キャッシュのフォーマットバージョンが違ったらクリア
-          console.info("Forums Cache Clear by format version")
-          this.forums = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}}
-        }
-      }
-    })
-    chrome.storage.local.get(["Authors"], (items)=>{
-      if (!items.Authors) {
-        console.info("Authors Cache Create")
-        this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
-      } else {
-        this.authors = items.Authors
-         if ( this.authors.cacheFormatVer !== this.getCacheAuthorsFormatVer() ) {
-          //キャッシュのフォーマットバージョンが違ったらクリア
-          console.info("Authors Cache Clear by format version")
-          this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}}
-        }
-      }
-    })
+
+    this.forums  = {cacheFormatVer: this.getCacheFormsFormatVer(), forum:{}} // 初期化
+    this.setupCache("Forums", this.getCacheFormsFormatVer(), (newCache) => {this.forums = newCache as Forums})
+
+    this.authors = {cacheFormatVer: this.getCacheAuthorsFormatVer(), author:{}} // 初期化
+    this.setupCache("Authors", this.getCacheAuthorsFormatVer(), (newCache) => {this.authors = newCache as Authors})
+
     //ライセンス情報
     this.initializeLicenseValue()
   }
+  private setupCache(cacheName: string, cacheFormatVer: number, setCache: (newCache: Forums|Authors) => void) {
+    chrome.storage.local.get([cacheName], (items) => {
+      if (!items[cacheName]) {
+        console.info(`${cacheName} Cache Create`);
+      } else {
+        if (items[cacheName].cacheFormatVer !== cacheFormatVer) {
+          //キャッシュのフォーマットバージョンが違ったら使わない
+          console.info(`${cacheName} Cache Clear by format version`);
+        } else {
+          setCache(items[cacheName]) // 良さげなので保存されていたキャッシュを使う
+        }
+      }
+    });
+  }
+
   private updateClassVars(special: any) {
     const countButton = special.countButton
     if (countButton != null) { this.countButton = Boolean(countButton)}  //Default true->false
@@ -666,14 +675,14 @@ class Background{
   }
 
   private initializeLicenseValue() {
-    chrome.storage.sync.get("License", (items)=>{
+    chrome.storage.sync.get("License", (items) => {
       if (chrome.runtime.lastError) {
         console.log("####: storage.sync.get() ERR:",chrome.runtime.lastError);
         return;
       }
       if (items) {
         const license = items.License;
-        if (license ){
+        if (license ) {
           const licenseStatus = license.status;
           if ( licenseStatus ) {
             this.license.status = licenseStatus;
@@ -685,15 +694,15 @@ class Background{
           const licenseCreateDate = license.createDate;
           if ( licenseCreateDate ) {
             this.license.createDate = new Date(licenseCreateDate);
-          }else{
-            if (this.license.createDate) delete this.license.createDate;
+          } else {
+            if (this.license.createDate) { delete this.license.createDate; }
           }
         }
       }
     })
   }
 
-  private setACsession(userID:string, sessionA:string) {
+  private setACsession(userID: string, sessionA: string) {
     this.userID = userID;
     this.sessionA = sessionA;
     chrome.storage.local.set({ACsession:{userID, sessionA}})
@@ -712,7 +721,7 @@ class Background{
   //   this.supportAirSearchBeta =  support
   //   //うう、単体にしてもSpecialに書き込むときに競合する
   // }
-  private setSpecial(config:Configurations ) {
+  private setSpecial(config: Configurations ) {
     this.coursenameRestrictionEnable = Boolean(config.cRmode);
     this.experimental = Boolean(config.experimental);
     this.popupWaitForMac = config.popupWaitForMac;
@@ -738,7 +747,7 @@ class Background{
       countButton: this.countButton,
       saveContentInCache: this.saveContentInCache,
       apiKey: this.apiKey,
-      supportAirSearchBeta: this.supportAirSearchBeta
+      supportAirSearchBeta: this.supportAirSearchBeta,
     }})
   }
   private isCRmode() {
@@ -789,26 +798,29 @@ class Background{
   private getCacheAuthorsFormatVer() {
     return 2;
   }
-  private setForumCache(forum:Forum) {
+  private setForumCache(forum: Forum) {
     this.forums.forum[forum.fid] = forum;
     let diff = Object.keys(this.forums.forum).length - this.getForumMemoryCacheSize();
     if ( diff > 0 ) {
-      type FidDate = {fid:string, date:Date};
+      // tslint:disable-next-line: interface-name
+      interface FidDate {fid: string, date: Date};
       console.log("Cache Retension Over: " + diff + " Forum.")
       //キャッシュ多すぎなのでキャッシュリテンションする
       //日付別でソート
       const sorting = new Array() as FidDate[];
       for(const fid in this.forums.forum) {
-        sorting.push({ "fid": fid, "date": new Date(this.forums.forum[""+fid]!.cacheDate!) }); //必ずある
+        if ( this.forums.forum.hasOwnProperty(fid) ) {
+          sorting.push({ fid, date: new Date(this.forums.forum[""+fid]!.cacheDate!) }); //必ずある
+        }
       }
-      sorting.sort( (a:FidDate,b:FidDate) => (a.date.getTime() - b.date.getTime()) )
+      sorting.sort( (a: FidDate,b: FidDate) => (a.date.getTime() - b.date.getTime()) )
       //古いキャッシュから削除
       while ( diff-- > 0 ) {
         if ( sorting.length <= 0 ) {  //failsafe
           console.warn("ACex: Unexpected over retantion.");
           break;
         }
-        const fid:string = sorting.shift()!.fid //無いと上でbreakしているので必ずある
+        const fid: string = sorting.shift()!.fid //無いと上でbreakしているので必ずある
         if (fid !== forum.fid) { //今登録したのは削除対象外にする
           const f = this.forums.forum[fid];
           console.log("ACex: cache retention "+fid+" "+f?.cacheDate+" "+f?.title);
@@ -825,29 +837,30 @@ class Background{
       console.error("setForumCache(): Unexpected Exception in storage.local.set({Forums}).", e, forum)
     }
   }
-  private getForumCache(fid:number):Forum {
+  private getForumCache(fid: number): Forum {
     const forum = this.forums.forum[fid] as Forum;
     return forum;
   }
-  private setAuthorCache(uuid:string, name:string) {
+  private setAuthorCache(uuid: string, name: string) {
     //TODO: Authorキャッシュのリテンション
     if ( !this.authors.author[uuid] ) { //未登録なら
-      const author:Author = {
+      const author: Author = {
         cacheDate: new Date().toISOString(), //キャッシュ更新日付
-        name
+        name,
       }
       this.authors.author[uuid] = author;
       try {
         chrome.storage.local.set({Authors:this.authors})
       } catch (e) {
         //多分 Out of memoryが発生しているが例外を握りつぶす
-        console.error("setAuthorCache(): Unexpected Exception in store.local.set({Authors})={uuid:"+ uuid +",name:"+ name +"}", e)
+        console.error("setAuthorCache(): Unexpected Exception in store.local.set({Authors})={uuid:"+
+         uuid +",name:"+ name +"}", e)
       }
     }
   }
-  private getAuthorCache(uuid:string):string {  //stringで名前を返すので関数名良くないかも
+  private getAuthorCache(uuid: string): string {  //stringで名前を返すので関数名良くないかも
     const author = this.authors.author[uuid];
-    let name:string = "" //undefined
+    let name: string = "" //undefined
     if ( author ) {
       name = author.name;
     }
@@ -873,9 +886,9 @@ class Background{
   //   }
   //   return lStatus
   // }
-  private setLicense(status:LicenseStatus, validDate:Date, createDate:Date|undefined) {
+  private setLicense(status: LicenseStatus, validDate: Date, createDate: Date|undefined) {
     // let key = "UNKNOWN";
-    // for (key in ["FREE_TRIAL","FREE_TRIAL_EXPIRED","FULL","NONE","UNKNOWN"]){
+    // for (key in ["FREE_TRIAL","FREE_TRIAL_EXPIRED","FULL","NONE","UNKNOWN"]) {
     //   if ( status === key ) break; //サニタイズ
     // }
     const key = status
@@ -890,13 +903,13 @@ class Background{
                         validDate: (this.license.validDate as Date).getTime(),
                         createDate: (this.license.createDate as Date).getTime()};
       } else {
-        if (this.license.createDate) delete this.license.createDate;
+        if (this.license.createDate) { delete this.license.createDate; }
         storeLicense = {status: this.license.status,
                         validDate: (this.license.validDate as Date).getTime() };
       }
       console.log("ACex: storage.sync.set(",this.license, ")");
       chrome.storage.sync.set( //Date型は保存できないみたいなので数値で保管
-        {"License": storeLicense }, ()=>{
+        {License: storeLicense }, () => {
           if (chrome.runtime.lastError) {
             console.log("####: storage.sync.set() ERR:",
                         chrome.runtime.lastError);
@@ -907,7 +920,7 @@ class Background{
   private getLicenseStatus() {
     return this.license.status;
   }
-  private getLicenseValidDate():Date {
+  private getLicenseValidDate(): Date {
     return this.license.validDate as Date;
   }
   // private getLicenseCreateDate():Date|undefined {
@@ -917,7 +930,7 @@ class Background{
   //     return undefined;
   //   }
   // }
-  private getLicenseExpireDate():Date|undefined {
+  private getLicenseExpireDate(): Date|undefined {
     if ( this.license.createDate &&
          Object.prototype.toString.call(this.license.createDate).slice(8, -1)==="Date" ) { //Date型だったら
            return new Date((this.license.createDate as Date).getTime() +
@@ -927,22 +940,22 @@ class Background{
          }
   }
   //ライセンス管理
-  private setupAuth(_interactive:boolean) {
-    const CWS_LICENSE_API_URL = 'https://www.googleapis.com/chromewebstore/v1.1/userlicenses/';
+  private setupAuth(_interactive: boolean) {
+    const CWS_LICENSE_API_URL = "https://www.googleapis.com/chromewebstore/v1.1/userlicenses/"
     if ( this.isUseLicenseInfo() ) {
       //まだ実験的機能
       getLicense();
-    }else{
+    } else {
       console.log("ACex: not getLicense(), because disable license check.");
     }
     /*************************************************************************
      * Call to license server to request the license
      *************************************************************************/
     function getLicense() {
-      xhrWithAuth('GET', CWS_LICENSE_API_URL + chrome.runtime.id, true,
+      xhrWithAuth("GET", CWS_LICENSE_API_URL + chrome.runtime.id, true,
                   onLicenseFetched);
     }
-    function onLicenseFetched(error:chrome.runtime.LastError|undefined, status?:number, response?:string) {
+    function onLicenseFetched(error: chrome.runtime.LastError|undefined, status?: number, response?: string) {
       console.log(error, status, response);
       //ユーザが承認しないとerror.message="The user did not approve access."
       //statusDiv.text("Parsing license...");
@@ -968,10 +981,10 @@ class Background{
      *    @param {{result: boolean, accessLevel: string, createTinme: number,
      *     maxAgeSecs: number }} license Chromeウェブストアのライセンス情報
      **************************************************************************/
-    function parseLicense(license:ChromeWebStoreLicense) {
+    function parseLicense(license: ChromeWebStoreLicense) {
       console.log("ACex: Full License=" + license.result);
       //let licenseStatus:string
-      let licenseStatus:LicenseStatus
+      let licenseStatus: LicenseStatus
       if (license.result && license.accessLevel === "FULL") {
         console.log("Fully paid & properly licensed.");
         licenseStatus = LicenseStatus.FULL //"FULL";
@@ -1018,10 +1031,10 @@ class Background{
      * @param {function(?string, number, strting)} callback
      **************************************************************************/
     // Helper Util for making authenticated XHRs
-    function xhrWithAuth(method:string, url:string, interactive:boolean,
-      callback:(l:chrome.runtime.LastError|undefined, status?:number, response?:string)=>void) {
+    function xhrWithAuth(method: string, url: string, interactive: boolean,
+        callback: (l: chrome.runtime.LastError|undefined, status?: number, response?: string) => void) {
       let retry = true;
-      let accessToken:string
+      let accessToken: string
       getToken();
       function getToken() {
         //statusDiv.text("Getting auth token...");
@@ -1041,11 +1054,11 @@ class Background{
         //statusDiv.text("Starting authenticated XHR...");
         const xhr = new XMLHttpRequest();
         xhr.open(method, url);
-        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
         xhr.onload = requestComplete;
         xhr.send();
       }
-      function requestComplete(this:XMLHttpRequest) {
+      function requestComplete(this: XMLHttpRequest) {
         //statusDiv.text("Authenticated XHR completed.");
         if (this.status === 401 && retry) {
           retry = false;
@@ -1081,23 +1094,6 @@ class Background{
   //   }
   //   return ctx!.getImageData(0, 0, width, height);
   // }
-
-
-
-
-  // page actionポイ動きにする
-  // https://developer.chrome.com/docs/extensions/reference/action/#emulating-pageactions-with-declarativecontent
-  static chromeActionDisable() {
-    // Page actions are disabled by default and enabled on select tabs
-    chrome.action.disable();
-    // サンプルにはURLでenbaleする方法も書いてあるが使わない
-    // ベーシがACから外れた時にdisableにならない。
-  }
-
-  // オプションをマイグレーションするリリースノートページを開く
-  public openReleaseNote() {
-    this.openNewTab("ACex_ReleaseNote.html")
-  }
 }
 let bg = new Background();
 

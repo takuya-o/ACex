@@ -10,9 +10,6 @@
 // }
 
 class PlayerExstender {
-  //定数
-  private static RETRY_MAX = 10
-  private static RETRY_WAIT = 1000 //ms
   //
   public static injectMakeButton() {
     // MakeSlideのコンストラクターの延長で呼ばれる
@@ -22,7 +19,8 @@ class PlayerExstender {
         console.log("Not support AirSearch Beta") //Optionでenableになっていない。Permissionも出ていないのでボタンを表示しない
       }  else {
         // MakeSlideでフォントが読み込まれるまでボタンは出ない
-        const slideCarousel = document.querySelector("div.carousel.slide") as HTMLDivElement //1しかないはず 無い時nullだけど下でreturnするのでキャストでその先を助ける
+        const slideCarousel = document.querySelector("div.carousel.slide") as HTMLDivElement
+        //1しかないはず 無い時nullだけど下でreturnするのでキャストでその先を助ける
         if ( !slideCarousel ) {
           console.error("Cannot find slide carousel.")
           return
@@ -39,16 +37,14 @@ class PlayerExstender {
       }
     })
   }
+  //定数
+  private static RETRY_MAX = 10
+  private static RETRY_WAIT = 1000 //ms
 
   private static sharpner(retry = PlayerExstender.RETRY_MAX) {
-    const imgs = document.querySelectorAll('img.filterBlur2') //パス変わるので曇り入っているイメージ全部にした 古いのも含むよ
+    const imgs = document.querySelectorAll("img.filterBlur2") //パス変わるので曇り入っているイメージ全部にした 古いのも含むよ
     if (imgs.length === 0) {
-      if (retry > 0 ) {
-        console.log("Retry get Blur image", retry)
-        setTimeout( PlayerExstender.sharpner, PlayerExstender.RETRY_WAIT, --retry )
-      } else {
-        console.log("Retry over: Cannot get slide Blur images.") //TODO: AirSearchiのBetaが取れたらwranにする
-      }
+      PlayerExstender.retryCheck(retry, "slide Blur images", PlayerExstender.sharpner)
       return
     }
     console.log("Find img.filterBlur2", imgs.length, imgs)
@@ -58,35 +54,42 @@ class PlayerExstender {
           img.setAttribute("class", orgClass.replace(/filterBlur2/, "")) //曇り止め
         }
       })
-    console.log("OK: Shapner",)
+    console.log("OK: Shapner")
   }
+  private static retryCheck(retry: number, message: string, cb: () => void) {
+    if (retry > 0) {
+      console.log(`Retry get ${message}`, retry)
+      setTimeout(cb, PlayerExstender.RETRY_WAIT, --retry)
+    } else {
+      console.log("Retry over: Cannot get ${message}.") // 無いときも有る
+    }
+    return
+  }
+
   private static setDownloadable(retry = PlayerExstender.RETRY_MAX ) {
-    const videos = document.querySelectorAll('video')
+    const videos = document.querySelectorAll("video")
     if (videos.length === 0) {
       if ( retry !== PlayerExstender.RETRY_MAX && document.querySelectorAll("span.wapper-img").length !==0 ) {
-        //ビデオの替わりの画像が有った
+        //ビデオの替わりの画像が有った つまりビデオが見られないページだった
         console.log("Retry End: no video.")
-      } else  if (retry > 0 ) {
-        console.log("Retry get video", retry)
-        setTimeout( PlayerExstender.setDownloadable, PlayerExstender.RETRY_WAIT, --retry )
       } else {
-        console.log("Retry over: Cannot get video.") //もしかしたら視聴できない講義かも TODO: AirSearchのBataがとれたらwarnにする
+        PlayerExstender.retryCheck(retry, "video", PlayerExstender.setDownloadable)
       }
       return
     }
     Array.prototype.forEach.call(videos, (video: HTMLVideoElement) => {
-      const orgControls = video.getAttribute('controls')
+      const orgControls = video.getAttribute("controls")
       if(orgControls) { //controls属性が有った
-        const orgControlsList = video.getAttribute('controlslist')
+        const orgControlsList = video.getAttribute("controlslist")
         if (orgControlsList) {
           if (orgControlsList === "nodownload") { //controlslistはnodownloadだけ
             video.removeAttribute("controlsllist") //全部けしちゃう
           } else { //他のオプションも有った
-            video.setAttribute('controlslist', orgControlsList.replace(/nodownload/, ""))
+            video.setAttribute("controlslist", orgControlsList.replace(/nodownload/, ""))
           }
         }
       } else { //controls属性が無い 当然controlslistも無い 2021/06/06発見
-        video.setAttribute('controls',"")
+        video.setAttribute("controls","")
       }
       console.log("OK: Video downloader") //videoは一つしか無いので。沢山有る場合は考える
     })
@@ -162,7 +165,7 @@ class PlayerExstender {
             const top1 = Math.floor( (j%(nx*ny)) / nx ) * h
             console.log("drawImage",j, left1, top1)
 
-            ctx?.drawImage(tmpImg, left1, top1, w, h, 0,0, w, h)
+            ctx!.drawImage(tmpImg, left1, top1, w, h, 0,0, w, h)
             const outImg = new Image(w, h)
             outImg.src = canvas.toDataURL("image/png") //canvasをimgにする onladされない 96dpi
             console.log(j, "(" + outImg.width +"," + outImg.height + ")" )
@@ -172,13 +175,15 @@ class PlayerExstender {
           if (i >= imgs.length - 1) {
             //最後のスライド
             console.log("Last slide", i)
-            const title = ((document.querySelector("div.course-video, span.wapper-img")!.nextElementSibling) as HTMLDivElement)
-                            .innerText
+            const title = (
+              (document.querySelector("div.course-video, span.wapper-img")!.nextElementSibling) as HTMLDivElement
+            ).innerText
             // "h1:not(.header__logo)" という手もあるけどね
             let subTitle = (document.querySelector(".MuiTypography-subtitle1") as HTMLDivElement)
                             .innerText.replace(/\s/g,"")
             //タイムテーブル1つめより フォーマット変更 2021/5
-            // (document.querySelector("ol#TimeTable>li:first-child p:nth-of-type(2)") as HTMLParagraphElement).innerText
+            // (document.querySelector("ol#TimeTable>li:first-child p:nth-of-type(2)"
+            // ) as HTMLParagraphElement).innerText
             subTitle = subTitle.replace(/^[^#]+#\d+\s*/, "") // 頭にタイトル#番号 とタイトルが有ったら消す
             //TODO: 1秒待つのはoutImg.srcを待っていない対処療法Workaround
             setTimeout(() => {

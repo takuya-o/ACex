@@ -13,9 +13,12 @@
     "coverage": "node_modules/.bin/npx nyc --reporter cobertura mocha",
     "test-hate": "mocha --reporter=dot ./test/js/",
     "test-report": "mocha --reporter=doc ./test/js/ > ./mocha-report.html",
-    "textlint": "textlint",
-    "htmlhint": "htmlhint",
-    "stylelint": "stylelint \"src/**/*.css\" \"src/**/*.scss\""
+
+    "textlint": "textlint \"*.md *.txt\"",
+    "htmlhint": "htmlhint \"src/**/*.html\"",
+    "stylelint": "stylelint \"src/**/*.css\" \"src/**/*.scss\"",
+    "tslint": "tslint \"src/**/*.ts\"",
+    "tslint-fix": "tslint --fix \"src/**/*.ts\""
   },
   "repository": {
     "type": "git",
@@ -38,7 +41,7 @@
     "crx3": "^1.1.3",
     "htmlhint": "^1.1.4",
     "mocha": "^10.0.0",
-    "npm": "^8.9.0",
+    "npm": "^8.10.0",
     "npm-check-updates": "^12.5.11",
     "nyc": "^15.1.0",
     "source-map-support": "^0.5.21",

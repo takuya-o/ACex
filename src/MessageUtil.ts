@@ -63,6 +63,15 @@ class MessageUtil {
     }
   }
 
+  public static message(msg:string) {
+    const message = document.getElementById("message")
+    if ( !message ) {
+      console.warn( new Error(`Cannot display message: ${msg}`).stack)
+    } else{
+      message.innerText = msg
+    }
+  }
+
   constructor() {
     console.log("--- Start MessageUtil ---")
     MessageUtil.assignMessages();
