@@ -17,7 +17,7 @@
 /for*/
 /coverage/
 /.nyc_output/
-/tsconfig.tsbuildinfo
+/.tsbuildinfo
 dump.lsif
 .env
 

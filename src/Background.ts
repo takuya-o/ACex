@@ -1046,7 +1046,7 @@ class Background {
               return;
             }
             console.log("chrome.identity.getAuthToken returned a token", token);
-            accessToken = token;
+            accessToken = token as string; // undefined時もあるらしいけど
             requestStart();
           });
       }
@@ -1107,7 +1107,10 @@ let bg = new Background();
 //   }
 // });
 
-chrome.runtime.onInstalled.addListener(() => {
-  Background.chromeActionDisable()  // インストール時にはバッチをdisableにして page actionポイ動きにする
-  bg.openReleaseNote()
+chrome.runtime.onInstalled.addListener((details) => {
+  console.log(`onInstalled: reason=${details.reason}` , details)
+  if ( details.reason === "update" ) {
+    Background.chromeActionDisable()  // インストール時にはバッチをdisableにして page actionポイ動きにする
+    bg.openReleaseNote()
+  }
 })

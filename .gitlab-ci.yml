@@ -55,7 +55,7 @@ include:
   - node_modules/
   policy: pull #pull-push
 
-.cache: &owasp_cache
+.owasp_cache: &owasp_cache
   key: OWASP
   paths:
     - data/
@@ -105,7 +105,7 @@ code_navigation:
     # mv dump.lsif-typed dump.lsif
     # https://github.com/sourcegraph/lsif-node/blob/master/OLD_README.md
     apk add --no-cache git
-    ./node_modules/.bin/lsif-tsc -p . #JS --AllowJs --checkJs
+    ./node_modules/.bin/scip-typescript index . #JS コードインテリジェンス dump.lsif 出力
   artifacts:
     reports:
       lsif: dump.lsif
@@ -117,8 +117,6 @@ code_navigation:
 code_quality:  #STARTER BRONZE->CORE FREE
   tags: #追加項目
   - DinD
-#  script:
-#  - test -f gl-code-quality-report.json && cat gl-code-quality-report.json
 
 code_quality_html:
   extends: code_quality
@@ -126,7 +124,11 @@ code_quality_html:
     # 環境変数をscriptで設定する必要が有る
     - export REPORT_FORMAT=html
     # html出力できるイメージはGitLab CIの最新masterテンプレートから持ってくる
-    - export CODE_QUALITY_IMAGE=$(wget -q -O - https://gitlab.com/gitlab-org/gitlab/-/raw/master/lib/gitlab/ci/templates/Jobs/Code-Quality.gitlab-ci.yml|awk '/CODE_QUALITY_IMAGE:/{gsub(/^"|"$/,"",$2);print $2}')
+    # NG registry.gitlab.com/gitlab-org/security-products/codequality:12-5-stable = Default
+    # OK registry.gitlab.com/gitlab-org/ci-cd/codequality:0.85.26
+    # NG registry.gitlab.com/gitlab-org/ci-cd/codequality:0.85.29 HTMLが出力されない
+    # OK registry.gitlab.com/gitlab-org/ci-cd/codequality
+    - export CODE_QUALITY_IMAGE=$(eval echo $(wget -q -O - https://gitlab.com/gitlab-org/gitlab/-/raw/master/lib/gitlab/ci/templates/Jobs/Code-Quality.gitlab-ci.yml|awk '/CODE_QUALITY_IMAGE:/{gsub(/^"|"$/,"",$2);print $2}'))
     - !reference [code_quality, script]
   artifacts:
     paths: [gl-code-quality-report.html]
@@ -144,22 +146,16 @@ dependency_scanning:  #ULTIMATE GOLD
   tags: #追加項目
   - DinD
   needs: []
-#  script:
-#    - cat gl-dependency-scanning-report.json #Defaultで出力済み
   artifacts:
+    # *ファイル名には使えない expose_as: "Dependency JSON"
     paths:
       - "**/cyclonedx-*.json"
-#    reports:
-#      dependency_scanning: gl-dependency-scanning-report.json
-#    expose_as: "Dependency JSON"
       - "gl-dependency-scanning-report.json"
 
 license_scanning: #ULTIMATE GOLD
   tags: #追加項目
   - DinD
   needs: []
-#  script:
-#    - cat gl-license-management-report.json
   artifacts:
     expose_as: "License Scanning Report json"
     paths: [ "gl-license-scanning-report.json", "gl-license-scanning-report.html", $LM_REPORT_FILE ]
@@ -167,17 +163,17 @@ license_scanning: #ULTIMATE GOLD
 secret_detection:
   tags: #追加項目
   - DinD
+  variables:
+    SECRET_DETECTION_EXCLUDED_PATHS: "src/lib/ipag00303/ipag-ttf.js" # カンマ区切りでglab
   artifacts:
     expose_as: "Secret detection JSON"
     paths:
       - "gl-secret-detection-report.json"
 
 sast: #ULTIMATE GOLD->CORE FREE(ESLint)
+  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
   tags: #追加項目
   - DinD
-#  script:
-#    - sast  #SAST_CONFIDENCE_LEVEL=1で低リスクも挙がる
-#    - cat gl-sast-report.json
 
 #のこりのテストはreviewが必要
 # dast:
@@ -194,7 +190,9 @@ cov-test:
     - node_modules/.bin/npx nyc --reporter cobertura mocha
   artifacts:
     reports:
-      cobertura: coverage/cobertura-coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
   rules:
     - if: '$TEST_DISABLED'
       when: never
@@ -211,14 +209,23 @@ pages:
   #  - container_scanning # $CONTAINER_SCANNING_DISABLED
   #  - dependency_scanning
     - gemnasium-dependency_scanning
-    - retire-js-dependency_scanning
+  #  - retire-js-dependency_scanning 15.0で無くなった
     - license_scanning
-  #  - sast
-    - brakeman-sast
-    - eslint-sast
-    - nodejs-scan-sast
-    - semgrep-sast
     - owasp-dependency-check
+  #  - sast                        テンプレート Artifactsはすべて gl-sast-report.json
+  #  - brakeman-sast               # for Ruby
+  #  - eslint-sast                 Removed 15.4
+  #  - flawfiinder-sast            # for C, C++
+  #  - kubesec-sast
+  #  - mobsf-android-sast
+  #  - mobst-ios-sast
+    - nodejs-scan-sast
+  #  - phpcs-security-audit-sast
+  #  - pmd-apex-sast               # *.cls
+  #  - security-code-scan-sast     # *.csproj *.vbproj
+    - semgrep-sast                 # python, JavaScript, TypeScript Go Java C# HTML
+  #  - sobelow-sast                # mix.exs
+  #  -  spotbugs-sast              # groovy scala kt
   script:
   - |
     mkdir .public
@@ -269,6 +276,7 @@ owasp-dependency-check:
     --suppression owasp-dependency-check-suppressions.xml
     --data data
     #--noupdate
+  allow_failure: true # CIに失敗してもMRをMerge可能なようにする設定
   artifacts:
     when: on_failure
     paths:
@@ -300,10 +308,13 @@ reviewdog:
     npx textlint -f checkstyle --no-color "**/*.md" | bin/reviewdog -f=checkstyle -name="textlint" -reporter=gitlab-mr-discussion || true
     #npx textlint -f stylish "**/*.md" | bin/reviewdog -f=eslint -name="textlint" -reporter=gitlab-mr-discussion
     npx htmlhint -f checkstyle --nocolor "src/**/*.html" | bin/reviewdog -f=checkstyle -name="htmlhint" -reporter=gitlab-mr-discussion || true
-  only:
-    - branches
-  except:
-    - master
+  rules:
+    - if: '$BUILD_DISABLED'
+      when: never
+    - if: '$AUTO_DEVOPS_PLATFORM_TARGET == "EC2"'
+      when: never
+    - if: '( $CI_COMMIT_TAG || $CI_COMMIT_BRANCH ) && $CI_OPEN_MERGE_REQUESTS'
+      allow_failure: true # CIに失敗してもMRをMerge可能なようにする設定
 
 
 # ---------------------------------------------------------------------------

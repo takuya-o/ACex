@@ -217,5 +217,32 @@
    <packageUrl regex="true">^pkg:npm/xmldom@.*$</packageUrl>
    <vulnerabilityName>1070127</vulnerabilityName>
   </suppress>
-  
+  <suppress>
+   <notes><![CDATA[
+   file name: opener:1.5.2
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/opener@.*$</packageUrl>
+   <cpe>cpe:/a:opener_project:opener</cpe>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: http-cache-semantics:^4.1.0
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/http\-cache\-semantics@.*$</packageUrl>
+   <cpe>cpe:/a:http-cache-semantics_project:http-cache-semantics</cpe>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: jquery.js
+   ]]></notes>
+   <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
+   <vulnerabilityName>jQuery 1.x and 2.x are End-of-Life and no longer receiving security updates</vulnerabilityName>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: word-wrap:1.2.3
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/word\-wrap@.*$</packageUrl>
+   <vulnerabilityName>CVE-2023-26115</vulnerabilityName>
+  </suppress>
 </suppressions>

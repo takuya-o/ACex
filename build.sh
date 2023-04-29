@@ -34,6 +34,7 @@ cp -p node_modules/jquery/dist/jquery.min.* src/lib/
 (cd src;zip -r -X - . -x@../.crxignore)|\
  ./node_modules/.bin/crx3 ${CRX_OPT:-} -o ${CI_PROJECT_NAME}.crx -z ${CI_PROJECT_NAME}.zip && rm ${CI_PROJECT_NAME}.crx
 
+gem install --user-install --no-document crxmake  #ruby-rdocパッケージいれず-no-..
 if [ -f src.pem ];then
   # src.pemがあれば正式ビルド
   ./build.rb

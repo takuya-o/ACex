@@ -81,7 +81,7 @@ Dockerコンテナで、パッケージングをして、CIとしています。
 * 対応済み ~~削除された発言除外~~
 * 発言中のURL抽出
 * コースすべてのフォーラムなど複数のフォーラムの合計値の算出
-* テスト中 Chromeウェブストアでのライセンス管理
+* テスト中→廃止予定Chromeウェブストアでのライセンス管理
 * 対応済み ~~キャッシュによる高速化~~ from V0.0.8.0
 * キャッシュを利用した更新部分のみの取得による高速化
 * AirSearch beta(2020/12)対応
@@ -104,7 +104,7 @@ It may become unusable due to changes in AirCampus specifications.
 
 It is using Google Tag Manager and Google Analytics to investigate usage.
 
-### What is new!
+### What is new
 Version 0.9
 Support Manifest V3.
 
@@ -128,14 +128,15 @@ Refactoring some features.
 
 ### Permissions
 activeTab - Used for switching and managing browser tabs.
-storage, unlimitedStorage - Used to save option setting values ​​and data cache.
+storage, unlimitedStorage - Used to save option setting values and data cache.
 identity, identity.email - Used for license management.
 <all_urls> - For taking slide images by screenshot. (Optional)
 
 ## 日本語版
 
 ※BBTのウェブサイト「AirCampus for Web」は2020/1/15にサービスが終了し、代わりに「AirCampusポータル」になりました。
-※AirSearch Bata(2020年12月現在)として公開されている新しいAirSearchと、そこから起動される新しい視聴画面に対応中です。いまのところ視聴画面での視聴情報表示に対応する見通しはありません。
+※2021年に公開されていた新しいAirSearchと、そこから起動される新しい視聴画面に対応中です。いまのところ視聴画面での視聴情報表示に対応する見通しはありません。
+※2023年に公開が開始されている「新しいデザイン」は未調査です。
 
 以下の機能がビジネス・ブレークスルー(BBT)の「AirCampusポータル」に追加されます。
 - 各フォローラムの発言数カウント・グラフ化する
@@ -148,7 +149,7 @@ AirCampusの仕様変更により使えなくなってしまうことがある�
 
 Google Tag ManagerとGoogle Analyticsを使用して使用状況を調査しています。
 
-### What is new!
+### What is new
 Version 0.9
 Manifest V3対応。
 

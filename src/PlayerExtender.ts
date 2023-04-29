@@ -61,7 +61,7 @@ class PlayerExstender {
       console.log(`Retry get ${message}`, retry)
       setTimeout(cb, PlayerExstender.RETRY_WAIT, --retry)
     } else {
-      console.log("Retry over: Cannot get ${message}.") // 無いときも有る
+      console.log(`Retry over: Cannot get ${message}.`) // 無いときも有る
     }
     return
   }
