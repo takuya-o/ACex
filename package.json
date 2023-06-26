@@ -33,7 +33,7 @@
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@sourcegraph/scip-typescript": "^0.3.9",
-    "@types/chrome": "^0.0.233",
+    "@types/chrome": "^0.0.238",
     "@types/google.visualization": "^0.0.68",
     "@types/jquery": "^3.5.16",
     "@types/jspdf": "<2.0.0",
