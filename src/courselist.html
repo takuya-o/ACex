@@ -1,46 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" type="text/css" href="css/acexbase.css">
-  <link rel="stylesheet" type="text/css" href="css/courselist.css">
-  <link rel="stylesheet" type="text/css" href="css/switch.css">
-  <title class="MSG_ACex_Course_List">Course List - AirCampus Portal Extender</title>
-  <!-- script type="text/javascript" src="lib/jquery.min.js"></script -->
-  <script type="text/javascript" src="lib/tagmanager.js"></script>
-  <script type="text/javascript" src="Types.js"></script>
-  <script type="text/javascript" src="TabHandler.js"></script>
-  <script type="text/javascript" src="MessageUtil.js"></script>
-  <script type="text/javascript" src="ACexMessageSender.js"></script>
-  <script type="text/javascript" src="CourseCommon.js"></script>
-  <script type="text/javascript" src="CourseList.js"></script>
-  <!--<script data-main="CourseList.js" src="lib/require.js"></script>-->
-</head>
-<body>
-<!-- Google Tag Manager -->
-<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager -->
-  <header>
-    <h2><span id="cmd_name"></span></h2>
-    <div class="onoffswitch">
-      <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="termonoffswitch" checked>
-      <label class="onoffswitch-label" for="termonoffswitch">
-        <span class="onoffswitch-inner"></span>
-        <span class="onoffswitch-switch"></span>
-      </label>
-    </div>
-    <div><span class="MSG_inProgressCouseOnly">In progress course only</span></div>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="css/acexbase.css" />
+    <link rel="stylesheet" type="text/css" href="css/courselist.css" />
+    <link rel="stylesheet" type="text/css" href="css/switch.css" />
+    <title class="MSG_ACex_Course_List">Course List - AirCampus Portal Extender</title>
+    <!-- script type="text/javascript" src="lib/jquery.min.js"></script -->
+    <script type="text/javascript" src="lib/tagmanager.js"></script>
+    <script type="text/javascript" src="out/CourseList.js"></script>
+    <!--<script data-main="CourseList.js" src="lib/require.js"></script>-->
+  </head>
+  <body>
+    <!-- Google Tag Manager -->
+    <noscript
+      ><iframe
+        src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager -->
+    <header>
+      <h2><span id="cmd_name"></span></h2>
+      <div class="onoffswitch">
+        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="termonoffswitch" checked />
+        <label class="onoffswitch-label" for="termonoffswitch">
+          <span class="onoffswitch-inner"></span>
+          <span class="onoffswitch-switch"></span>
+        </label>
+      </div>
+      <div>
+        <span class="MSG_inProgressCouseOnly">In progress course only</span>
+      </div>
+    </header>
 
-  <section>
-    <div id="list">
-      <ul id="ProgramList"></ul>
-    </div>
-  </section>
-  <footer id="statusbar">
-    <div id="message"></div>
-  </footer>
-</body>
+    <section>
+      <div id="list">
+        <ul id="ProgramList"></ul>
+      </div>
+    </section>
+    <footer id="statusbar">
+      <div id="message"></div>
+    </footer>
+  </body>
 </html>
 <!-- -*- coding: utf-8-unix -*- -->

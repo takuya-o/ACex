@@ -1,25 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="css/acexbase.css">
-    <link rel="stylesheet" type="text/css" href="css/countresult.css">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="css/acexbase.css" />
+    <link rel="stylesheet" type="text/css" href="css/countresult.css" />
     <title class="MSG_ACex_Count_Result">Count Result - AirCampus Portal Extender</title>
     <!-- <script type="text/javascript" src="lib/jquery.min.js"></script> -->
     <script type="text/javascript" src="lib/tagmanager.js"></script>
-    <script type="text/javascript" src=" https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript" src="Types.js"></script>
-    <script type="text/javascript" src="TabHandler.js"></script>
-    <script type="text/javascript" src="MessageUtil.js"></script>
-    <script type="text/javascript" src="ACexMessageSender.js"></script>
-    <script type="text/javascript" src="CountResult.js"></script>
+    <script type="text/javascript" src="out/CountResult.js"></script>
     <!-- <script data-main="CountResult.js" src="lib/require.js"></script> -->
   </head>
   <body>
-<!-- Google Tag Manager -->
-<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager -->
+    <!-- Google Tag Manager -->
+    <noscript
+      ><iframe
+        src="//www.googletagmanager.com/ns.html?id=GTM-K26M5B"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager -->
     <div id="message"></div>
     <br />
     <h2 id="title">Course</h2>
@@ -38,41 +39,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button type="button" id="force_reload_button">
           <span class="MSG_force_reload">Reload</span>
         </button>
-	<a id="download" href="#" download="data.json">
-	  <span class="MSG_data_download">Data Download</span>
-	</a>
+        <a id="download" href="#" download="data.json">
+          <span class="MSG_data_download">Data Download</span>
+        </a>
       </div>
       <table id="ranking_table">
         <tr id="table_header_top">
-          <th rowspan="2"><span class="MSG_number_column"
-                    title="MSG_tips_number_column">#</span></th>
-          <th rowspan="2"><span class="MSG_name_column"
-                    title="MSG_tips_name_column">Name</span></th>
-          <th rowspan="2"><span class="MSG_count_column"
-                    title="MSG_tips_posted_without_deleted">
-              Posted</span></th>
-          <th rowspan="2"><span class="MSG_deleted_column"
-                    title="MSG_tips_deleted_column">Deleted</span></th>
-          <th rowspan="2"><span class="MSG_ownreply_column"
-                    title="MSG_tips_ownreply_column">Own Reply</span></th>
-          <th rowspan="2"><span class="MSG_reply_column"
-                    title="MSG_tips_reply_without_own">
-              Reply</span></th>
-          <th rowspan="2"><span class="MSG_reply_ratio_column"
-                    title="MSG_tips_retio_of_reply_by_posted">
-              Reply Ratio</span></th>
-          <th rowspan="2"><span class="MSG_replied_column"
-                    title="MSG_tips_replied_without_ownreply">
-              Replied</span></th>
-          <th rowspan="2"><span class="MSG_replied_ratio_column"
-                    title="MSG_tips_ratio_of_replied_by_posted">
-              Replied Ratio</span></th>
-          <th id="week_header"><span class="MSG_week_column"
-                    title="MSG_tips_week_column">
-              Week</span></th>
+          <th rowspan="2">
+            <span class="MSG_number_column" title="MSG_tips_number_column">#</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_name_column" title="MSG_tips_name_column">Name</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_count_column" title="MSG_tips_posted_without_deleted"> Posted</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_deleted_column" title="MSG_tips_deleted_column">Deleted</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_ownreply_column" title="MSG_tips_ownreply_column">Own Reply</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_reply_column" title="MSG_tips_reply_without_own"> Reply</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_reply_ratio_column" title="MSG_tips_retio_of_reply_by_posted"> Reply Ratio</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_replied_column" title="MSG_tips_replied_without_ownreply"> Replied</span>
+          </th>
+          <th rowspan="2">
+            <span class="MSG_replied_ratio_column" title="MSG_tips_ratio_of_replied_by_posted"> Replied Ratio</span>
+          </th>
+          <th id="week_header">
+            <span class="MSG_week_column" title="MSG_tips_week_column"> Week</span>
+          </th>
         </tr>
-        <tr id="table_header_bottom">
-        </tr>
+        <tr id="table_header_bottom"></tr>
       </table>
     </div>
     <div id="graph_area">

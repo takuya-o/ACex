@@ -1,0 +1,7 @@
+/build/
+/dist/
+/out/
+/node_modules/
+/src/out/
+/src/lib/
+*.js

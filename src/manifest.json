@@ -4,14 +4,10 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.9.2023.1040",
+  "version": "0.10.2023.7151",
   "minimum_chrome_version": "88",
 
-  "permissions": [
-    "storage",
-    "unlimitedStorage",
-    "activeTab"
-  ],
+  "permissions": ["storage", "unlimitedStorage", "activeTab"],
   "host_permissions": [
     "<all_urls>",
 
@@ -26,31 +22,31 @@
     "https://www.gstatic.com/charts/loader.js",
     "https://www.google.com/uds/*"
   ],
-  "optional_permissions": [
-    "identity",
-    "identity.email"
-  ],
+  "optional_permissions": ["identity", "identity.email"],
   "sandbox": {
     "pages": ["countgraph.html"]
   },
   "content_scripts": [
-    { "matches": [
+    {
+      "matches": [
         "https://accontent.bbt757.com/content/*",
         "https://www.bbt757.com/content/*",
         "https://www.ohmae.ac.jp/content/*",
         "https://www.bbt757.com/ac/web/*",
         "https://*.aircamp.us/course/*",
-        "https://*.aircamp.us/" ],
-      "js": ["lib/jquery.min.js", "Types.js", "MessageUtil.js", "ACex.js"],
+        "https://*.aircamp.us/"
+      ],
+      "js": ["out/ACex.js"],
       "run_at": "document_idle"
     },
-    { "matches": ["https://www.bbt757.com/svlBOS/user/airsearch*", "http://www.bbt757.com/svlBOS/user/airsearch*"] ,
-      "js": [ "lib/jspdf.umd.min.js", "lib/ipag00303/ipag-ttf.js", "Types.js", "MessageUtil.js", "MakeSlide.js", "AirSearchExtender.js" ],
+    {
+      "matches": ["https://www.bbt757.com/svlBOS/user/airsearch*", "http://www.bbt757.com/svlBOS/user/airsearch*"],
+      "js": ["lib/ipag00303/ipag-ttf.js", "out/AirSearchExtender.js"],
       "run_at": "document_idle"
     },
     {
       "matches": ["https://player.aircamp.us/content/*"],
-      "js": [ "lib/jspdf.umd.min.js", "lib/ipag00303/ipag-ttf.js", "Types.js", "MessageUtil.js", "MakeSlide.js", "PlayerExtender.js" ],
+      "js": ["lib/ipag00303/ipag-ttf.js", "out/PlayerExtender.js"],
       "run_at": "document_idle"
     }
   ],
@@ -78,7 +74,7 @@
     "16": "icon_16.png"
   },
   "background": {
-    "service_worker": "Background.js",
+    "service_worker": "out/Background.js",
     "type": "classic"
   },
   "default_locale": "ja"

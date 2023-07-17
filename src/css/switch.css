@@ -35,7 +35,8 @@
 }
 
 /* stylelint-disable-next-line selector-pseudo-element-colon-notation */
-.onoffswitch-inner:before, .onoffswitch-inner:after {
+.onoffswitch-inner:before,
+.onoffswitch-inner:after {
   float: left;
   width: 50%;
   height: 13px;
@@ -54,7 +55,7 @@
 
 /* stylelint-disable-next-line selector-pseudo-element-colon-notation */
 .onoffswitch-inner:after {
-  content: "ON";
+  content: 'ON';
   padding-left: 10px;
   background-color: #2fccff;
   color: #fff;
@@ -62,7 +63,7 @@
 
 /* stylelint-disable-next-line selector-pseudo-element-colon-notation */
 .onoffswitch-inner:before {
-  content: "OFF";
+  content: 'OFF';
   padding-right: 10px;
   background-color: #eee;
   color: #999;

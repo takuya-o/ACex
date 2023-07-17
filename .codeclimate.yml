@@ -40,6 +40,7 @@ plugins:
   eslint:
     enabled: true
     channel: "stable"
+    config: .eslintrc.json
   fixme:
     enabled: true
   rubocop:

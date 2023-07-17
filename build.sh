@@ -25,10 +25,13 @@ fi
 ./node_modules/.bin/npm update $NPM_OPT || true
 ./node_modules/.bin/npm audit fix $NPM_OPT || true # workaround
 ./node_modules/.bin/npm fund $NPM_OPT
-cp -p node_modules/jquery/dist/jquery.min.* src/lib/
-[ -f node_modules/jspdf/dist/jspdf.umd.min.js ] && cp -p node_modules/jspdf/dist/jspdf.umd.min.js* src/lib/
+#cp -p node_modules/jquery/dist/jquery.min.* src/lib/
+[ -f node_modules/jspdf/dist/jspdf.es.min.js ] && cp -p node_modules/jspdf/dist/jspdf.es.min.js* src/lib/
 # rm -f tsconfig.tsbuildinfo # tsc --incremental false があれば消す必要は無い
-./node_modules/.bin/tsc ${TSC_OPT:-} || true # workaround
+./node_modules/.bin/tsc -noEmit ${TSC_OPT:-} #|| true # workaround
+
+npx rimraf src/out
+node esbuild.config.js #tscもやってくれるけど TSC_OPTの渡し方があやしい
 
 # rubyいらず .tsなども入らなくなりzipにkey.pemが無いけど問題なし
 (cd src;zip -r -X - . -x@../.crxignore)|\

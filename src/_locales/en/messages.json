@@ -1,314 +1,317 @@
 {
-  "comment_for_emacs":{
-    "message":"-*- coding: utf-8-unix -*-"
+  "comment_for_emacs": {
+    "message": "-*- coding: utf-8-unix -*-"
   },
-  "ACex_name":{
-    "message":"AirCampus Portal Extender"
+  "ACex_name": {
+    "message": "AirCampus Portal Extender"
   },
-  "ACex_description":{
-    "message":"Adding utility tools for BBT's website 'AirCampus Portal'"
+  "ACex_description": {
+    "message": "Adding utility tools for BBT's website 'AirCampus Portal'"
   },
-  "chrome_extension_name":{
-    "message":"AC extender"
+  "chrome_extension_name": {
+    "message": "AC extender"
   },
-  "ACex_Release_Note":{
-    "message":"AirCampus Portal Extender Releasse Note"
+  "ACex_Release_Note": {
+    "message": "AirCampus Portal Extender Releasse Note"
   },
-  "Version":{
-    "message":"Version"
+  "Version": {
+    "message": "Version"
   },
-  "ACex_Release_Options":{
-    "message":"AirCampus Portal Extender Options"
+  "ACex_Release_Options": {
+    "message": "AirCampus Portal Extender Options"
   },
-  "ACex_Release_Course_List":{
-    "message":"Course List - AirCampus Portal Extender"
+  "ACex_Release_Course_List": {
+    "message": "Course List - AirCampus Portal Extender"
   },
-  "ACex_Release_Count_Result":{
-    "message":"Count Result - AirCampus Portal Extender"
+  "ACex_Release_Count_Result": {
+    "message": "Count Result - AirCampus Portal Extender"
   },
-  "ACex_Release_Count_Graph":{
-    "message":"Count Result Graph - AirCampus Portal Extender"
+  "ACex_Release_Count_Graph": {
+    "message": "Count Result Graph - AirCampus Portal Extender"
   },
-  "save":{
-    "message":"Save"
+  "save": {
+    "message": "Save"
   },
-  "options_saved":{
-    "message":"Options saved."
+  "options_saved": {
+    "message": "Options saved."
   },
-  "reader":{
-    "message":"Reader"
+  "reader": {
+    "message": "Reader"
   },
-  "count":{
-    "message":"Count"
+  "count": {
+    "message": "Count"
   },
-  "selectCourse":{
-    "message":"select course"
+  "selectCourse": {
+    "message": "select course"
   },
-  "inProgressCouseOnly":{
-    "message":"In progress course only"
+  "inProgressCouseOnly": {
+    "message": "In progress course only"
   },
-  "loding":{
-    "message":"Loding..."
+  "loding": {
+    "message": "Loding..."
   },
-  "cache_hit":{
-    "message":"Cache Hit"
+  "cache_hit": {
+    "message": "Cache Hit"
   },
-  "program_list":{
-    "message":"Program List"
+  "program_list": {
+    "message": "Program List"
   },
-  "exception_occurred":{
-    "message":"Exception occurred"
+  "exception_occurred": {
+    "message": "Exception occurred"
   },
-  "loding_fail":{
-    "message":"Loding Fail."
+  "loding_fail": {
+    "message": "Loding Fail."
   },
-  "loding_exception":{
-    "message":"Loding Exception?"
+  "loding_exception": {
+    "message": "Loding Exception?"
   },
-  "loding_success":{
-    "message":"Loding success."
+  "loding_success": {
+    "message": "Loding success."
   },
-  "create_table":{
-    "message":"Creating table."
+  "create_table": {
+    "message": "Creating table."
   },
-  "create_graph":{
-    "message":"Creating graph."
+  "create_graph": {
+    "message": "Creating graph."
   },
-  "course_list":{
-    "message":"Course List"
+  "course_list": {
+    "message": "Course List"
   },
-  "forum_list":{
-    "message":"Discussion List"
+  "forum_list": {
+    "message": "Discussion List"
   },
-  "id":{
-    "message":"ID="
+  "id": {
+    "message": "ID="
   },
-  "discussion_data":{
-    "message":"Discussion Data"
+  "discussion_data": {
+    "message": "Discussion Data"
   },
-  "count_finish":{
-    "message":"Count Finish."
+  "count_finish": {
+    "message": "Count Finish."
   },
-  "no_charts":{
-    "message":"Could not display charts."
+  "no_charts": {
+    "message": "Could not display charts."
   },
-  "last_update":{
-    "message":"Data Last Update:"
+  "last_update": {
+    "message": "Data Last Update:"
   },
-  "start_day":{
-    "message":"Discussion Start:"
+  "start_day": {
+    "message": "Discussion Start:"
   },
-  "end_day":{
-    "message":"End:"
+  "end_day": {
+    "message": "End:"
   },
-  "UNKNOWN":{
-    "message":"Unknown"
+  "UNKNOWN": {
+    "message": "Unknown"
   },
-  "force_reload":{
-    "message":"Reload"
+  "force_reload": {
+    "message": "Reload"
   },
-  "data_download":{
-    "message":"Data Download"
+  "data_download": {
+    "message": "Data Download"
   },
-  "number_column":{
-    "message":"#"
+  "number_column": {
+    "message": "#"
   },
-  "tips_number_column":{
-    "message":"Ranking by posted count."
+  "tips_number_column": {
+    "message": "Ranking by posted count."
   },
-  "name_column":{
-    "message":"Name"
+  "name_column": {
+    "message": "Name"
   },
-  "tips_name_column":{
-    "message":"The first posted message's name."
+  "tips_name_column": {
+    "message": "The first posted message's name."
   },
-  "count_column":{
-    "message":"Posted"
+  "count_column": {
+    "message": "Posted"
   },
-  "week_column":{
-    "message":"Week"
+  "week_column": {
+    "message": "Week"
   },
-  "tips_week_column":{
-    "message":"Posted per week"
+  "tips_week_column": {
+    "message": "Posted per week"
   },
-  "tips_posted_without_deleted":{
-    "message":"Posted count without deleted message and own reply."
+  "tips_posted_without_deleted": {
+    "message": "Posted count without deleted message and own reply."
   },
-  "deleted_column":{
-    "message":"Deleted"
+  "deleted_column": {
+    "message": "Deleted"
   },
-  "tips_deleted_column":{
-    "message":"How many deleted messages."
+  "tips_deleted_column": {
+    "message": "How many deleted messages."
   },
-  "ownreply_column":{
-    "message":"Own Reply"
+  "ownreply_column": {
+    "message": "Own Reply"
   },
-  "tips_ownreply_column":{
-    "message":"How many posted by own reply."
+  "tips_ownreply_column": {
+    "message": "How many posted by own reply."
   },
-  "reply_column":{
-    "message":"Reply"
+  "reply_column": {
+    "message": "Reply"
   },
-  "tips_reply_without_own":{
-    "message":"How many reply to other people."
+  "tips_reply_without_own": {
+    "message": "How many reply to other people."
   },
-  "reply_ratio_column":{
-    "message":"Reply Ratio"
+  "reply_ratio_column": {
+    "message": "Reply Ratio"
   },
-  "tips_retio_of_reply_by_posted":{
-    "message":"Ratio of Reply by Posted."
+  "tips_retio_of_reply_by_posted": {
+    "message": "Ratio of Reply by Posted."
   },
-  "replied_column":{
-    "message":"Replied"
+  "replied_column": {
+    "message": "Replied"
   },
-  "tips_replied_without_ownreply":{
-    "message":"How many replied from other people."
+  "tips_replied_without_ownreply": {
+    "message": "How many replied from other people."
   },
-  "replied_ratio_column":{
-    "message":"Replied Ratio"
+  "replied_ratio_column": {
+    "message": "Replied Ratio"
   },
-  "tips_retio_of_replied_by_posted":{
-    "message":"Ratio of Reply by Posted. "
+  "tips_retio_of_replied_by_posted": {
+    "message": "Ratio of Reply by Posted. "
   },
-  "option_list":{
-    "message":"Options"
+  "option_list": {
+    "message": "Options"
   },
-  "special_option_list":{
-    "message":"Spetial Options"
+  "special_option_list": {
+    "message": "Spetial Options"
   },
-  "experimental_enable":{
-    "message":"Enable experimental function."
+  "experimental_enable": {
+    "message": "Enable experimental function."
   },
-  "count_button_enable":{
-    "message":"Display 'Count' button on course page."
+  "count_button_enable": {
+    "message": "Display 'Count' button on course page."
   },
-  "count_button_enable_tooltip":{
-    "message":"The 'count' button will appear on the course screen.\nThis is an old feature."
+  "count_button_enable_tooltip": {
+    "message": "The 'count' button will appear on the course screen.\nThis is an old feature."
   },
-  "coursename_rectriction":{
-    "message":"Trim course name"
+  "coursename_rectriction": {
+    "message": "Trim course name"
   },
-  "coursename_rectriction_tooltip":{
-    "message":"'Graduate school' etc. remove from the course name for displaing briefly."
+  "coursename_rectriction_tooltip": {
+    "message": "'Graduate school' etc. remove from the course name for displaing briefly."
   },
-  "experimental_option_list":{
-    "message":"Experimental Options"
+  "experimental_option_list": {
+    "message": "Experimental Options"
   },
-  "display_popup_menu":{
-    "message":"Display Experimental Popup Menu"
+  "display_popup_menu": {
+    "message": "Display Experimental Popup Menu"
   },
-  "popup_wait_for_mac":{
-    "message":"Popup Wait(Mac Only)"
+  "popup_wait_for_mac": {
+    "message": "Popup Wait(Mac Only)"
   },
-  "millisecond":{
-    "message":"ms"
+  "millisecond": {
+    "message": "ms"
   },
-  "downloadable":{
-    "message":"Enable Video Download Link"
+  "downloadable": {
+    "message": "Enable Video Download Link"
   },
-  "downloadable_tooltip":{
-    "message":"Enable to download the video on the recture video screen."
+  "downloadable_tooltip": {
+    "message": "Enable to download the video on the recture video screen."
   },
-  "display_telop":{
-    "message":"Display Telop"
+  "display_telop": {
+    "message": "Display Telop"
   },
-  "display_telop_tooltip":{
-    "message":"Dispaly telop information on the recture video screen."
+  "display_telop_tooltip": {
+    "message": "Dispaly telop information on the recture video screen."
   },
-  "auth_time":{
-    "message":"Authenticate time"
+  "auth_time": {
+    "message": "Authenticate time"
   },
-  "license":{
-    "message":"License"
+  "license": {
+    "message": "License"
   },
-  "license_user":{
-    "message":"User"
+  "license_user": {
+    "message": "User"
   },
-  "license_status":{
-    "message":"License Status"
+  "license_status": {
+    "message": "License Status"
   },
-  "license_MSG_UNKNOWN":{
-    "message":"Unknown"
+  "license_MSG_UNKNOWN": {
+    "message": "Unknown"
   },
-  "license_MSG_FREE_TRIAL":{
-    "message":"Free Trial"
+  "license_MSG_FREE_TRIAL": {
+    "message": "Free Trial"
   },
-  "license_MSG_FREE_TRIAL_EXPIRED":{
-    "message":"Free Trial(Expired)"
+  "license_MSG_FREE_TRIAL_EXPIRED": {
+    "message": "Free Trial(Expired)"
   },
-  "license_MSG_FULL":{
-    "message":"Full License"
+  "license_MSG_FULL": {
+    "message": "Full License"
   },
-  "license_MSG_NONE":{
-    "message":"None"
+  "license_MSG_NONE": {
+    "message": "None"
   },
-  "license_expire":{
-    "message":"License Expire"
+  "license_expire": {
+    "message": "License Expire"
   },
   "check_license_by_chrome_web_store": {
-    "message":"Check License Information by Chrome Web Store"
+    "message": "Check License Information by Chrome Web Store"
   },
   "check_license_by_chrome_web_store_tooltip": {
-    "message":"Check the license information on the Chrome Web Store.\nFor display your email address, the email address authority will be requested."
+    "message": "Check the license information on the Chrome Web Store.\nFor display your email address, the email address authority will be requested."
   },
   "trial_priod_days": {
-    "message":"Trial Priod Days"
+    "message": "Trial Priod Days"
   },
   "trial_priod_days_tooltip": {
     "message": "For testing."
   },
   "days": {
-    "message":"days"
+    "message": "days"
   },
   "forum_memory_cache_size": {
-    "message":"Discussion Memory Cache Size"
+    "message": "Discussion Memory Cache Size"
   },
   "save_content_in_cache": {
-    "message":"Save Content in Cache"
+    "message": "Save Content in Cache"
   },
   "save_content_in_cache_tooltip": {
-    "message":"Caching the content body for downloading.\nPlease note that memory usage will increase."
+    "message": "Caching the content body for downloading.\nPlease note that memory usage will increase."
   },
-  "api_key":{
-    "message":"API Key:"
+  "api_key": {
+    "message": "API Key:"
   },
-  "api_key_tooltip":{
-    "message":"Input Google Cloud Vision's API Key"
+  "api_key_tooltip": {
+    "message": "Input Google Cloud Vision's API Key"
   },
-  "support_airsearch_beta":{
-    "message":"Enable PDF documents by images on AirSearch Beta"
+  "support_airsearch_beta": {
+    "message": "Enable PDF documents by images on AirSearch Beta"
   },
-  "support_airsearch_beta_tooltip":{
-    "message":"AirSearch Beta will also be able to create 'PDF by images'.\nAdditional access permissions for all sites will be requested."
+  "support_airsearch_beta_tooltip": {
+    "message": "AirSearch Beta will also be able to create 'PDF by images'.\nAdditional access permissions for all sites will be requested."
   },
-  "cannot_get_image_data":{
-    "message":"Could not get the data of the slide image."
+  "cannot_get_image_data": {
+    "message": "Could not get the data of the slide image."
   },
-  "image_PDF_document":{
-    "message":"PDF by images"
+  "image_PDF_document": {
+    "message": "PDF by images"
   },
-  "too_small_window":{
-    "message":"Warning: The window may be too small to get the slides"
+  "too_small_window": {
+    "message": "Warning: The window may be too small to get the slides"
   },
-  "image_data_could_not_be_acquired":{
-    "message":"The slide image data could not be acquired."
+  "image_data_could_not_be_acquired": {
+    "message": "The slide image data could not be acquired."
   },
-  "text_detection_error":{
-    "message":"Text extraction with API Key failed."
+  "text_detection_error": {
+    "message": "Text extraction with API Key failed."
   },
-  "Doing_data_migration":{
-    "message":"Doing options data migration."
+  "Doing_data_migration": {
+    "message": "Doing options data migration."
   },
-  "Data_migration_done":{
-    "message":"Options data migration done."
+  "Data_migration_done": {
+    "message": "Options data migration done."
   },
-  "No_data_migration":{
-    "message":"No optional data migration was required."
+  "No_data_migration": {
+    "message": "No optional data migration was required."
   },
-  "Ver0_9":{
-    "message":" "
+  "Ver0_9": {
+    "message": " "
   },
-  "Option_data_migration":{
-    "message":"This page automatically migrates options data."
+  "Ver0_10": {
+    "message": "On Version 0.10, support 2023 AirCampus new design "
+  },
+  "Option_data_migration": {
+    "message": "This page automatically migrates options data."
   }
 }

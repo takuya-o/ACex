@@ -36,7 +36,7 @@ include:
 #  - template: Jobs/Deploy.gitlab-ci.yml
 #  - template: Jobs/Browser-Performance-Testing.gitlab-ci.yml
 #  - template: Security/DAST.gitlab-ci.yml
-  - template: Security/Container-Scanning.gitlab-ci.yml
+#コンテナではない  - template: Security/Container-Scanning.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/License-Scanning.gitlab-ci.yml
   - template: Jobs/SAST.gitlab-ci.yml
@@ -92,55 +92,61 @@ build: #上書きと追加項目
     - ${CI_PROJECT_NAME}.zip
 
 #コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
-code_navigation:
+code_intelligence_ts:
   stage: deploy
-  image: "node:alpine" #11.10.1-alpine <- alpine:2.9
   needs: [ build ]
+  allow_failure: true # recommended
+  image: "node:alpine" #11.10.1-alpine <- alpine:2.9
   cache:
     <<: *default_cache
-  allow_failure: true # recommended
+  rules:
+    - if: $CODE_INTELLIGENCE_DISABLED
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - '**/*.ts'
   script:
-  - |
-    # ./node_modules/.bin/lsif-typescript index #JS --infer-tsconfig
-    # mv dump.lsif-typed dump.lsif
-    # https://github.com/sourcegraph/lsif-node/blob/master/OLD_README.md
-    apk add --no-cache git
-    ./node_modules/.bin/scip-typescript index . #JS コードインテリジェンス dump.lsif 出力
+    - npx lsif-tsc --project ./tsconfig.json --out dump.lsif
   artifacts:
     reports:
       lsif: dump.lsif
 
-#コードインテリジェンス https://docs.gitlab.com/ee/user/project/code_intelligence.html
-#code_navigation:
-# テンプレートではまだgoのみサポート
-
 code_quality:  #STARTER BRONZE->CORE FREE
-  tags: #追加項目
-  - DinD
+  services: # Shut off Docker-in-Docker
+  tags:
+    - cq-sans-dind
 
 code_quality_html:
   extends: code_quality
-  script:
-    # 環境変数をscriptで設定する必要が有る
-    - export REPORT_FORMAT=html
-    # html出力できるイメージはGitLab CIの最新masterテンプレートから持ってくる
-    # NG registry.gitlab.com/gitlab-org/security-products/codequality:12-5-stable = Default
-    # OK registry.gitlab.com/gitlab-org/ci-cd/codequality:0.85.26
-    # NG registry.gitlab.com/gitlab-org/ci-cd/codequality:0.85.29 HTMLが出力されない
-    # OK registry.gitlab.com/gitlab-org/ci-cd/codequality
-    - export CODE_QUALITY_IMAGE=$(eval echo $(wget -q -O - https://gitlab.com/gitlab-org/gitlab/-/raw/master/lib/gitlab/ci/templates/Jobs/Code-Quality.gitlab-ci.yml|awk '/CODE_QUALITY_IMAGE:/{gsub(/^"|"$/,"",$2);print $2}'))
-    - !reference [code_quality, script]
+  services: # Shut off Docker-in-Docker
+  tags:
+    - cq-sans-dind
+  variables:
+    REPORT_FORMAT: html
   artifacts:
     paths: [gl-code-quality-report.html]
 
-container_scanning: #Docker image形式を検査する
-  tags: #追加項目
-  - DinD
-  needs: []
+code_quality_eslint:
+  image: node:alpine
+  needs: [ build ]
+  cache:
+    <<: *default_cache
+    policy: pull   #Not update
+  script:
+    - npx eslint src --ext ts --format gitlab
   artifacts:
-    expose_as: 'Container Scanning Report JSON'
-    paths:
-      - gl-container-scanning-report.json
+    reports:
+      codequality: gl-code-quality.json
+
+# コンテナではない
+# container_scanning: #Docker image形式を検査する
+#   tags: #追加項目
+#   - DinD
+#   needs: []
+#   artifacts:
+#     expose_as: 'Container Scanning Report JSON'
+#     paths:
+#       - gl-container-scanning-report.json
 
 dependency_scanning:  #ULTIMATE GOLD
   tags: #追加項目
@@ -187,7 +193,7 @@ cov-test:
     <<: *default_cache
     policy: pull   #Not update
   script:
-    - node_modules/.bin/npx nyc --reporter cobertura mocha
+    - npx nyc --reporter cobertura mocha  # npm run coverage
   artifacts:
     reports:
       coverage_report:
@@ -196,7 +202,7 @@ cov-test:
   rules:
     - if: '$TEST_DISABLED'
       when: never
-    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH'
       exists:
         - .nycrc
 
@@ -281,6 +287,10 @@ owasp-dependency-check:
     when: on_failure
     paths:
     - report
+  rules:
+    - if: '$TEST_DISABLED'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
 
 reviewdog:
   stage: test
@@ -314,8 +324,6 @@ reviewdog:
     - if: '$AUTO_DEVOPS_PLATFORM_TARGET == "EC2"'
       when: never
     - if: '( $CI_COMMIT_TAG || $CI_COMMIT_BRANCH ) && $CI_OPEN_MERGE_REQUESTS'
-      allow_failure: true # CIに失敗してもMRをMerge可能なようにする設定
-
 
 # ---------------------------------------------------------------------------
 .auto_devops: &auto_devops |

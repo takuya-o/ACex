@@ -19,6 +19,7 @@
 /.nyc_output/
 /.tsbuildinfo
 dump.lsif
+mocha-report.html
 .env
 
 

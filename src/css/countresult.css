@@ -8,7 +8,8 @@
   border: 1px #1c79c6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
 }
 
-#ranking_table td, th {
+#ranking_table td,
+th {
   border: 1px #1c79c6 solid; /* セルの枠線（太さ・色・スタイル） */
   padding: 5px; /* セル内の余白 */
 }
@@ -18,7 +19,8 @@
   border: 1px #1c79c6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
 }
 
-#graph_table td, th {
+#graph_table td,
+th {
   border: 1px #1c79c6 solid; /* セルの枠線（太さ・色・スタイル） */
   padding: 5px; /* セル内の余白 */
 }
@@ -36,68 +38,56 @@
 #end_day {
 }
 
-td.red_cell { /* そのセルを赤くする */
+td.red_cell {
+  /* そのセルを赤くする */
   color: red;
 }
 
-td.yellow_cell { /* そのセルを黄色くする */
+td.yellow_cell {
+  /* そのセルを黄色くする */
   color: #aa0;
 }
 
 .MSG_number_column {
-
 }
 
 .MSG_name_column {
-
 }
 
 .MSG_count_column {
-
 }
 
 .MSG_deleted_column {
-
 }
 
 .MSG_ownreply_column {
-
 }
 
 .MSG_reply_column {
-
 }
 
 .MSG_reply_ratio_column {
-
 }
 
 .MSG_replied_column {
-
 }
 
 .MSG_replied_ratio_column {
-
 }
 
 .MSG_end_day {
-
 }
 
 .MSG_UNKNOWN {
-
 }
 
 .MSG_last_update {
-
 }
 
 .MSG_force_reload {
-
 }
 
 .MSG_week_column {
-
 }
 
 #graph_frame {

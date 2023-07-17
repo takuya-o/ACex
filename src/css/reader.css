@@ -3,7 +3,10 @@ body {
   margin: 0% auto;
 }
 
-header, nav, section, footer {
+header,
+nav,
+section,
+footer {
   display: block;
   padding: 2%;
 }
@@ -13,7 +16,8 @@ header {
   width: 71%;
 }
 
-header ul, header li {
+header ul,
+header li {
   list-style-type: none;
   display: inline;
 }

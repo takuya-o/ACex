@@ -245,4 +245,53 @@
    <packageUrl regex="true">^pkg:npm/word\-wrap@.*$</packageUrl>
    <vulnerabilityName>CVE-2023-26115</vulnerabilityName>
   </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: npm:7.24.2
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/npm@.*$</packageUrl>
+   <vulnerabilityName>CVE-2021-43616</vulnerabilityName>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: npm:7.24.2
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/npm@.*$</packageUrl>
+   <vulnerabilityName>CVE-2022-29244</vulnerabilityName>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: qs:~6.5.2
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/qs@.*$</packageUrl>
+   <cve>CVE-2022-24999</cve>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: request:2.88.2
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/request@.*$</packageUrl>
+   <vulnerabilityName>CVE-2023-28155</vulnerabilityName>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: tough-cookie:2.5.0
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/tough\-cookie@.*$</packageUrl>
+   <vulnerabilityName>CVE-2023-26136</vulnerabilityName>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: got:9.6.0
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/got@.*$</packageUrl>
+   <cve>CVE-2022-33987</cve>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: jquery.js
+   ]]></notes>
+   <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
+   <cve>CVE-2020-23064</cve>
+  </suppress>
 </suppressions>

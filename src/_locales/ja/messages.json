@@ -1,314 +1,317 @@
 {
-  "comment_for_emacs":{
-    "message":"-*- coding: utf-8-unix -*-"
+  "comment_for_emacs": {
+    "message": "-*- coding: utf-8-unix -*-"
   },
-  "ACex_name":{
-    "message":"AirCampusポータルExtender"
+  "ACex_name": {
+    "message": "AirCampusポータルExtender"
   },
-  "ACex_description":{
-    "message":"BBTのWebサイト「AirCampusポータル」に便利な機能を追加します"
+  "ACex_description": {
+    "message": "BBTのWebサイト「AirCampusポータル」に便利な機能を追加します"
   },
-  "chrome_extension_name":{
-    "message":"AC extender"
+  "chrome_extension_name": {
+    "message": "AC extender"
   },
-  "ACex_Release_Note":{
-    "message":"AirCampusポータルExtender リリースノート"
+  "ACex_Release_Note": {
+    "message": "AirCampusポータルExtender リリースノート"
   },
-  "Version":{
-    "message":"バージョン"
+  "Version": {
+    "message": "バージョン"
   },
-  "ACex_Release_Options":{
-    "message":"AirCampusポータルExtenderオプション"
+  "ACex_Release_Options": {
+    "message": "AirCampusポータルExtenderオプション"
   },
-  "ACex_Release_Course_List":{
-    "message":"AirCampusポータルExtenderコースリスト"
+  "ACex_Release_Course_List": {
+    "message": "AirCampusポータルExtenderコースリスト"
   },
-  "ACex_Release_Count_Result":{
-    "message":"AirCampusポータルExtender計測結果"
+  "ACex_Release_Count_Result": {
+    "message": "AirCampusポータルExtender計測結果"
   },
-  "ACex_Release_Count_Graph":{
-    "message":"AirCampusポータルExtender計測結果グラフ"
+  "ACex_Release_Count_Graph": {
+    "message": "AirCampusポータルExtender計測結果グラフ"
   },
-  "save":{
-    "message":"保存"
+  "save": {
+    "message": "保存"
   },
-  "options_saved":{
-    "message":"オプションを保存しました。"
+  "options_saved": {
+    "message": "オプションを保存しました。"
   },
-  "reader":{
-    "message":"リーダ"
+  "reader": {
+    "message": "リーダ"
   },
-  "count":{
-    "message":"カウント"
+  "count": {
+    "message": "カウント"
   },
-  "selectCourse":{
-    "message":"コース選択"
+  "selectCourse": {
+    "message": "コース選択"
   },
-  "inProgressCouseOnly":{
-    "message":"開講中のみ"
+  "inProgressCouseOnly": {
+    "message": "開講中のみ"
   },
-  "loding":{
-    "message":"ロード中..."
+  "loding": {
+    "message": "ロード中..."
   },
-  "cache_hit":{
-    "message":"キャッシュヒット"
+  "cache_hit": {
+    "message": "キャッシュヒット"
   },
-  "program_list":{
-    "message":"プログラム一覧"
+  "program_list": {
+    "message": "プログラム一覧"
   },
-  "exception_occurred":{
-    "message":"例外発生"
+  "exception_occurred": {
+    "message": "例外発生"
   },
-  "loding_fail":{
-    "message":"取得失敗"
+  "loding_fail": {
+    "message": "取得失敗"
   },
-  "loding_exception":{
-    "message":"取得中に例外発生"
+  "loding_exception": {
+    "message": "取得中に例外発生"
   },
-  "loding_success":{
-    "message":"取得成功"
+  "loding_success": {
+    "message": "取得成功"
   },
-  "create_table":{
-    "message":"表を作成中..."
+  "create_table": {
+    "message": "表を作成中..."
   },
-  "create_graph":{
-    "message":"グラフを作成中..."
+  "create_graph": {
+    "message": "グラフを作成中..."
   },
-  "course_list":{
-    "message":"コース一覧"
+  "course_list": {
+    "message": "コース一覧"
   },
-  "forum_list":{
-    "message":"ディスカッション一覧"
+  "forum_list": {
+    "message": "ディスカッション一覧"
   },
-  "id":{
-    "message":"ID="
+  "id": {
+    "message": "ID="
   },
-  "discussion_data":{
-    "message":"ディスカッションデータ"
+  "discussion_data": {
+    "message": "ディスカッションデータ"
   },
-  "count_finish":{
-    "message":"計測完了"
+  "count_finish": {
+    "message": "計測完了"
   },
-  "no_charts":{
-    "message":"グラフ表示できません"
+  "no_charts": {
+    "message": "グラフ表示できません"
   },
-  "last_update":{
-    "message":"データ更新時刻:"
+  "last_update": {
+    "message": "データ更新時刻:"
   },
-  "start_day":{
-    "message":"ディスカッション 開始日時:"
+  "start_day": {
+    "message": "ディスカッション 開始日時:"
   },
-  "end_day":{
-    "message":"終了日時:"
+  "end_day": {
+    "message": "終了日時:"
   },
-  "UNKNOWN":{
-    "message":"不明"
+  "UNKNOWN": {
+    "message": "不明"
   },
-  "force_reload":{
-    "message":"強制更新"
+  "force_reload": {
+    "message": "強制更新"
   },
-  "data_download":{
-    "message":"データダウンロード"
+  "data_download": {
+    "message": "データダウンロード"
   },
-  "number_column":{
-    "message":"順位"
+  "number_column": {
+    "message": "順位"
   },
-  "tips_number_column":{
-    "message":"発言数の多い順での順位"
+  "tips_number_column": {
+    "message": "発言数の多い順での順位"
   },
-  "name_column":{
-    "message":"名前"
+  "name_column": {
+    "message": "名前"
   },
-  "tips_name_column":{
-    "message":"一番最初の発言時の名前"
+  "tips_name_column": {
+    "message": "一番最初の発言時の名前"
   },
-  "count_column":{
-    "message":"発言数"
+  "count_column": {
+    "message": "発言数"
   },
-  "tips_posted_without_deleted":{
-    "message":"削除と自己返信を除いた発言数"
+  "tips_posted_without_deleted": {
+    "message": "削除と自己返信を除いた発言数"
   },
-  "week_column":{
-    "message":"週"
+  "week_column": {
+    "message": "週"
   },
-  "tips_week_column":{
-    "message":"週ごとの発言数"
+  "tips_week_column": {
+    "message": "週ごとの発言数"
   },
-  "deleted_column":{
-    "message":"削除数"
+  "deleted_column": {
+    "message": "削除数"
   },
-  "tips_deleted_column":{
-    "message":"削除した発言数"
+  "tips_deleted_column": {
+    "message": "削除した発言数"
   },
-  "ownreply_column":{
-    "message":"自己返信数"
+  "ownreply_column": {
+    "message": "自己返信数"
   },
-  "tips_ownreply_column":{
-    "message":"自分自身の発言に対する返信数"
+  "tips_ownreply_column": {
+    "message": "自分自身の発言に対する返信数"
   },
-  "reply_column":{
-    "message":"返信数"
+  "reply_column": {
+    "message": "返信数"
   },
-  "tips_reply_without_own":{
-    "message":"他人に返信した数"
+  "tips_reply_without_own": {
+    "message": "他人に返信した数"
   },
-  "reply_ratio_column":{
-    "message":"返信比率"
+  "reply_ratio_column": {
+    "message": "返信比率"
   },
-  "tips_retio_of_reply_by_posted":{
-    "message":"発言数に占める返信数の割合"
+  "tips_retio_of_reply_by_posted": {
+    "message": "発言数に占める返信数の割合"
   },
-  "replied_column":{
-    "message":"被返信数"
+  "replied_column": {
+    "message": "被返信数"
   },
-  "tips_replied_without_ownreply":{
-    "message":"他人から返信された数"
+  "tips_replied_without_ownreply": {
+    "message": "他人から返信された数"
   },
-  "replied_ratio_column":{
-    "message":"被返信比率"
+  "replied_ratio_column": {
+    "message": "被返信比率"
   },
-  "tips_ratio_of_replied_by_posted":{
-    "message":"発言数に対する被返信数の割合"
+  "tips_ratio_of_replied_by_posted": {
+    "message": "発言数に対する被返信数の割合"
   },
-  "option_list":{
-    "message":"オプション"
+  "option_list": {
+    "message": "オプション"
   },
-  "special_option_list":{
-    "message":"特殊オプション"
+  "special_option_list": {
+    "message": "特殊オプション"
   },
-  "experimental_enable":{
-    "message":"実験的な機能を有効にする"
+  "experimental_enable": {
+    "message": "実験的な機能を有効にする"
   },
-  "count_button_enable":{
-    "message":"コースの画面で「カウント」ボタンを表示する"
+  "count_button_enable": {
+    "message": "コースの画面で「カウント」ボタンを表示する"
   },
-  "count_button_enable_tooltip":{
-    "message":"コースの画面に「カウント」ボタンが表示されます。\n古い機能です。"
+  "count_button_enable_tooltip": {
+    "message": "コースの画面に「カウント」ボタンが表示されます。\n古い機能です。"
   },
-  "coursename_rectriction":{
-    "message":"コース名を制限し短くする"
+  "coursename_rectriction": {
+    "message": "コース名を制限し短くする"
   },
-  "coursename_rectriction_tooltip":{
-    "message":"コース名から「大学院」などを取り短く表示します。"
+  "coursename_rectriction_tooltip": {
+    "message": "コース名から「大学院」などを取り短く表示します。"
   },
-  "experimental_option_list":{
-    "message":"実験的オプション"
+  "experimental_option_list": {
+    "message": "実験的オプション"
   },
-  "display_popup_menu":{
-    "message":"実験用Popupメニュー表示"
+  "display_popup_menu": {
+    "message": "実験用Popupメニュー表示"
   },
-  "popup_wait_for_mac":{
-    "message":"Popup待ち時間(Macのみ有効)"
+  "popup_wait_for_mac": {
+    "message": "Popup待ち時間(Macのみ有効)"
   },
-  "millisecond":{
-    "message":"ms"
+  "millisecond": {
+    "message": "ms"
   },
-  "downloadable":{
-    "message":"映像ダウンロードを可能にする"
+  "downloadable": {
+    "message": "映像ダウンロードを可能にする"
   },
-  "downloadable_tooltip":{
-    "message":"視聴画面で映像のダウンロードができるようになります。"
+  "downloadable_tooltip": {
+    "message": "視聴画面で映像のダウンロードができるようになります。"
   },
-  "display_telop":{
-    "message":"視聴認証情報表示"
+  "display_telop": {
+    "message": "視聴認証情報表示"
   },
-  "display_telop_tooltip":{
-    "message":"視聴画面で視聴認証の情報を表示します。"
+  "display_telop_tooltip": {
+    "message": "視聴画面で視聴認証の情報を表示します。"
   },
-  "auth_time":{
-    "message":"認証時刻"
+  "auth_time": {
+    "message": "認証時刻"
   },
-  "license":{
-    "message":"ライセンス"
+  "license": {
+    "message": "ライセンス"
   },
-  "license_user":{
-    "message":"ユーザ"
+  "license_user": {
+    "message": "ユーザ"
   },
-  "license_status":{
-    "message":"ライセンス状態"
+  "license_status": {
+    "message": "ライセンス状態"
   },
-  "license_MSG_UNKNOWN":{
-    "message":"不明"
+  "license_MSG_UNKNOWN": {
+    "message": "不明"
   },
-  "license_MSG_FREE_TRIAL":{
-    "message":"無料試用"
+  "license_MSG_FREE_TRIAL": {
+    "message": "無料試用"
   },
-  "license_MSG_FREE_TRIAL_EXPIRED":{
-    "message":"無料試用(期限切れ)"
+  "license_MSG_FREE_TRIAL_EXPIRED": {
+    "message": "無料試用(期限切れ)"
   },
-  "license_MSG_FULL":{
-    "message":"フルライセンス"
+  "license_MSG_FULL": {
+    "message": "フルライセンス"
   },
-  "license_MSG_NONE":{
-    "message":"ライセンスなし"
+  "license_MSG_NONE": {
+    "message": "ライセンスなし"
   },
-  "license_expire":{
-    "message":"ライセンス期限"
+  "license_expire": {
+    "message": "ライセンス期限"
   },
   "check_license_by_chrome_web_store": {
-    "message":"Chromeウェブストアのライセンス情報を確認する"
+    "message": "Chromeウェブストアのライセンス情報を確認する"
   },
   "check_license_by_chrome_web_store_tooltip": {
-    "message":"Chromeウェブストアでのライセンス情報を確認します。\nメールアドレスの表示のために、追加でメールアドレス取得の権限が必要になります。"
+    "message": "Chromeウェブストアでのライセンス情報を確認します。\nメールアドレスの表示のために、追加でメールアドレス取得の権限が必要になります。"
   },
   "trial_priod_days": {
-    "message":"試用期間"
+    "message": "試用期間"
   },
   "trial_priod_days_tooltip": {
-    "message":"テスト用"
+    "message": "テスト用"
   },
   "days": {
-    "message":"日"
+    "message": "日"
   },
   "forum_memory_cache_size": {
-    "message":"ディスカッションメモリキャッシュ個数"
+    "message": "ディスカッションメモリキャッシュ個数"
   },
   "save_content_in_cache": {
-    "message":"キャッシュにコンテンツ本文も保存する"
+    "message": "キャッシュにコンテンツ本文も保存する"
   },
   "save_content_in_cache_tooltip": {
-    "message":"データ分析向けにダウンロードするためにコンテンツ本文もキャッシュに保存します。\nメモリー利用量が増えるので注意してください。"
+    "message": "データ分析向けにダウンロードするためにコンテンツ本文もキャッシュに保存します。\nメモリー利用量が増えるので注意してください。"
   },
-  "api_key":{
-    "message":"API Key:"
+  "api_key": {
+    "message": "API Key:"
   },
-  "api_key_tooltip":{
-    "message":"Google Cloud Vision APIのAPI Keyを入力してください。"
+  "api_key_tooltip": {
+    "message": "Google Cloud Vision APIのAPI Keyを入力してください。"
   },
-  "support_airsearch_beta":{
-    "message":"AirSearch Betaの視聴画面で「画像PDF化資料」作成をサポート"
+  "support_airsearch_beta": {
+    "message": "AirSearch Betaの視聴画面で「画像PDF化資料」作成をサポート"
   },
-  "support_airsearch_beta_tooltip":{
-    "message":"AirSearch Betaでも「画像PDF化資料」が作成できるようになります。\n追加で全てのサイトのアクセス権限が必要になります。"
+  "support_airsearch_beta_tooltip": {
+    "message": "AirSearch Betaでも「画像PDF化資料」が作成できるようになります。\n追加で全てのサイトのアクセス権限が必要になります。"
   },
-  "cannot_get_image_data":{
-    "message":"スライドイメージのデータを取得できませんでした。"
+  "cannot_get_image_data": {
+    "message": "スライドイメージのデータを取得できませんでした。"
   },
-  "image_PDF_document":{
-    "message":"画像PDF化資料"
+  "image_PDF_document": {
+    "message": "画像PDF化資料"
   },
-  "too_small_window":{
-    "message":"警告:スライドを取得にはウィンドウが小さすぎるかもしれません"
+  "too_small_window": {
+    "message": "警告:スライドを取得にはウィンドウが小さすぎるかもしれません"
   },
-  "image_data_could_not_be_acquired":{
-    "message":"スライド画像データが取得できませんでした。"
+  "image_data_could_not_be_acquired": {
+    "message": "スライド画像データが取得できませんでした。"
   },
-  "text_detection_error":{
-    "message":"API Keyでテキスト抽出を行いましたが失敗しました。"
+  "text_detection_error": {
+    "message": "API Keyでテキスト抽出を行いましたが失敗しました。"
   },
-  "Doing_data_migration":{
-    "message":"オプションデータ移行中"
+  "Doing_data_migration": {
+    "message": "オプションデータ移行中"
   },
-  "Data_migration_done":{
-    "message":"オプションデータ移行完了"
+  "Data_migration_done": {
+    "message": "オプションデータ移行完了"
   },
-  "No_data_migration":{
-    "message":"オプションデータ移行は必要ありませんでした。"
+  "No_data_migration": {
+    "message": "オプションデータ移行は必要ありませんでした。"
   },
-  "Ver0_9":{
-    "message":" "
+  "Ver0_9": {
+    "message": " "
   },
-  "Option_data_migration":{
-    "message":"このページでは自動的にオプションデータのマイグレーションを行います。"
+  "Ver0_10": {
+    "message": "バージョン0.10にて、2023年のAirCampus新デザインに対応しました。"
+  },
+  "Option_data_migration": {
+    "message": "このページでは自動的にオプションデータのマイグレーションを行います。"
   }
 }

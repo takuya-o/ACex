@@ -1,42 +1,49 @@
 {
   "compilerOptions": {
-      "module": "ES2020",
-      // TypeScript 5.5で無くなる "suppressImplicitAnyIndexErrors": true,
-      "moduleResolution": "node",
-      "allowSyntheticDefaultImports": true,
-      "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    //"tsBuildInfoFile": "./tsconfig.tsbuildinfo", //./.tsbuildinfo defaultは.tsbuildinfo
+    "target": "ESNext",  //ES3
+    "lib": ["ES5", "ES2015", "ESNext", "DOM"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    "module": "ESNext", //CommonJS if target is ES3 or ES5, ES6/ES2015
+    // TypeScript 5.5で無くなる "suppressImplicitAnyIndexErrors": true,
+    "moduleResolution": "node",  //Classic if module is AMD, UMD, System or ES6/ES2015, Matches if module is node16 or nodenext, Node otherwise. =default
+    "resolveJsonModule": true,                        /* Enable importing .json files. */
+    //"allowJs": false, // .jsもコンパイル
+    //"checkJs": false,
+    "sourceMap": true,
+    // "outDir": "./src",  // same as .ts file
+    //"removeComments": false,  //true CI/CD時にコマンドオプションで消す
+    "newLine": "LF", //or crlf Platform specific.
+    //"preserveConstEnums": true, //true if isolatedModules, false otherwise.
 
-      "strict": true,
-      "noImplicitAny": true,
-      "noImplicitThis":true,
-      "alwaysStrict":true,
-      "strictBindCallApply":true,
-      "strictNullChecks":true,
-      "strictFunctionTypes":true,
-      "strictPropertyInitialization":true,
+    "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
+    "allowSyntheticDefaultImports": true, //true if esModuleInterop is enabled, module is system, or moduleResolution is bundler, false otherwise.
+    "esModuleInterop": true,  //true if module is node16 or nodenext, false otherwise.
+    //"forceConsistentCasingInFileNames": true,
 
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noImplicitReturns": true,
-      "noFallthroughCasesInSwitch": true,
-      "noUncheckedIndexedAccess": true,
-
-      "removeComments": false,  // CI/CD時にコマンドオプションで消す
-      "preserveConstEnums": true,
-      "newLine": "LF",
-      "sourceMap": true,
-      "outDir": "./src",
-      "allowJs": false, //.jsもコンパイル
-      "checkJs": false,
-      "incremental": true,
-      //"tsBuildInfoFile": "./tsconfig.tsbuildinfo", //defaultは.tsbuildinfo
-      "target": "ES2020",
-      "esModuleInterop": true,
+    "strict": true,
+    //"noImplicitAny": true, //true if strict, false otherwise.
+    //"strictNullChecks":true, //true if strict, false otherwise.
+    //"strictFunctionTypes":true, //true if strict, false otherwise.
+    //"strictBindCallApply":true, //true if strict, false otherwise.
+    //"strictPropertyInitialization":true, //true if strict, false otherwise.
+    //"noImplicitThis":true, //true if strict, false otherwise.
+    //"alwaysStrict":true, //true if strict, false otherwise.
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    //危ないので使うのやめた "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "exclude": [
     "node_modules/",
     "src/lib/",
     ".npm/"
   ],
-  "include": ["./src/**/*"]
+  "include": ["./src/**/*"],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
 }
