@@ -38,7 +38,7 @@ class ACex {
     }
     //URL渡し用のメッセージハンドラ
     chrome.runtime.onMessage.addListener(
-      (msg: { cmd: string }, _sender: chrome.runtime.MessageSender, sendResponse: (res: string) => void) => {
+      (msg: { cmd: string }, _sender: chrome.runtime.MessageSender, sendResponse: (_res: string) => void) => {
         console.log('--- Recv ACex:', msg)
         if (msg.cmd === 'getUrl') {
           sendResponse(document.URL) //このタブのURLを返す

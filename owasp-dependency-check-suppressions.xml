@@ -1,109 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-   <suppress>
-      <notes><![CDATA[
-      file name: btoa:1.2.1
-      ]]></notes>
-      <packageUrl regex="true">^pkg:npm/btoa@.*$</packageUrl>
-      <vulnerabilityName>CWE-125: Out-of-bounds Read</vulnerabilityName>
-   </suppress>
-   <suppress>
-     <notes><![CDATA[
-     file name: just-diff-apply:3.0.0
-     ]]></notes>
-     <packageUrl regex="true">^pkg:npm/just\-diff\-apply@.*$</packageUrl>
-     <vulnerabilityName>CWE-74: Improper Neutralization of Special Elements in Output Used by a Downstream Component ('Injection')</vulnerabilityName>
-   </suppress>
-   <suppress>
-     <notes><![CDATA[
-     file name: just-diff:3.1.1
-     ]]></notes>
-     <packageUrl regex="true">^pkg:npm/just\-diff@.*$</packageUrl>
-     <vulnerabilityName>CWE-74: Improper Neutralization of Special Elements in Output Used by a Downstream Component ('Injection')</vulnerabilityName>
-   </suppress>
-   <suppress>
-     <notes><![CDATA[
-     file name: dot-prop:4.2.1
-     ]]></notes>
-     <packageUrl regex="true">^pkg:npm/dot\-prop@.*$</packageUrl>
-     <cpe>cpe:/a:dot-prop_project:dot-prop</cpe>
-   </suppress>
-   <suppress>
-     <notes><![CDATA[
-     file name: ansi-regex:2.1.1
-     ]]></notes>
-     <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-     <cve>CVE-2021-3807</cve>
-   </suppress>
-   <suppress>
-     <notes><![CDATA[
-     file name: ansi-regex:5.0.1
-     ]]></notes>
-     <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-     <vulnerabilityName>1002401</vulnerabilityName>
-   </suppress>
-   <suppress>
-     <notes><![CDATA[
-     file name: lodash:4.17.21
-     ]]></notes>
-     <packageUrl regex="true">^pkg:npm/lodash@.*$</packageUrl>
-     <cve>CVE-2021-41720</cve>
-   </suppress>
-   <suppress>
-    <notes><![CDATA[
-    file name: ansi-regex:2.1.1
-    ]]></notes>
-    <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-    <vulnerabilityName>1004946</vulnerabilityName>
-  </suppress>
   <suppress>
-    <notes><![CDATA[
-    file name: json-schema:0.2.3
-    ]]></notes>
-    <packageUrl regex="true">^pkg:npm/json\-schema@.*$</packageUrl>
-    <cve>CVE-2021-3918</cve>
+   <notes><![CDATA[
+   file name: async:2.6.4
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/async@.*$</packageUrl>
+   <vulnerabilityName>CVE-2024-39249</vulnerabilityName>
   </suppress>
   <suppress>
    <notes><![CDATA[
-   file name: json-schema:0.2.3
+   file name: async:3.2.3
    ]]></notes>
-   <packageUrl regex="true">^pkg:npm/json\-schema@.*$</packageUrl>
-   <vulnerabilityName>1006724</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: ansi-regex:3.0.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-   <vulnerabilityName>1070250</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: ansi-regex:4.1.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-   <vulnerabilityName>1070251</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: ansi-regex:3.0.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-   <cpe>cpe:/a:ansi-regex_project:ansi-regex</cpe>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: ansi-regex:3.0.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-   <vulnerabilityName>1070273</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: ansi-regex:4.1.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/ansi\-regex@.*$</packageUrl>
-   <vulnerabilityName>1070274</vulnerabilityName>
+   <packageUrl regex="true">^pkg:npm/async@.*$</packageUrl>
+   <vulnerabilityName>CVE-2024-39249</vulnerabilityName>
   </suppress>
   <suppress>
    <notes><![CDATA[
@@ -113,18 +22,18 @@
    <cve>CVE-2015-9251</cve>
   </suppress>
   <suppress>
-    <notes><![CDATA[
-    file name: jquery.js
-    ]]></notes>
-    <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
-    <cve>CVE-2019-11358</cve>
+   <notes><![CDATA[
+   file name: jquery.js
+   ]]></notes>
+   <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
+   <cve>CVE-2019-11358</cve>
   </suppress>
   <suppress>
-    <notes><![CDATA[
-    file name: jquery.js
-    ]]></notes>
-    <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
-    <cve>CVE-2020-11022</cve>
+   <notes><![CDATA[
+   file name: jquery.js
+   ]]></notes>
+   <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
+   <cve>CVE-2020-11022</cve>
   </suppress>
   <suppress>
    <notes><![CDATA[
@@ -135,163 +44,31 @@
   </suppress>
   <suppress>
    <notes><![CDATA[
-   file name: acorn:2.7.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/acorn@.*$</packageUrl>
-   <vulnerabilityName>CWE-400: Uncontrolled Resource Consumption ('Resource Exhaustion')</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jspdf:1.5.3
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/jspdf@.*$</packageUrl>
-   <vulnerabilityName>CVE-2021-23353</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jspdf:1.5.3
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/jspdf@.*$</packageUrl>
-   <vulnerabilityName>CWE-400: Uncontrolled Resource Consumption ('Resource Exhaustion')</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jspdf:1.5.3
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/jspdf@.*$</packageUrl>
-   <vulnerabilityName>1068208</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jspdf:1.5.3
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/jspdf@.*$</packageUrl>
-   <vulnerabilityName>CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jspdf:1.5.3
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/jspdf@.*$</packageUrl>
-   <vulnerabilityName>1067944</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jspdf:1.5.3
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/jspdf@.*$</packageUrl>
-   <vulnerabilityName>1068099</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: xmldom:0.1.31
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/xmldom@.*$</packageUrl>
-   <cpe>cpe:/a:xmldom_project:xmldom</cpe>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: xmldom:0.1.31
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/xmldom@.*$</packageUrl>
-   <cve>CVE-2021-32796</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: xmldom:0.1.31
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/xmldom@.*$</packageUrl>
-   <cve>CVE-2021-21366</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: xmldom:0.1.31
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/xmldom@.*$</packageUrl>
-   <vulnerabilityName>1067480</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: xmldom:0.1.31
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/xmldom@.*$</packageUrl>
-   <vulnerabilityName>1070127</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: opener:1.5.2
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/opener@.*$</packageUrl>
-   <cpe>cpe:/a:opener_project:opener</cpe>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: http-cache-semantics:^4.1.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/http\-cache\-semantics@.*$</packageUrl>
-   <cpe>cpe:/a:http-cache-semantics_project:http-cache-semantics</cpe>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
    file name: jquery.js
    ]]></notes>
    <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
-   <vulnerabilityName>jQuery 1.x and 2.x are End-of-Life and no longer receiving security updates</vulnerabilityName>
+   <vulnerabilityName>jquery issue: 162</vulnerabilityName>
+  </suppress>
+
+  <suppress>
+   <notes><![CDATA[
+   file name: @eslint/plugin-kit:0.2.0
+   ]]></notes>
+   <packageUrl regex="true">^pkg:npm/%40eslint%2Fplugin-kit@.*$</packageUrl>
+   <vulnerabilityName>GHSA-7q7g-4xm8-89cq</vulnerabilityName>
   </suppress>
   <suppress>
    <notes><![CDATA[
-   file name: word-wrap:1.2.3
+   file name: cross-spawn:7.0.3
    ]]></notes>
-   <packageUrl regex="true">^pkg:npm/word\-wrap@.*$</packageUrl>
-   <vulnerabilityName>CVE-2023-26115</vulnerabilityName>
+   <packageUrl regex="true">^pkg:npm/cross-spawn@.*$</packageUrl>
+   <vulnerabilityName>CVE-2024-21538</vulnerabilityName>
   </suppress>
   <suppress>
    <notes><![CDATA[
-   file name: npm:7.24.2
+   file name: nanoid:3.3.7
    ]]></notes>
-   <packageUrl regex="true">^pkg:npm/npm@.*$</packageUrl>
-   <vulnerabilityName>CVE-2021-43616</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: npm:7.24.2
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/npm@.*$</packageUrl>
-   <vulnerabilityName>CVE-2022-29244</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: qs:~6.5.2
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/qs@.*$</packageUrl>
-   <cve>CVE-2022-24999</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: request:2.88.2
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/request@.*$</packageUrl>
-   <vulnerabilityName>CVE-2023-28155</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: tough-cookie:2.5.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/tough\-cookie@.*$</packageUrl>
-   <vulnerabilityName>CVE-2023-26136</vulnerabilityName>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: got:9.6.0
-   ]]></notes>
-   <packageUrl regex="true">^pkg:npm/got@.*$</packageUrl>
-   <cve>CVE-2022-33987</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jquery.js
-   ]]></notes>
-   <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
-   <cve>CVE-2020-23064</cve>
+   <packageUrl regex="true">^pkg:npm/nanoid@.*$</packageUrl>
+   <vulnerabilityName>CVE-2024-55565</vulnerabilityName>
   </suppress>
 </suppressions>

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 
@@ -131,7 +130,6 @@ class PlayerExstender {
     })
   }
 
-  // eslint-disable-next-line max-lines-per-function
   private static getCapture(
     imgs: NodeListOf<HTMLImageElement>, //画像一覧
     w: number,
@@ -179,14 +177,6 @@ class PlayerExstender {
     }
   }
 
-  constructor() {
-    console.log('--- Start PlayerExtender ---')
-    // tslint:disable-next-line: no-unused-expression
-    new MakeSlide(PlayerExstender.injectMakeButton)
-    PlayerExstender.sharpner()
-    PlayerExstender.setDownloadable()
-  }
-
   // eslint-disable-next-line max-lines-per-function
   private static getCaptureCutImage(
     imgs: NodeListOf<HTMLImageElement>,
@@ -223,7 +213,7 @@ class PlayerExstender {
       //最後のスライド
       console.log('Last slide', slideNumber)
       const title = (document.querySelector('meta[property="og:title"]') as HTMLMetaElement).content.replace(
-        /配信は.*分から/m,
+        /配信は.*(時|分)から/m,
         '',
       )
       //(document.querySelector("#content h5") as HTMLHeadElement).innerText
@@ -254,6 +244,14 @@ class PlayerExstender {
       //次のCapture まだスライドがある
       PlayerExstender.getCapture(imgs, w, h, nx, ny, tmpImg, ctx, canvas, outRoot, slideNumber + 1)
     }
+  }
+
+  constructor() {
+    console.log('--- Start PlayerExtender ---')
+    // tslint:disable-next-line: no-unused-expression
+    new MakeSlide(PlayerExstender.injectMakeButton)
+    PlayerExstender.sharpner()
+    PlayerExstender.setDownloadable()
   }
 }
 // tslint:disable-next-line: no-unused-expression

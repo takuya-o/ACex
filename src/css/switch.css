@@ -34,9 +34,8 @@
   transition: margin 0.3s ease-in 0s;
 }
 
-/* stylelint-disable-next-line selector-pseudo-element-colon-notation */
-.onoffswitch-inner:before,
-.onoffswitch-inner:after {
+.onoffswitch-inner::before,
+.onoffswitch-inner::after {
   float: left;
   width: 50%;
   height: 13px;
@@ -53,16 +52,14 @@
   box-sizing: border-box;
 }
 
-/* stylelint-disable-next-line selector-pseudo-element-colon-notation */
-.onoffswitch-inner:after {
+.onoffswitch-inner::after {
   content: 'ON';
   padding-left: 10px;
   background-color: #2fccff;
   color: #fff;
 }
 
-/* stylelint-disable-next-line selector-pseudo-element-colon-notation */
-.onoffswitch-inner:before {
+.onoffswitch-inner::before {
   content: 'OFF';
   padding-right: 10px;
   background-color: #eee;

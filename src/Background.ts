@@ -410,7 +410,7 @@ class Background {
       requests: [
         {
           image: { content: base64 },
-          features: [{ type: 'DOCUMENT_TEXT_DETECTION', maxResults: 30 }],
+          features: [{ type: 'DOCUMENT_TEXT_DETECTION' }],
         },
       ],
     }
@@ -902,7 +902,6 @@ class Background {
   private getCacheAuthorsFormatVer() {
     return 2
   }
-  // eslint-disable-next-line max-lines-per-function
   private setForumCache(forum: Forum) {
     this.forums.forum[forum.fid] = forum
     let diff = Object.keys(this.forums.forum).length - this.getForumMemoryCacheSize()

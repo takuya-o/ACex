@@ -388,7 +388,7 @@ class CountResult {
           //その人で初めて出てきた週 .d[]が無いとundefinedで数値でないのでfalse
           data[uuidIndex]!.d[week] = 1
         } else {
-          data[uuidIndex]!.d[week]++
+          data[uuidIndex]!.d[week]!++
         }
       }
     }
@@ -457,7 +457,7 @@ class CountResult {
           counter[uuid] = 0
           //最初に見つかった名前を利用する→最初にキャッシュされた名前を利用する
         }
-        counter[uuid]++ //発言数カウント
+        counter[uuid]!++ //発言数カウント
         const identifier = i //記事番号
         postuser[identifier] = uuid //誰のポストか覚えておく
         const relation = entry.relation //参照先
@@ -471,15 +471,15 @@ class CountResult {
           }
           if (postuser[relation] !== uuid) {
             //返信先が自分以外だったら参照数と相手の記事の被参照数カウントアップ
-            reply[uuid]++
-            replied[postuser[relation]!]++
+            reply[uuid]!++
+            replied[postuser[relation]!]!++
           } else {
             //自分での返信だった
-            counter[uuid]-- //発言数カウント訂正
+            counter[uuid]!-- //発言数カウント訂正
             if (isNaN(ownReply[uuid]!)) {
               ownReply[uuid] = 0 //初期化が大切
             }
-            ownReply[uuid]++
+            ownReply[uuid]!++
           }
         }
       } else {
@@ -487,7 +487,7 @@ class CountResult {
         if (isNaN(deleted[uuid]!)) {
           deleted[uuid] = 0
         }
-        deleted[uuid]++
+        deleted[uuid]!++
       }
     } // forum.entryでのforループ
 

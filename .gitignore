@@ -1,6 +1,7 @@
 # -*- coding: utf-8-unix -*-
 *~
 *.bak
+/bak/
 *.pem
 *.crx
 *.zip
@@ -18,6 +19,7 @@
 /coverage/
 /.nyc_output/
 /.tsbuildinfo
+/tsconfig.tsbuildinfo
 dump.lsif
 mocha-report.html
 .env

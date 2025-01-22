@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 // -*- coding: utf-8-unix -*-
 /// <reference types="chrome" />
 
@@ -190,7 +189,7 @@ class CourceList {
       } else {
         list.style.display = 'none'
       }
-    } catch (e) {
+    } catch (_e) {
       //まだ無かった
       console.log('--- Create CourseItem:' + courseID)
       dataLayer.push({ event: 'course-' + courseID })

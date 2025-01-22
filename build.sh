@@ -15,16 +15,16 @@ if [ -f src.pem ];then
 fi
 
 #rm -f src/lib/*.js
-rm -f src/lib/*.map
+rm -f src/lib/*.map src/*.js src/*.js.map src/out
 
 if [ -x ./node_modules/.bin/npm ];then
-  ./node_modules/.bin/npm install $NPM_OPT
+  ./node_modules/.bin/npm ci $NPM_OPT
 else
-  npm install $NPM_OPT
+  npm ci $NPM_OPT
 fi
-./node_modules/.bin/npm update $NPM_OPT || true
-./node_modules/.bin/npm audit fix $NPM_OPT || true # workaround
-./node_modules/.bin/npm fund $NPM_OPT
+#./node_modules/.bin/npm update $NPM_OPT || true
+#./node_modules/.bin/npm audit fix $NPM_OPT || true # workaround
+#./node_modules/.bin/npm fund $NPM_OPT
 #cp -p node_modules/jquery/dist/jquery.min.* src/lib/
 [ -f node_modules/jspdf/dist/jspdf.es.min.js ] && cp -p node_modules/jspdf/dist/jspdf.es.min.js* src/lib/
 # rm -f tsconfig.tsbuildinfo # tsc --incremental false があれば消す必要は無い
