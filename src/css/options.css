@@ -18,6 +18,7 @@
   text-align: right;
 }
 
+/*
 #count_button_option {
 }
 
@@ -54,27 +55,6 @@
 .MSG_display_telop {
 }
 
-.MSG_license {
-}
-
-.MSG_license_user {
-}
-
-.MSG_license_status {
-}
-
-.MSG_license_expire {
-}
-
-.MSG_check_license_by_chrome_web_store {
-}
-
-.MSG_trial_priod_days {
-}
-
-.MSG_days {
-}
-
 .MSG_count_button_enable {
 }
 
@@ -83,6 +63,7 @@
 
 .MSG_forum_memory_cache_size {
 }
+*/
 
 footer {
   height: 32px;

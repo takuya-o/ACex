@@ -79,16 +79,16 @@ class CountGraph {
     this.createGraph(chartData, dataTable)
   }
 
-  private checkNaN(n: number) {
+  private checkNaN(n: number | undefined): number {
     // numberが、NaNなら0、それ以外ならそのまま返す
-    if (isNaN(n)) {
+    if (n === undefined || isNaN(n)) {
       return 0
     }
     return n
   }
   private createGraph(chartData: ChartData, dataTable: google.visualization.DataTable) {
     const rows = new Array<Array<number>>()
-    const last = new Array(chartData.data.length)
+    const last = Array.from({ length: chartData.data.length }, () => 0)
     for (let week = chartData.minWeek; week <= chartData.maxWeek; week++) {
       const row = new Array<number>()
       row.push(week)

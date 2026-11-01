@@ -1,0 +1,49 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "Node.js & TypeScript",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:26-trixie",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
+      "packages": "git-secrets,connect-proxy,ruby-rubygems"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "stylelint.vscode-stylelint",
+        "htmlhint.vscode-htmlhint",
+        "redhat.vscode-yaml",
+        "3w36zj6.textlint"
+      ]
+    }
+  },
+  "containerEnv": {
+    "TZ": "${localEnv:TZ:JST-9}" // ホストの環境変数TZの値がnullの場合、'JST-9'を設定
+  },
+  "postCreateCommand": "./build.sh"
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "yarn install",
+
+  // Configure tool-specific properties.
+  // "customizations": {},
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
+// 鍵についてはssh-add -l で確認
+// 環境変数http_proxyや~/.gitconfigは、コンテナ作成時の値が自動的に登録されている。
+// 新しいイメージを持ってきたらコンテナ内で
+// scp -p user@example.com:.ssh/config ~/.ssh/
+// scp -p user@example.com:.ssh/id_ecdsa* ~/.ssh/
+// ssh user@172.17.0.1 cat .gnupg/user@example.com_sub.key | gnups --import -
+// 等が必要

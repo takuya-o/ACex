@@ -3,10 +3,10 @@
 発言数が成績に大きく影響しているように感じたので、AirCampusでのディスカッションの発言数をカウントするChromeブラウザ拡張機能を作りました。
 
 ## 主な機能
-* ディスカッションの発言数カウント - 参加者の発言数の推移一覧とグラフを表示します
-* ビデオダウンロード - ビデオのダウンロードができるようになります
-* 画像からのPDF資料作成 - PDF資料がない場合も画像があればPDF資料を作成します
-* 視聴認証情報の表示 - 視聴画面での認証情報を表示します
+* ディスカッションの発言数カウント - 参加者の発言数の推移一覧とグラフを表示する
+* ビデオダウンロード - ビデオのダウンロードができるようになる
+* 画像からのPDF資料作成 - PDF資料がない場合も画像があればPDF資料を作成する
+* 視聴認証情報の表示 - 視聴画面での認証情報を表示する
 
 ## インストール方法
 
@@ -14,10 +14,10 @@
 1. Chromeウェブストアからインストールする。([URLは限定公開](https://chrome.google.com/webstore/detail/aircampus%E3%83%9D%E3%83%BC%E3%82%BF%E3%83%ABextender/iphdoahjdhlkfkjdfdjcidmgadpaelno))
 
 ### 開発版のインストール
-1. ソースを展開します
-2. Chromeブラウザの「拡張機能」タブを開きます
-3. デベロッパーモードのチェックボックスを選択してデベロッパーモードにします
-4. 「パッケージ化されていない拡張機能を読み込む」ボタンで./src/を開きます
+1. ソースを展開する
+2. Chromeブラウザの「拡張機能」タブを開く
+3. デベロッパーモードのチェックボックスを選択してデベロッパーモードにする
+4. 「パッケージ化されていない拡張機能を読み込む」ボタンで./src/を開く
 
 ※開発版では自動更新機能をまだ使っていないので、バージョンアップの都度インストールもしくは更新が必要です。
 
@@ -25,18 +25,18 @@
 ## 使い方
 
 ### AirCampusポータルの場合
-1. ChromeブラウザーでAirCampusポータルからカウントしたいディスカッションを開きます
-2. ツールバーのこの拡張機能のアイコンに赤く「count」とバッチがつきます
-3. アイコンをクリックすると、別タブに投稿数一覧の表が開きます
+1. ChromeブラウザーでAirCampusポータルからカウントしたいディスカッションを開く
+2. ツールバーのこの拡張機能のアイコンに赤く「count」とバッチがつく
+3. アイコンをクリックすると、別タブに投稿数一覧の表が開く
 
 ※オプション設定により、ディスカッションのページの一番上の「カウント」ボタンからも投稿数の一覧を開くことができますが、画面が崩れるので、将来的には「カウント」ボタンは無くす予定です。
 
 ### AirCampus for Webの場合
 注: AirCampus for Webは、BBTでのサービスが2020年1月15日に終了しています。
-1. ChromeブラウザーでAirCampus for Webを開くと、ツールバーのこの拡張機能アイコンが有効になります
-2. アイコンをクリックすると「カウントコース選択」Course Listタブが開きます
-4. 各コースがボタンになっているので、発言数をカウントしたいフォーラムまでボタンをクリックしてドリルダウンします
-5. 該当のディスカッションのボタンを押すと、別タブに投稿数一覧の表が開きます
+1. ChromeブラウザーでAirCampus for Webを開くと、ツールバーのこの拡張機能アイコンが有効になる
+2. アイコンをクリックすると「カウントコース選択」Course Listタブが開く
+4. 各コースがボタンになっているので、発言数をカウントしたいフォーラムまでボタンをクリックしてドリルダウンする
+5. 該当のディスカッションのボタンを押すと、別タブに投稿数一覧の表が開く
 
 ※終了したディスカッションは、「開講中のみ」ボタンをOffにすることにより表示されるようになります。
 
@@ -48,8 +48,8 @@
 ※画像PDF作成時にOCRによりテキスト埋め込みを行う場合には、[Google Cloud Vision API](https://cloud.google.com/vision)のAPI Keyを取得してオプション画面で設定する必要があります。
 
 #### Google Cloud Vision APIでのAPI Key取得方法
-1. まず、APIを有効にする必要があります。「[クイックスタート: Vision API のセットアップ](https://cloud.google.com/vision/docs/setup#api)」の「APIを有効にする」まで行います
-2. 「[API キーを使用して認証する](https://cloud.google.com/docs/authentication/api-keys)」を参照して、APIキーを作成します。APIキーで「Cloud Vision API」を選択することを忘れないでください
+1. まず、APIを有効にする必要がある。「[クイックスタート: Vision API のセットアップ](https://cloud.google.com/vision/docs/setup#api)」の「APIを有効にする」まで行う
+2. 「[API キーを使用して認証する](https://cloud.google.com/docs/authentication/api-keys)」を参照して、APIキーを作成する。APIキーで「Cloud Vision API」を選択することを忘れないでください
 
 # 開発
 
@@ -65,13 +65,13 @@
 * 対応済み ~~削除された発言除外~~
 * 発言中のURL抽出
 * コースすべてのフォーラムなど複数のフォーラムの合計値の算出
-* テスト中→廃止予定:Chromeウェブストアでのライセンス管理
+* 廃止:Chromeウェブストアでのライセンス管理
 * 対応済み ~~キャッシュによる高速化~~ from V0.0.8.0
 * キャッシュを利用した更新部分のみの取得による高速化
 * AirSearch beta(2020/12)対応
   * 認証情報表示
-  * ~~ビデオダウンロード~~
-  * ~~画像PDF作成~~
+  * 対応済み ~~ビデオダウンロード~~
+  * 対応済み ~~画像PDF作成~~
 
 ## ビルド方法
 
@@ -148,9 +148,9 @@ GitLabのCI変数に以下を追加して、CPU使用量と容量増えること
 ∵ GitLabのDefaultだと圧縮がものすごく遅く最近の通信速度は早いので。
 
 ## ソース管理
-* git-flowでブランチ管理しています
-* 主な開発や課題管理はプライベートのGitLabで行っています
-* [GitHub](https://github.com/takuya-o/ACex)は泥臭いものを削った公開用です
+* git-flowでブランチ管理している
+* 主な開発や課題管理はプライベートのGitLabで行っている
+* [GitHub](https://github.com/takuya-o/ACex)は泥臭いものを削った公開用である
 
 
 # chromeウェブストアの概要文
@@ -199,7 +199,6 @@ Refactoring some features.
 ### Permissions
 activeTab - Used for switching and managing browser tabs.
 storage, unlimitedStorage - Used to save option setting values and data cache.
-identity, identity.email - Used for license management.
 <all_urls> - For taking slide images by screenshot. (Optional)
 
 ## 日本語版
@@ -212,7 +211,7 @@ identity, identity.email - Used for license management.
 - 各フォローラムの発言数カウント・グラフ化する
 - 視聴画面で講義映像をダウンロードする
 - AirSearchの画像からPDF資料を作成する
-  さらにGoogle VisionのAPI Keyを利用すれば、PDF資料にOCRによるテキストも埋め込むことができます
+  さらにGoogle VisionのAPI Keyを利用すれば、PDF資料にOCRによるテキストも埋め込むことができる
 
 ソースは、GitHubで公開しています。
 AirCampusの仕様変更により使えなくなってしまうことがあるかもしれません。
@@ -249,5 +248,3 @@ Version 0.3
 activeTab - ブラウザタブの切替・管理のために利用します。
 storage, unlimitedStorage - オプションの設定値やデータのキャッシュを保存するために利用します。
 <all_urls> - スライド画像をスクリーンチャプタで取得するために利用します。
-identity  - ライセンス管理のためにユーザを特定するため。
-identity.email - ユーザ管理のために連絡先を確認するため。

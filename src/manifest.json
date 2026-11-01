@@ -4,7 +4,7 @@
   "name": "__MSG_ACex_name__",
   "description": "__MSG_ACex_description__",
   "author": "Takuya Ono",
-  "version": "0.10.2023.7153",
+  "version": "0.10.2026.10290",
   "minimum_chrome_version": "88",
 
   "permissions": ["storage", "unlimitedStorage", "activeTab"],
@@ -22,7 +22,6 @@
     "https://www.gstatic.com/charts/loader.js",
     "https://www.google.com/uds/*"
   ],
-  "optional_permissions": ["identity", "identity.email"],
   "sandbox": {
     "pages": ["countgraph.html"]
   },

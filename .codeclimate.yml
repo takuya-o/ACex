@@ -63,3 +63,5 @@ exclude_patterns:
   - "**/*.min.css"
   - "**/__tests__/"
   - "**/__mocks__/"
+  - "**/src/lib/"
+  - "src/lib/ipag00303/ipag-ttf.js"

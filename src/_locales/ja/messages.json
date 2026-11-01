@@ -218,48 +218,6 @@
   "auth_time": {
     "message": "認証時刻"
   },
-  "license": {
-    "message": "ライセンス"
-  },
-  "license_user": {
-    "message": "ユーザ"
-  },
-  "license_status": {
-    "message": "ライセンス状態"
-  },
-  "license_MSG_UNKNOWN": {
-    "message": "不明"
-  },
-  "license_MSG_FREE_TRIAL": {
-    "message": "無料試用"
-  },
-  "license_MSG_FREE_TRIAL_EXPIRED": {
-    "message": "無料試用(期限切れ)"
-  },
-  "license_MSG_FULL": {
-    "message": "フルライセンス"
-  },
-  "license_MSG_NONE": {
-    "message": "ライセンスなし"
-  },
-  "license_expire": {
-    "message": "ライセンス期限"
-  },
-  "check_license_by_chrome_web_store": {
-    "message": "Chromeウェブストアのライセンス情報を確認する"
-  },
-  "check_license_by_chrome_web_store_tooltip": {
-    "message": "Chromeウェブストアでのライセンス情報を確認します。\nメールアドレスの表示のために、追加でメールアドレス取得の権限が必要になります。"
-  },
-  "trial_priod_days": {
-    "message": "試用期間"
-  },
-  "trial_priod_days_tooltip": {
-    "message": "テスト用"
-  },
-  "days": {
-    "message": "日"
-  },
   "forum_memory_cache_size": {
     "message": "ディスカッションメモリキャッシュ個数"
   },
@@ -288,7 +246,7 @@
     "message": "画像PDF化資料"
   },
   "too_small_window": {
-    "message": "警告:スライドを取得にはウィンドウが小さすぎるかもしれません"
+    "message": "警告:スライドを取得にはウィンドウが小さすぎるようです"
   },
   "image_data_could_not_be_acquired": {
     "message": "スライド画像データが取得できませんでした。"

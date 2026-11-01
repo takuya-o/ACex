@@ -1,1 +1,6 @@
 /* stylelint-disable selector-id-pattern */
+
+/* 影響のないスタイル */
+:root {
+	--countgraph-no-op: 0;
+}

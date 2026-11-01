@@ -37,7 +37,7 @@ export class TabHandler {
   }
   private static assignTabHandlers() {
     console.log('assignTabHandlers()')
-    chrome.tabs.onRemoved.addListener((tabId: number, _removeInfo: chrome.tabs.TabRemoveInfo) => {
+    chrome.tabs.onRemoved.addListener((tabId: number, _removeInfo: chrome.tabs.OnRemovedInfo) => {
       //閉じたときにtabListから削除する
       //TODO: 自分が閉じられるときには間に合わない = 代表ハンドラーが無くなると残りもみんな削除されなくなってしまう。Workaound:二回ボタンを押す
       console.log('--- tab closed:' + tabId)
@@ -45,7 +45,7 @@ export class TabHandler {
       // tslint:disable-next-line: trailing-comma
     })
     //タブが変更された時判定 新規に開かれたときにも呼ばれる
-    chrome.tabs.onUpdated.addListener((tabId: number, changeInfo: chrome.tabs.TabChangeInfo, _tab: chrome.tabs.Tab) => {
+    chrome.tabs.onUpdated.addListener((tabId: number, changeInfo: chrome.tabs.OnUpdatedInfo, _tab: chrome.tabs.Tab) => {
       let url = changeInfo.url
       if (url) {
         //urlが変更されたので、新しいURLがリストあるか確認

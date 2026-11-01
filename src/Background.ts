@@ -10,13 +10,10 @@ import {
   BackgroundMsg,
   BackgroundMsgCmd,
   BackgroundResponse,
-  ChromeWebStoreLicense,
   Configurations,
   FontData,
   Forum,
   Forums,
-  License,
-  LicenseStatus,
   TabId,
   TextAnnotations,
   TextDetectionResult,
@@ -34,17 +31,10 @@ class Background {
   //定数
   private static ASSIGN_TAB_HANDLER_MAX_RETRY = 10 //回
   private static ASSIGN_TAB_HANDLER_RETRY_WAIT = 200 //msまつ
-  private static FONT_FILENAME = 'lib/ipag00303/ipag.ttf'
+  //private static FONT_FILENAME = 'lib/ipag00303/ipag.ttf'
   //クラス変数
   private static tabList: { [key: string]: number } = {} //Tab管理用連想記憶配列 {}
-  private static defaultLicense: License = {
-    status: LicenseStatus.UNKNOWN, //FREE_TRIAL,FREE_TRIAL_EXPIRED, FULL, NONE
-    validDate: new Date(),
-    //不明時はメモリも確保しないcreateDate: null//store.syncだと{}になる
-    expireDate: undefined,
-  }
   //インスタンス変数
-  private license: License = Object.create(Background.defaultLicense)
   private handlerTab: number | null = null //Eventからの立ち上がりでnullのままだけど、複数登録しても害は無いのでそのまま
   private userID = 'u='
   private sessionA = 'a='
@@ -53,8 +43,6 @@ class Background {
   private popupWaitForMac = 500
   private downloadable = true
   private displayTelop = false
-  private useLicenseInfo = false
-  private trialPriodDays = 30
   private forumMemoryCacheSize = 100
   private countButton = false
   private apiKey = ''
@@ -66,15 +54,6 @@ class Background {
   constructor() {
     this.initializeClassValue()
     this.assignEventHandlers()
-    //再起動したときに呼ばれる 再起動時のみライセンスチェック
-    if (this.getLicenseValidDate()?.getMilliseconds() > Date.now()) {
-      //期限来ていない UNKNOWNでもNONEでも
-      console.log('ACex: License is Valid.')
-    } else {
-      //FULLでもFREE_TRIALでも期限来てたら許可取り直し
-      console.log('ACex: License is not Valid.')
-      this.setupAuth(true)
-    }
   }
   // オプションをマイグレーションするリリースノートページを開く
   public openReleaseNote() {
@@ -169,12 +148,6 @@ class Background {
           this.checkAndExec(msg.forum, this.setForumCache.bind(this), sendResponse)
         } else if (msg.cmd === BackgroundMsgCmd.OPEN) {
           this.checkAndExec(msg.url, this.openTab.bind(this), sendResponse)
-        } else if (msg.cmd === BackgroundMsgCmd.GET_LICENSE) {
-          sendResponse({
-            validDate: this.getLicenseValidDate(),
-            status: this.getLicenseStatus(),
-            expireDate: this.getLicenseExpireDate(),
-          })
         } else if (msg.cmd === BackgroundMsgCmd.GET_SESSION) {
           if (!this.getUserID() || !this.getSessionA()) {
             console.error(
@@ -213,16 +186,11 @@ class Background {
             popupWaitForMac: this.getPopupWaitForMac(),
             downloadable: this.isDownloadable(),
             displayTelop: this.isDisplayTelop(),
-            useLicenseInfo: this.isUseLicenseInfo(),
-            trialPriodDays: this.getTrialPriodDays(),
             forumMemoryCacheSize: this.getForumMemoryCacheSize(),
             saveContentInCache: this.isSaveContentInCache(),
             apiKey: this.getAPIkey(),
             supportAirSearchBeta: this.isSupportAirSearchBeta(),
           })
-        } else if (msg.cmd === BackgroundMsgCmd.SETUP_AUTH) {
-          this.setupAuth(true)
-          sendResponse()
         } else if (msg.cmd === BackgroundMsgCmd.TEXT_DETECTION) {
           if (!msg.text) {
             console.error('textDetection: Not find argument text', msg.text)
@@ -267,42 +235,13 @@ class Background {
       if (namespace === 'sync') {
         const changeSpecial = changes.Special
         if (changeSpecial) {
-          const special = changeSpecial.newValue
+          const special:Configurations = changeSpecial.newValue as Configurations
           console.log('--- ACex: sync.Special changed.', special, changes)
           if (special) {
             if (special.couresenameRestriction != undefined) {
               special.cRmode = special.couresenameRestriction
             }
             this.updateClassVars(special)
-          }
-        }
-        const storageChange = changes.License
-        if (storageChange) {
-          const license = storageChange.newValue
-          console.log('--- ACex: sync.Licnese changed.', license, changes)
-          if (license) {
-            if (license.status) {
-              this.license.status = license.status
-            } else {
-              this.license.status = LicenseStatus.UNKNOWN
-            }
-            if (license.validDate) {
-              this.license.validDate = new Date(license.validDate)
-            } else {
-              this.license.validDate = new Date()
-            }
-            if (license.createDate) {
-              this.license.createDate = new Date(license.createDate)
-            } else {
-              if (this.license.createDate) {
-                delete this.license.createDate
-              }
-            }
-            console.log('ACex: storage changed' + JSON.stringify(this.license))
-            // console.log('Storage key "%s" in namespace "%s" changed. ' +
-            //             'Old value was "%s", new value is "%s".',
-            //             "License", namespace,
-            //             storageChange.oldValue, storageChange.newValue);
           }
         }
       }
@@ -359,35 +298,36 @@ class Background {
   }
   //フォントデータ読み込み
   private getFontData(sendResponse: (res: FontData) => void) {
-    chrome.runtime.getPackageDirectoryEntry(directoryEntry => {
-      //V3で呼べなくなった popupからのみ呼べるらしい
-      directoryEntry.getFile(
-        Background.FONT_FILENAME,
-        { create: false },
-        fileEntry => {
-          fileEntry.file(file => {
-            const reader = new FileReader()
-            reader.onloadend = ev => {
-              const result = ev?.target?.result as string //"undefined"かも
-              const font = result.substr(result.indexOf(',') + 1)
-              console.info(font)
-              console.info('Font length:', font.length)
-              sendResponse({ data: font, length: font.length })
-            }
-            reader.onerror = ev => {
-              console.error('Font File Read Error', ev)
-              reader.abort()
-              sendResponse({ data: '', length: -1 })
-            }
-            reader.readAsDataURL(file)
-          })
-        },
-        fileError => {
-          console.error('Font File Open Error', fileError)
-          sendResponse({ data: '', length: -1 })
-        },
-      )
-    })
+    sendResponse({ data: '', length: -1 })
+    // chrome.runtime.getPackageDirectoryEntry(directoryEntry => {
+    //   //V3で呼べなくなった popupからのみ呼べるらしい
+    //   directoryEntry.getFile(
+    //     Background.FONT_FILENAME,
+    //     { create: false },
+    //     fileEntry => {
+    //       fileEntry.file(file => {
+    //         const reader = new FileReader()
+    //         reader.onloadend = ev => {
+    //           const result = ev?.target?.result as string //"undefined"かも
+    //           const font = result.substr(result.indexOf(',') + 1)
+    //           console.info(font)
+    //           console.info('Font length:', font.length)
+    //           sendResponse({ data: font, length: font.length })
+    //         }
+    //         reader.onerror = ev => {
+    //           console.error('Font File Read Error', ev)
+    //           reader.abort()
+    //           sendResponse({ data: '', length: -1 })
+    //         }
+    //         reader.readAsDataURL(file)
+    //       })
+    //     },
+    //     fileError => {
+    //       console.error('Font File Open Error', fileError)
+    //       sendResponse({ data: '', length: -1 })
+    //     },
+    //   )
+    // })
     //V3では "web_accessible_resources":["lib/ipag00303/ipag.ttf"]で読めるかも
     // async function injectHtml():Promise<Blob> {
     //   const res = await fetch(chrome.runtime.getURL(Background.FONT_FILENAME), { method: "GET" })
@@ -434,7 +374,7 @@ class Background {
             addtionalMessage = `: API key is invalid or referrer is not allowed. ${chrome.runtime.getURL('')}`
           }
           console.error(`--- Ajax NG: ${response.status} ${response.statusText}${addtionalMessage}`, response)
-          throw new Error(`fetch() Error ${response.status} ${response.statusText}`)
+          throw new Error(`fetch() Error ${response.status} ${response.statusText}${addtionalMessage}`)
         }
       })
       .then(json => {
@@ -452,7 +392,7 @@ class Background {
             if (!json.responses[0]) {
               //.fullTextAnnotation.textが無いときが有ったので戻り先で注意
             } else {
-              ans = json.responses[0].fullTextAnnotation.text //成功
+              ans = json.responses[0].fullTextAnnotation?.text ?? '' //成功
               const textAnnotations = json.responses[0].textAnnotations as TextAnnotations
               // if (textAnnotations) {
               //   ans = textAnnotations.map( (textAnnotation:any)=>{
@@ -675,19 +615,20 @@ class Background {
     chrome.storage.local.get(['tabList'], items => {
       //有ったら使う
       if (items.tabList) {
-        Background.tabList = items.tabList
+        Background.tabList = items.tabList as typeof Background.tabList
       }
     }) //順序性は無い
     this.localStorageMigration()
     chrome.storage.local.get(['ACsession'], items => {
-      if (items.ACsession) {
-        this.userID = items.ACsession.userID
-        this.sessionA = items.ACsession.sessionA
+      const acSession = items.ACsession as { userID: string; sessionA: string }|undefined
+      if (acSession) {
+        this.userID = acSession.userID
+        this.sessionA = acSession.sessionA
       }
     })
     chrome.storage.sync.get(['Special'], items => {
       if (items.Special) {
-        const special = items.Special
+        const special:Configurations = items.Special as Configurations
         if (special.couresenameRestriction != undefined) {
           special.cRmode = special.couresenameRestriction
         }
@@ -707,20 +648,18 @@ class Background {
     this.setupCache('Authors', this.getCacheAuthorsFormatVer(), newCache => {
       this.authors = newCache as Authors
     })
-
-    //ライセンス情報
-    this.initializeLicenseValue()
   }
   private setupCache(cacheName: string, cacheFormatVer: number, setCache: (newCache: Forums | Authors) => void) {
     chrome.storage.local.get([cacheName], items => {
       if (!items[cacheName]) {
         console.info(`${cacheName} Cache Create`)
       } else {
-        if (items[cacheName].cacheFormatVer !== cacheFormatVer) {
+        const item: Forums | Authors = items[cacheName] as Forums | Authors
+        if (item.cacheFormatVer !== cacheFormatVer) {
           //キャッシュのフォーマットバージョンが違ったら使わない
           console.info(`${cacheName} Cache Clear by format version`)
         } else {
-          setCache(items[cacheName]) // 良さげなので保存されていたキャッシュを使う
+          setCache(item) // 良さげなので保存されていたキャッシュを使う
         }
       }
     })
@@ -746,14 +685,6 @@ class Background {
     if (displayTelop) {
       this.displayTelop = Boolean(displayTelop)
     }
-    const useLicenseInfo = special.useLicenseInfo
-    if (useLicenseInfo) {
-      this.useLicenseInfo = Boolean(useLicenseInfo)
-    }
-    const trialPriodDays = special.trialPriodDays
-    if (trialPriodDays) {
-      this.trialPriodDays = trialPriodDays
-    }
     const forumMemoryCacheSize = special.forumMemoryCacheSize
     if (forumMemoryCacheSize) {
       this.forumMemoryCacheSize = forumMemoryCacheSize
@@ -774,36 +705,6 @@ class Background {
     }
   }
 
-  private initializeLicenseValue() {
-    chrome.storage.sync.get('License', items => {
-      if (chrome.runtime.lastError) {
-        console.log('####: storage.sync.get() ERR:', chrome.runtime.lastError)
-        return
-      }
-      if (items) {
-        const license = items.License
-        if (license) {
-          const licenseStatus = license.status
-          if (licenseStatus) {
-            this.license.status = licenseStatus
-          }
-          const licenseValidDate = license.validDate
-          if (licenseValidDate) {
-            this.license.validDate = new Date(licenseValidDate)
-          }
-          const licenseCreateDate = license.createDate
-          if (licenseCreateDate) {
-            this.license.createDate = new Date(licenseCreateDate)
-          } else {
-            if (this.license.createDate) {
-              delete this.license.createDate
-            }
-          }
-        }
-      }
-    })
-  }
-
   private setACsession(userID: string, sessionA: string) {
     this.userID = userID
     this.sessionA = sessionA
@@ -815,10 +716,6 @@ class Background {
   private getSessionA() {
     return this.sessionA
   }
-  // private setConfigLisence(license:boolean) {
-  //   this.useLicenseInfo = license
-  //   //うう、単体にしてもSpecialに書き込むときに競合する
-  // }
   // private setConfigAriSearchBeta(support:boolean) {
   //   this.supportAirSearchBeta =  support
   //   //うう、単体にしてもSpecialに書き込むときに競合する
@@ -829,8 +726,6 @@ class Background {
     this.popupWaitForMac = config.popupWaitForMac
     this.downloadable = config.downloadable
     this.displayTelop = config.displayTelop
-    this.useLicenseInfo = config.useLicenseInfo
-    this.trialPriodDays = config.trialPriodDays
     this.forumMemoryCacheSize = config.forumMemoryCacheSize
     this.countButton = config.countButton
     this.saveContentInCache = config.saveContentInCache
@@ -844,8 +739,6 @@ class Background {
         popupWaitForMac: this.popupWaitForMac,
         downloadable: this.downloadable,
         displayTelop: this.displayTelop,
-        useLicenseInfo: this.useLicenseInfo,
-        trialPriodDays: this.trialPriodDays,
         forumMemoryCacheSize: this.forumMemoryCacheSize,
         countButton: this.countButton,
         saveContentInCache: this.saveContentInCache,
@@ -868,12 +761,6 @@ class Background {
   }
   private isDisplayTelop() {
     return this.displayTelop
-  }
-  private isUseLicenseInfo() {
-    return this.useLicenseInfo
-  }
-  private getTrialPriodDays() {
-    return this.trialPriodDays
   }
   private isCountButton() {
     return this.countButton
@@ -981,218 +868,6 @@ class Background {
       name = author.name
     }
     return name
-  }
-  // private toEnum(status:string):LicenseStatus {
-  //   let lStatus:LicenseStatus = LicenseStatus.UNKNOWN
-  //   switch (status) {
-  //     case "FREE_TRIAL":
-  //       lStatus = LicenseStatus.FREE_TRIAL
-  //       break
-  //     case "FREE_TRIAL_EXPIRED":
-  //       lStatus = LicenseStatus.FREE_TRIAL_EXPIRED
-  //       break
-  //     case "FULL":
-  //       lStatus = LicenseStatus.FULL
-  //       break
-  //     case "NONE":
-  //       lStatus = LicenseStatus.NONE
-  //       break
-  //     default:
-  //       lStatus = LicenseStatus.UNKNOWN
-  //   }
-  //   return lStatus
-  // }
-  private setLicense(status: LicenseStatus, validDate: Date, createDate: Date | undefined) {
-    // let key = "UNKNOWN";
-    // for (key in ["FREE_TRIAL","FREE_TRIAL_EXPIRED","FULL","NONE","UNKNOWN"]) {
-    //   if ( status === key ) break; //サニタイズ
-    // }
-    const key = status
-    if (key !== LicenseStatus.UNKNOWN) {
-      this.license = Object.create(Background.defaultLicense) //chrome.storage.sync.remove("License");
-      this.license.status = status
-      this.license.validDate = validDate //Date
-      let storeLicense = {}
-      if (createDate) {
-        //Date or null
-        this.license.createDate = createDate
-        storeLicense = {
-          status: this.license.status,
-          validDate: (this.license.validDate as Date).getTime(),
-          createDate: (this.license.createDate as Date).getTime(),
-        }
-      } else {
-        if (this.license.createDate) {
-          delete this.license.createDate
-        }
-        storeLicense = {
-          status: this.license.status,
-          validDate: (this.license.validDate as Date).getTime(),
-        }
-      }
-      console.log('ACex: storage.sync.set(', this.license, ')')
-      chrome.storage.sync.set(
-        //Date型は保存できないみたいなので数値で保管
-        { License: storeLicense },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.log('####: storage.sync.set() ERR:', chrome.runtime.lastError)
-          }
-        },
-      )
-    }
-  }
-  private getLicenseStatus() {
-    return this.license.status
-  }
-  private getLicenseValidDate(): Date {
-    return this.license.validDate as Date
-  }
-  // private getLicenseCreateDate():Date|undefined {
-  //   if (this.license.createDate ) {
-  //     return this.license.createDate as Date;
-  //   } else {
-  //     return undefined;
-  //   }
-  // }
-  private getLicenseExpireDate(): Date | undefined {
-    if (this.license.createDate && Object.prototype.toString.call(this.license.createDate).slice(8, -1) === 'Date') {
-      //Date型だったら
-      return new Date((this.license.createDate as Date).getTime() + this.trialPriodDays * 24 * 60 * 60 * 1000)
-    } else {
-      return undefined
-    }
-  }
-  //ライセンス管理
-  // eslint-disable-next-line max-lines-per-function
-  private setupAuth(_interactive: boolean) {
-    const cwsLicenseApiURL = 'https://www.googleapis.com/chromewebstore/v1.1/userlicenses/'
-    if (this.isUseLicenseInfo()) {
-      //まだ実験的機能
-      getLicense()
-    } else {
-      console.log('ACex: not getLicense(), because disable license check.')
-    }
-    /*************************************************************************
-     * Call to license server to request the license
-     *************************************************************************/
-    function getLicense() {
-      xhrWithAuth('GET', cwsLicenseApiURL + chrome.runtime.id, true, onLicenseFetched)
-    }
-    function onLicenseFetched(error: chrome.runtime.LastError | undefined, status?: number, response?: string) {
-      console.log(error, status, response)
-      //ユーザが承認しないとerror.message="The user did not approve access."
-      //statusDiv.text("Parsing license...");
-      if (status === 200 && response !== undefined) {
-        const responseObj = JSON.parse(response) as ChromeWebStoreLicense
-        //$("#license_info").text(JSON.stringify(response, null, 2));
-        //console.log("ACex: Parsing license " + JSON.stringify(response, null, 2));
-        parseLicense(responseObj)
-      } else {
-        console.error(error) //"The user turned off browser signin"など
-        //$("#dateCreated").text("N/A");
-        //$("#licenseState").addClass("alert-danger");
-        //$("#licenseStatus").text("Error");
-        //statusDiv.html("Error reading license server.");
-      }
-    }
-    /**************************************************************************
-     * Parse the license and determine if the user should get a free trial
-     *  - if license.accessLevel ==="FULL", they've paid for the app
-     *  - if license.accessLevel ==="FREE_TRIAL" they haven't paid
-     *    - If they've used the app for less than TRIAL_PERIOD_DAYS days, free trial
-     *    - Otherwise, the free trial has expired
-     *    @param {{result: boolean, accessLevel: string, createTinme: number,
-     *     maxAgeSecs: number }} license Chromeウェブストアのライセンス情報
-     **************************************************************************/
-    function parseLicense(license: ChromeWebStoreLicense) {
-      console.log('ACex: Full License=' + license.result)
-      //let licenseStatus:string
-      let licenseStatus: LicenseStatus
-      if (license.result && license.accessLevel === 'FULL') {
-        console.log('Fully paid & properly licensed.')
-        licenseStatus = LicenseStatus.FULL //"FULL";
-        //licenseStatus = "alert-success";
-      } else if (license.result && license.accessLevel === 'FREE_TRIAL') {
-        let daysAgoLicenseIssued = Date.now() - parseInt(license.createdTime, 10)
-        daysAgoLicenseIssued = daysAgoLicenseIssued / 1000 / 60 / 60 / 24
-        if (daysAgoLicenseIssued <= bg.trialPriodDays) {
-          console.log('Free trial, still within trial period')
-          licenseStatus = LicenseStatus.FREE_TRIAL //"FREE_TRIAL";
-          //licenseStatus = "alert-info";
-        } else {
-          console.log('Free trial, trial period expired.')
-          licenseStatus = LicenseStatus.FREE_TRIAL_EXPIRED //"FREE_TRIAL_EXPIRED";
-          //licenseStatus = "alert-warning";
-        }
-      } else {
-        console.log('No license ever issued.')
-        licenseStatus = LicenseStatus.NONE ///"NONE";
-        //licenseStatus = "alert-danger";
-      }
-      //$("#dateCreated").text(moment(parseInt(license.createdTime, 10)).format("llll"));
-      //$("#licenseState").addClass(licenseStatus);
-      //$("#licenseStatus").text(licenseStatusText);
-      //statusDiv.html("&nbsp;");
-      const validDate = new Date(Date.now() + parseInt(license.maxAgeSecs, 10) * 1000)
-      console.log('ACex: Valid Date=' + validDate)
-      if (license.result) {
-        console.log('ACex: Access Level=' + license.accessLevel)
-        console.log('ACex: Create=' + new Date(parseInt(license.createdTime, 10)))
-        const createDate = new Date(parseInt(license.createdTime, 10))
-        bg.setLicense(licenseStatus, validDate, createDate)
-      } else {
-        bg.setLicense(LicenseStatus.NONE, validDate, undefined)
-      }
-    }
-    /**************************************************************************
-     * Helper method for making authenticated requests
-     * @param {string} method
-     * @param {string} url
-     * @param {boolean} interactive
-     * @param {function(?string, number, strting)} callback
-     **************************************************************************/
-    // Helper Util for making authenticated XHRs
-    function xhrWithAuth(
-      method: string,
-      url: string,
-      interactive: boolean,
-      callback: (l: chrome.runtime.LastError | undefined, status?: number, response?: string) => void,
-    ) {
-      let retry = true
-      let accessToken: string
-      getToken()
-      function getToken() {
-        //statusDiv.text("Getting auth token...");
-        console.log('Calling chrome.identity.getAuthToken', interactive)
-        chrome.identity.getAuthToken({ interactive }, token => {
-          if (chrome.runtime.lastError) {
-            callback(chrome.runtime.lastError)
-            return
-          }
-          console.log('chrome.identity.getAuthToken returned a token', token)
-          accessToken = token as string // undefined時もあるらしいけど
-          requestStart()
-        })
-      }
-      function requestStart() {
-        //statusDiv.text("Starting authenticated XHR...");
-        const xhr = new XMLHttpRequest()
-        xhr.open(method, url)
-        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken)
-        xhr.onload = requestComplete
-        xhr.send()
-      }
-      function requestComplete(this: XMLHttpRequest) {
-        //statusDiv.text("Authenticated XHR completed.");
-        if (this.status === 401 && retry) {
-          retry = false
-          chrome.identity.removeCachedAuthToken({ token: accessToken }, getToken)
-        } else {
-          callback(undefined, this.status, this.response)
-        }
-      }
-    }
   }
   // //アイコンbadgeテキスト
   // private getIconImageData(img:HTMLImageElement|null,  text:string) {

@@ -131,14 +131,14 @@ code_quality_html:
   artifacts:
     paths: [gl-code-quality-report.html]
 
-code_quality_eslint:
+code_quality_oxlint:
   image: node:alpine
   needs: [ build ]
   cache:
     <<: *default_cache
     policy: pull   #Not update
   script:
-    - npx eslint src --format gitlab
+    - npx oxlint src --format gitlab
   artifacts:
     reports:
       codequality: gl-code-quality.json

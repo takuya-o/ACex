@@ -20,15 +20,11 @@ export enum BackgroundMsgCmd {
   GET_FORUM_CACHE = 'getForumCache',
   SET_FORUM_CACHE = 'setForumCache',
   OPEN = 'open',
-  // getAPIkey:"getAPIkey",
-  GET_LICENSE = 'getLicense',
   GET_SESSION = 'getSession',
   SET_SESSION = 'setSession',
   GET_CONFIGURATIONS = 'getConfigurations',
   SET_CONFIGURATIONS = 'setConfigurations',
-  // SET_CONFIG_LICENSE:"setConfgiLicense",
   // SET_CONFIG_AIRSEARCH_BETA:"setConfigAirSearchBeta",
-  SETUP_AUTH = 'setupAuth',
   TEXT_DETECTION = 'textDetection',
   GET_FONTDATA = 'getFontData',
   REMOVE_TAB_ID = 'removeTabId',
@@ -49,25 +45,10 @@ export type BackgroundMsg = {
   message?: string //LOG
   forum?: Forum //SET_FORUM_CACHE
   config?: Configurations //SET_CONFIGURATIONS
-  // configLicense?:boolean, //SET_CONFIG_LICENSE
   // configAirSearchBeta?:boolean, //SET_CONFIG_AIRSEARCH_BETA
   tabId?: number //REMOVE_TAB
 }
 //Backgroundからのレスポンス
-export enum LicenseStatus {
-  FREE_TRIAL = 'FREE_TRIAL',
-  FREE_TRIAL_EXPIRED = 'FREE_TRIAL_EXPIRED',
-  FULL = 'FULL',
-  NONE = 'NONE',
-  UNKNOWN = 'UNKNOWN',
-}
-//type LicenseStatus = typeof LicenseStatus[keyof typeof LicenseStatus];
-export type License = {
-  status: LicenseStatus //string, //|Date,
-  validDate: Date
-  expireDate: Date | undefined
-  createDate?: Date
-}
 export type BackgroundResponseName = {
   name: string
 }
@@ -101,7 +82,6 @@ export type BackgroundResponse =
   | BackgroundResponseForum
   | BackgroundResponseSession
   | TextDetectionResult
-  | License
   | Configurations
   | FontData
   | UrlString
@@ -109,14 +89,13 @@ export type BackgroundResponse =
 
 //オプション設定
 export type Configurations = {
+  couresenameRestriction?: boolean
   experimental: boolean
   countButton: boolean
   cRmode: boolean
   popupWaitForMac: number
   downloadable: boolean
   displayTelop: boolean
-  useLicenseInfo: boolean
-  trialPriodDays: number
   forumMemoryCacheSize: number
   saveContentInCache: boolean
   apiKey: string
@@ -200,19 +179,6 @@ export type Settings = {
     time: number //537  //USE
   }>
   data: string // "C,S,0,2015/08/10 07:32:01;I,6,537;" 認証済み情報 //USE
-}
-
-//Chrome Web Store license
-//https://developer.chrome.com/webstore/one_time_payments#verifying-payment
-export type ChromeWebStoreLicense = {
-  kind: string //Identifies a Chrome Web Store license "chromewebstore#license"
-  itemId: string //Your app or extension ID
-  createdTime: string //The date that the license was created, returned as a Unix timestamp.
-  // You can use to limit functionality of a free trial to a specific period of time.
-  result: boolean //Whether the user has a license (full or trial), true or false
-  accessLevel: string //FREE_TRIAL, FULL or NONE
-  maxAgeSecs: string // The length of time the response is valid for, once that time has passed your app
-  // should query the license server again to check whether the user's access has changed.
 }
 
 //AirCampus GetCourseList プログラム/コース一覧

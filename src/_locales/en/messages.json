@@ -218,48 +218,6 @@
   "auth_time": {
     "message": "Authenticate time"
   },
-  "license": {
-    "message": "License"
-  },
-  "license_user": {
-    "message": "User"
-  },
-  "license_status": {
-    "message": "License Status"
-  },
-  "license_MSG_UNKNOWN": {
-    "message": "Unknown"
-  },
-  "license_MSG_FREE_TRIAL": {
-    "message": "Free Trial"
-  },
-  "license_MSG_FREE_TRIAL_EXPIRED": {
-    "message": "Free Trial(Expired)"
-  },
-  "license_MSG_FULL": {
-    "message": "Full License"
-  },
-  "license_MSG_NONE": {
-    "message": "None"
-  },
-  "license_expire": {
-    "message": "License Expire"
-  },
-  "check_license_by_chrome_web_store": {
-    "message": "Check License Information by Chrome Web Store"
-  },
-  "check_license_by_chrome_web_store_tooltip": {
-    "message": "Check the license information on the Chrome Web Store.\nFor display your email address, the email address authority will be requested."
-  },
-  "trial_priod_days": {
-    "message": "Trial Priod Days"
-  },
-  "trial_priod_days_tooltip": {
-    "message": "For testing."
-  },
-  "days": {
-    "message": "days"
-  },
   "forum_memory_cache_size": {
     "message": "Discussion Memory Cache Size"
   },

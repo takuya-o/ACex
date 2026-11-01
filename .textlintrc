@@ -50,7 +50,7 @@
       "ja-space-around-code": { // インラインコードの前後にスペースを入れなくてもよい
         "before": false,
         "after": false,
-      },  
+      },
     },
 
     // textlint init

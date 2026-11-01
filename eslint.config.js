@@ -1,5 +1,5 @@
 // eslint.config.js
-import recommendedConfig from '@aarongoldenthal/eslint-config-standard/recommended-esm.js';
+import recommendedConfig from '@aarongoldenthal/eslint-config-standard/recommended-esm';
 
 // create by npx elint --init
 import globals from "globals";

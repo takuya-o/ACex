@@ -14,9 +14,8 @@ import { MessageUtil } from './MessageUtil'
 
 class PlayerExstender {
   //
-  public static injectMakeButton() {
+  public static injectMakeButton(retry = PlayerExstender.RETRY_MAX) {
     // MakeSlideのコンストラクターの延長で呼ばれる
-    console.log('injectMakeButton - PlayerExtender')
     chrome.runtime.sendMessage({ cmd: BackgroundMsgCmd.GET_CONFIGURATIONS }, (config: Configurations) => {
       if (!config.supportAirSearchBeta) {
         console.log('Not support AirSearch Beta') //Optionでenableになっていない。Permissionも出ていないのでボタンを表示しない
@@ -25,9 +24,10 @@ class PlayerExstender {
         const slideCarousel = document.querySelector('div.carousel.slide') as HTMLDivElement
         //1しかないはず 無い時nullだけど下でreturnするのでキャストでその先を助ける
         if (!slideCarousel) {
-          console.error('Cannot find slide carousel.')
+          PlayerExstender.retryCheck(retry, 'slide carousel', PlayerExstender.injectMakeButton)
           return
         }
+        console.log(`Find slide carousel`, slideCarousel)
         const makeSlideButton = document.createElement('input') as HTMLInputElement //作成
         makeSlideButton.type = 'button'
         makeSlideButton.value = MessageUtil.getMessage(['image_PDF_document'])
@@ -103,13 +103,14 @@ class PlayerExstender {
   }
   private static collectionImages(imgs: NodeListOf<HTMLImageElement>) {
     //let video = document.querySelector("div.course-video")
-    const w = imgs[0]!.naturalWidth //最初のスライドのサイスが最後まで続くと仮定
+    const w = imgs[0]!.naturalWidth //最初のスライドのサイスが最後まで続くと仮定 2026/10/30 2560x1440
     const h = imgs[0]!.naturalHeight
     //chrome.tabGroups.getZoom()は使えない
     chrome.runtime.sendMessage({ cmd: BackgroundMsgCmd.GET_ZOOM_FACTOR }, (zoomFactor: number) => {
       //chrome.tabs.getCurrent()もquery()も使えないので
       const clientWidth = Math.floor(document.documentElement.clientWidth * zoomFactor) //Zoom無しのサイズ切り捨て
       const clientHeight = Math.floor(document.documentElement.clientHeight * zoomFactor)
+      //TODO: Windows11のディスプレイのスケーリング設定値はwindow.devicePixelRatio これが1.0以外の時の処理
       if (clientWidth < w || clientHeight < h) {
         console.warn(`Too small Window, need ( ${w} x ${h}) actual ( ${clientWidth} x ${clientHeight} )`)
         alert(MessageUtil.getMessage(['too_small_window']))

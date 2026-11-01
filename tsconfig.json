@@ -6,7 +6,7 @@
     "lib": ["ES5", "ES2015", "ESNext", "DOM"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     "module": "ESNext", //CommonJS if target is ES3 or ES5, ES6/ES2015
     // TypeScript 5.5で無くなる "suppressImplicitAnyIndexErrors": true,
-    "moduleResolution": "node",  //Classic if module is AMD, UMD, System or ES6/ES2015, Matches if module is node16 or nodenext, Node otherwise. =default
+    "moduleResolution": "bundler",  //Classic if module is AMD, UMD, System or ES6/ES2015, Matches if module is node16 or nodenext, Node otherwise. =default
     "resolveJsonModule": true,                        /* Enable importing .json files. */
     //"allowJs": false, // .jsもコンパイル
     //"checkJs": false,
@@ -34,10 +34,11 @@
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
-    //危ないので使うのやめた "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "exclude": [
     "node_modules/",
+    "**/node_modules/*",
     "src/lib/",
     ".npm/"
   ],

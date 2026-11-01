@@ -11,11 +11,11 @@ CI_PROJECT_NAME=${CI_PROJECT_NAME:-$(basename $PWD)}
 if [ -f src.pem ];then
   # src.pemがあれば正式ビルド
   TSC_OPT=${TSC_OPT:-"--removeComments --incremental false"}  # コメント消す 完全ビルド
-  CRX_OPT=${CRX_OPT:-"-p src.pem"}      # 鍵ファイルを使う
+  CRX_OPT=${CRX_OPT:-"--key src.pem"}      # 鍵ファイルを使う
 fi
 
 #rm -f src/lib/*.js
-rm -f src/lib/*.map src/*.js src/*.js.map src/out
+rm -rf src/lib/*.map src/*.js src/*.js.map src/out
 
 if [ -x ./node_modules/.bin/npm ];then
   ./node_modules/.bin/npm ci $NPM_OPT
@@ -35,7 +35,7 @@ node esbuild.config.js #tscもやってくれるけど TSC_OPTの渡し方があ
 
 # rubyいらず .tsなども入らなくなりzipにkey.pemが無いけど問題なし
 (cd src;zip -r -X - . -x@../.crxignore)|\
- ./node_modules/.bin/crx3 ${CRX_OPT:-} -o ${CI_PROJECT_NAME}.crx -z ${CI_PROJECT_NAME}.zip && rm ${CI_PROJECT_NAME}.crx
+ ./node_modules/.bin/crx3 ${CRX_OPT:-} --crx ${CI_PROJECT_NAME}.crx --zip ${CI_PROJECT_NAME}.zip && rm ${CI_PROJECT_NAME}.crx
 
 gem install --user-install --no-document crxmake  #ruby-rdocパッケージいれず-no-..
 if [ -f src.pem ];then
